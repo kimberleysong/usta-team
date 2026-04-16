@@ -179,7 +179,7 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
     <button class="nav-item active" onclick="nav('dashboard',this)">Dashboard</button>
     <button class="nav-item" onclick="nav('roster',this)">Roster</button>
     <button class="nav-item" onclick="nav('availability',this)">Availability</button>
-    <button class="nav-item" onclick="nav('lineup',this)">Lineup</button>
+    <button class="nav-item" id="nav-lineup" onclick="nav('lineup',this)">Lineup</button>
     <button class="nav-item" onclick="nav('announcements',this)">Announcements</button>
     <div class="nav-section">Account</div>
     <button class="nav-item" id="nav-entitlements" onclick="nav('entitlements',this)" style="display:none">Entitlements</button>
@@ -372,7 +372,7 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
           <table class="tbl">
             <thead><tr><th>Action</th><th>Captain</th><th>Player</th></tr></thead>
             <tbody>
-              <tr><td>View lineup</td><td><span class="badge badge-green">Yes</span></td><td><span class="badge badge-green">Yes</span></td></tr>
+              <tr><td>View lineup</td><td><span class="badge badge-green">Yes</span></td><td><span class="badge badge-red">No</span></td></tr>
               <tr><td>Build &amp; save lineup</td><td><span class="badge badge-green">Yes</span></td><td><span class="badge badge-red">No</span></td></tr>
               <tr><td>Auto-fill lineup</td><td><span class="badge badge-green">Yes</span></td><td><span class="badge badge-red">No</span></td></tr>
               <tr><td>Announce lineup</td><td><span class="badge badge-green">Yes</span></td><td><span class="badge badge-red">No</span></td></tr>
@@ -565,6 +565,7 @@ function applyRoleUI(){
   document.getElementById('msg-captain-form').style.display = isCaptain ? 'block' : 'none';
   document.getElementById('nav-settings').style.display = isCaptain ? 'block' : 'none';
   document.getElementById('nav-entitlements').style.display = isCaptain ? 'block' : 'none';
+  document.getElementById('nav-lineup').style.display = isCaptain ? 'block' : 'none';
 }
 
 function logout(){
@@ -736,7 +737,9 @@ async function postMessage(){
   if(!TOKEN){toast('Sign in with Google to post');return}
   const subj=v('msg-subject'),body=v('msg-body');
   if(!subj||!body){toast('Subject and message required');return}
-  const row=['m'+Date.now(), new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}), v('msg-type'), subj, body, STATE.user?.name||'Captain'];
+  const now = new Date();
+  const datetime = now.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) + ' ' + now.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',hour12:true});
+  const row=['m'+Date.now(), datetime, v('msg-type'), subj, body, STATE.user?.name||'Captain'];
   await sheetsAppend('Messages',[row]);
   document.getElementById('msg-subject').value='';
   document.getElementById('msg-body').value='';
@@ -764,7 +767,7 @@ function getUpcomingWednesdays(n){
 }
 
 function renderDashboard(){
-  const upcoming = getUpcomingWednesdays(2);
+  const upcoming = getUpcomingWednesdays(3);
   const next = upcoming[0];
 
   // stat bar uses first upcoming date
@@ -792,7 +795,7 @@ function renderDashboard(){
     const dt = new Date(d+'T12:00:00');
     const dateLabel = dt.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
     const shortLabel = dt.toLocaleDateString('en-US',{month:'short',day:'numeric'});
-    const weekLabel = i===0 ? 'This Wednesday' : 'Next Wednesday';
+    const weekLabel = i===0 ? 'This Wednesday' : i===1 ? 'Next Wednesday' : 'In 3 Weeks';
 
     // availability for this date
     const dateAvail = STATE.availability[d] || {};
@@ -823,7 +826,7 @@ function renderDashboard(){
           <div style="font-size:13px;margin-bottom:4px"><span class="tag-in" style="margin-right:6px">${yesP.length}</span>${yesP.map(p=>p.first).join(', ')||'—'}</div>
           <div style="font-size:13px;margin-bottom:4px"><span class="tag-maybe" style="margin-right:6px">${maybeP.length}</span>${maybeP.map(p=>p.first).join(', ')||'—'}</div>
           <div style="font-size:13px;margin-bottom:4px"><span class="tag-out" style="margin-right:6px">${noP.length}</span>${noP.map(p=>p.first).join(', ')||'—'}</div>
-          ${unkP.length ? `<div style="font-size:12px;color:#aaa;margin-top:4px">${unkP.length} no response</div>` : ''}
+          <div style="font-size:13px;margin-bottom:4px"><span class="tag-unknown" style="margin-right:6px">${unkP.length}</span>${unkP.length ? unkP.map(p=>p.first).join(', ') : '—'}</div>
         </div>
         <div>
           <div style="font-size:12px;color:#888;margin-bottom:8px;font-weight:500">LINEUP</div>
@@ -1129,13 +1132,15 @@ function renderMessages(){
   if(!STATE.messages.length){el.innerHTML='<p style="font-size:13px;color:#888">No announcements yet.</p>';return}
   el.innerHTML = STATE.messages.map(m=>`
     <div class="msg-card">
-      <div style="display:flex;justify-content:space-between;align-items:center">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
         <span style="font-size:14px;font-weight:500">${m.subject}</span>
-        <span style="font-size:11px;color:#aaa">${m.date}</span>
+        <div style="text-align:right;flex-shrink:0">
+          <div style="font-size:12px;color:#555;font-weight:500">${m.date}</div>
+          <div style="font-size:11px;color:#aaa">— ${m.author}</div>
+        </div>
       </div>
-      <span class="badge ${m.type==='lineup'?'badge-blue':m.type==='reminder'?'badge-amber':'badge-gray'}" style="margin:4px 0;display:inline-block">${m.type}</span>
+      <span class="badge ${m.type==='lineup'?'badge-blue':m.type==='reminder'?'badge-amber':'badge-gray'}" style="margin:6px 0 4px;display:inline-block">${m.type}</span>
       <div class="msg-body">${m.body}</div>
-      <div style="font-size:11px;color:#aaa;margin-top:4px">— ${m.author}</div>
     </div>`).join('');
 }
 
@@ -1248,7 +1253,7 @@ function toast(msg){
 // patch nav to also load settings form and guard settings from non-captains
 const _nav = nav;
 window.nav = function(id, btn){
-  if((id==='settings' || id==='entitlements') && STATE.role !== 'captain'){
+  if((id==='settings' || id==='entitlements' || id==='lineup') && STATE.role !== 'captain'){
     toast('This screen is only accessible to the captain');
     return;
   }
