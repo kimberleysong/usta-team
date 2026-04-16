@@ -180,7 +180,7 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
     <button class="nav-item" onclick="nav('roster',this)">Roster</button>
     <button class="nav-item" onclick="nav('availability',this)">Availability</button>
     <button class="nav-item" onclick="nav('lineup',this)">Lineup</button>
-    <button class="nav-item" onclick="nav('messages',this)">Messages</button>
+    <button class="nav-item" onclick="nav('announcements',this)">Announcements</button>
     <div class="nav-section">Account</div>
     <button class="nav-item" id="nav-entitlements" onclick="nav('entitlements',this)" style="display:none">Entitlements</button>
     <button class="nav-item" id="nav-settings" onclick="nav('settings',this)" style="display:none">Settings</button>
@@ -200,25 +200,12 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
       <div id="sec-dashboard" class="section">
         <h2>Dashboard</h2>
         <div class="grid4" style="margin-bottom:1.5rem">
-          <div class="stat"><div class="stat-val" id="d-players">—</div><div class="stat-lbl">Players</div></div>
-          <div class="stat"><div class="stat-val" id="d-avail">—</div><div class="stat-lbl">Available Wed</div></div>
-          <div class="stat"><div class="stat-val" id="d-slots">0/8</div><div class="stat-lbl">Lineup filled</div></div>
-          <div class="stat"><div class="stat-val" id="d-match">Wed</div><div class="stat-lbl">Match day</div></div>
+          <div class="stat"><div class="stat-val" id="d-players">—</div><div class="stat-lbl">Total players</div></div>
+          <div class="stat"><div class="stat-val" id="d-avail">—</div><div class="stat-lbl">Available next Wed</div></div>
+          <div class="stat"><div class="stat-val" id="d-slots">0/8</div><div class="stat-lbl">Next lineup filled</div></div>
+          <div class="stat"><div class="stat-val" id="d-match">—</div><div class="stat-lbl">Next match</div></div>
         </div>
-        <div class="grid2">
-          <div class="card">
-            <div class="card-title">This Wednesday lineup</div>
-            <div id="d-lineup">No lineup set yet.</div>
-          </div>
-          <div class="card">
-            <div class="card-title">Latest announcement</div>
-            <div id="d-message">No announcements yet.</div>
-          </div>
-        </div>
-        <div class="card" style="margin-top:0">
-          <div class="card-title">Availability summary</div>
-          <div id="d-avail-summary">Loading...</div>
-        </div>
+        <div id="d-weeks-container"></div>
       </div>
 
       <!-- ROSTER -->
@@ -296,36 +283,38 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
           <p style="font-size:13px;color:#633806">Lineup editing requires captain access.</p>
         </div>
         <div id="lineup-editor">
-          <div class="card" style="margin-bottom:1rem">
-            <label style="font-size:12px;color:#888;display:block;margin-bottom:6px">Match date</label>
-            <div id="lineup-date-tabs" style="display:flex;gap:6px;flex-wrap:wrap"></div>
-            <div id="lineup-date-label" style="font-size:13px;color:#555;margin-top:8px"></div>
-          </div>
-          <div style="display:grid;grid-template-columns:3fr 2fr;gap:12px;margin-bottom:12px">
-            <div class="card" style="margin-bottom:0">
-              <div class="card-title">Doubles</div>
-              <div id="doubles-slots"></div>
+          <div id="lineup-builder-section">
+            <div class="card" style="margin-bottom:1rem">
+              <label style="font-size:12px;color:#888;display:block;margin-bottom:6px">Match date</label>
+              <div id="lineup-date-tabs" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+              <div id="lineup-date-label" style="font-size:13px;color:#555;margin-top:8px"></div>
             </div>
-            <div class="card" style="margin-bottom:0">
-              <div class="card-title">Singles</div>
-              <div id="singles-slots"></div>
+            <div style="display:grid;grid-template-columns:3fr 2fr;gap:12px;margin-bottom:12px">
+              <div class="card" style="margin-bottom:0">
+                <div class="card-title">Doubles</div>
+                <div id="doubles-slots"></div>
+              </div>
+              <div class="card" style="margin-bottom:0">
+                <div class="card-title">Singles</div>
+                <div id="singles-slots"></div>
+              </div>
             </div>
+            <div id="lineup-captain-controls" style="display:none;gap:8px;flex-wrap:wrap;margin-bottom:1.5rem">
+              <button class="btn btn-primary" onclick="autoFill()">Auto-fill from available</button>
+              <button class="btn" onclick="clearLineup()">Clear</button>
+              <button class="btn btn-green" onclick="saveLineup()">Save lineup</button>
+              <button class="btn" onclick="announceLineup()">Announce to team</button>
+            </div>
+            <hr style="border:none;border-top:0.5px solid #e0ddd5;margin:0.5rem 0 1.5rem">
           </div>
-          <div id="lineup-captain-controls" style="display:none;gap:8px;flex-wrap:wrap;margin-bottom:1.5rem">
-            <button class="btn btn-primary" onclick="autoFill()">Auto-fill from available</button>
-            <button class="btn" onclick="clearLineup()">Clear</button>
-            <button class="btn btn-green" onclick="saveLineup()">Save lineup</button>
-            <button class="btn" onclick="announceLineup()">Announce to team</button>
-          </div>
-          <hr style="border:none;border-top:0.5px solid #e0ddd5;margin:0.5rem 0 1.5rem">
           <h3 style="margin-bottom:1rem">All saved lineups</h3>
           <div id="all-lineups-list">Loading...</div>
         </div>
       </div>
 
-      <!-- MESSAGES -->
-      <div id="sec-messages" class="section" style="display:none">
-        <h2>Messages &amp; announcements</h2>
+      <!-- ANNOUNCEMENTS -->
+      <div id="sec-announcements" class="section" style="display:none">
+        <h2>Announcements</h2>
         <div id="msg-captain-form" style="display:none">
           <div class="card" style="margin-bottom:1rem">
             <div class="card-title">New announcement</div>
@@ -392,7 +381,7 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
         </div>
 
         <div class="card" style="margin-bottom:12px">
-          <div class="card-title">Messages</div>
+          <div class="card-title">Announcements</div>
           <table class="tbl">
             <thead><tr><th>Action</th><th>Captain</th><th>Player</th></tr></thead>
             <tbody>
@@ -436,7 +425,7 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
             <tr><td><code>Players</code></td><td style="font-size:12px">id, first, last, phone, email, rating, pos, gemail</td></tr>
             <tr><td><code>Availability</code></td><td style="font-size:12px">week, player_id, status, note</td></tr>
             <tr><td><code>Lineup</code></td><td style="font-size:12px">week, slot, player_id</td></tr>
-            <tr><td><code>Messages</code></td><td style="font-size:12px">id, date, type, subject, body, author</td></tr>
+            <tr><td><code>Announcements</code></td><td style="font-size:12px">id, date, type, subject, body, author</td></tr>
           </table>
           <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
             <button class="btn btn-green" onclick="requestOAuthToken()">1. Connect Google Account</button>
@@ -571,7 +560,8 @@ function applyRoleUI(){
   document.getElementById('roster-captain-only').style.display = isCaptain ? 'block' : 'none';
   document.getElementById('roster-actions-col').textContent = isCaptain ? 'Actions' : '';
   document.getElementById('lineup-captain-controls').style.display = isCaptain ? 'flex' : 'none';
-  document.getElementById('lineup-lock-notice').style.display = isCaptain ? 'none' : 'block';
+  document.getElementById('lineup-lock-notice').style.display = 'none';
+  document.getElementById('lineup-builder-section').style.display = isCaptain ? 'block' : 'none';
   document.getElementById('msg-captain-form').style.display = isCaptain ? 'block' : 'none';
   document.getElementById('nav-settings').style.display = isCaptain ? 'block' : 'none';
   document.getElementById('nav-entitlements').style.display = isCaptain ? 'block' : 'none';
@@ -733,7 +723,7 @@ async function announceLineup(){
   document.getElementById('msg-type').value='lineup';
   document.getElementById('msg-subject').value='Wednesday lineup — '+SELECTED_LINEUP_DATE;
   document.getElementById('msg-body').value=msg;
-  nav('messages', document.querySelectorAll('.nav-item')[4]);
+  nav('announcements', document.querySelectorAll('.nav-item')[4]);
 }
 
 function buildLineupText(){
@@ -741,7 +731,7 @@ function buildLineupText(){
   return `Wednesday ${SELECTED_LINEUP_DATE} Lineup\n\nDoubles:\n  Court 1: ${pn(STATE.lineup.d1p1)} / ${pn(STATE.lineup.d1p2)}\n  Court 2: ${pn(STATE.lineup.d2p1)} / ${pn(STATE.lineup.d2p2)}\n  Court 3: ${pn(STATE.lineup.d3p1)} / ${pn(STATE.lineup.d3p2)}\n\nSingles:\n  Court 1: ${pn(STATE.lineup.s1)}\n  Court 2: ${pn(STATE.lineup.s2)}\n\nGood luck team!`;
 }
 
-// ─── MESSAGES ────────────────────────────────────────────────────────────────
+// ─── ANNOUNCEMENTS ────────────────────────────────────────────────────────────────
 async function postMessage(){
   if(!TOKEN){toast('Sign in with Google to post');return}
   const subj=v('msg-subject'),body=v('msg-body');
@@ -761,47 +751,98 @@ function genLineupMsg(){
 }
 
 // ─── RENDER ──────────────────────────────────────────────────────────────────
-function renderDashboard(){
-  const dateAvail = STATE.availability[SELECTED_DATE] || {};
-  const avail = STATE.players.filter(p=>dateAvail[p.id]?.status==='yes').length;
-  const filled = LINEUP_KEYS.filter(k=>STATE.lineup[k]).length;
-  document.getElementById('d-players').textContent = STATE.players.length;
-  document.getElementById('d-avail').textContent = avail;
-  document.getElementById('d-slots').textContent = filled+'/8';
-  const selDt = new Date(SELECTED_DATE+'T12:00:00');
-  document.getElementById('d-match').textContent = selDt.toLocaleDateString('en-US',{month:'short',day:'numeric'});
-
-  const pn=id=>{if(!id)return'<span style="color:#aaa">TBD</span>';const p=STATE.players.find(x=>x.id===id);return p?p.first+' '+p.last:'TBD'};
-  const hasLineup = LINEUP_KEYS.some(k=>STATE.lineup[k]);
-  document.getElementById('d-lineup').innerHTML = hasLineup
-    ? `<div style="font-size:13px;line-height:1.8">
-        <strong>Doubles</strong><br>
-        D1: ${pn(STATE.lineup.d1p1)} / ${pn(STATE.lineup.d1p2)}<br>
-        D2: ${pn(STATE.lineup.d2p1)} / ${pn(STATE.lineup.d2p2)}<br>
-        D3: ${pn(STATE.lineup.d3p1)} / ${pn(STATE.lineup.d3p2)}<br>
-        <strong>Singles</strong><br>
-        S1: ${pn(STATE.lineup.s1)}<br>S2: ${pn(STATE.lineup.s2)}
-       </div>`
-    : '<span style="font-size:13px;color:#aaa">No lineup set yet.</span>';
-
-  const msg = STATE.messages[0];
-  document.getElementById('d-message').innerHTML = msg
-    ? `<div style="font-size:13px"><strong>${msg.subject}</strong><div style="color:#888;font-size:12px">${msg.date}</div><div style="color:#555;margin-top:4px;white-space:pre-wrap">${msg.body.slice(0,200)}${msg.body.length>200?'…':''}</div></div>`
-    : '<span style="font-size:13px;color:#aaa">No announcements yet.</span>';
-
-  const yesP=STATE.players.filter(p=>dateAvail[p.id]?.status==='yes');
-  const maybeP=STATE.players.filter(p=>dateAvail[p.id]?.status==='maybe');
-  const noP=STATE.players.filter(p=>dateAvail[p.id]?.status==='no');
-  const unkP=STATE.players.filter(p=>!dateAvail[p.id]||dateAvail[p.id].status==='unknown');
-  document.getElementById('d-avail-summary').innerHTML=`
-    <div style="font-size:12px;color:#888;margin-bottom:8px">Showing availability for ${selDt.toLocaleDateString('en-US',{month:'long',day:'numeric'})}</div>
-    <div style="display:flex;gap:1.5rem;flex-wrap:wrap;font-size:13px">
-      <div><span class="tag-in">${yesP.length} available</span><div style="margin-top:4px;color:#555">${yesP.map(p=>p.first+' '+p.last).join(', ')||'—'}</div></div>
-      <div><span class="tag-maybe">${maybeP.length} maybe</span><div style="margin-top:4px;color:#555">${maybeP.map(p=>p.first+' '+p.last).join(', ')||'—'}</div></div>
-      <div><span class="tag-out">${noP.length} unavailable</span><div style="margin-top:4px;color:#555">${noP.map(p=>p.first+' '+p.last).join(', ')||'—'}</div></div>
-      <div><span class="tag-unknown">${unkP.length} no response</span></div>
-    </div>`;
+function getUpcomingWednesdays(n){
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  const dates = [];
+  for(const d of MATCH_DATES){
+    const dt = new Date(d+'T12:00:00');
+    if(dt >= today) dates.push(d);
+    if(dates.length >= n) break;
+  }
+  return dates;
 }
+
+function renderDashboard(){
+  const upcoming = getUpcomingWednesdays(2);
+  const next = upcoming[0];
+
+  // stat bar uses first upcoming date
+  const nextAvail = next ? STATE.players.filter(p=>['yes','maybe'].includes((STATE.availability[next]||{})[p.id]?.status)).length : 0;
+  const nextFilled = next ? LINEUP_KEYS.filter(k=>(STATE.allLineups[next]||{})[k]).length : 0;
+  document.getElementById('d-players').textContent = STATE.players.length;
+  document.getElementById('d-avail').textContent = nextAvail;
+  document.getElementById('d-slots').textContent = nextFilled+'/8';
+  if(next){
+    const dt = new Date(next+'T12:00:00');
+    document.getElementById('d-match').textContent = dt.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+  }
+
+  const pn = id => { if(!id) return '<span style="color:#aaa">TBD</span>'; const p=STATE.players.find(x=>x.id===id); return p?p.first+' '+p.last:'TBD'; };
+
+  const container = document.getElementById('d-weeks-container');
+  if(!container) return;
+
+  if(!upcoming.length){
+    container.innerHTML = '<div class="card"><p style="font-size:13px;color:#888">No upcoming match dates.</p></div>';
+    return;
+  }
+
+  container.innerHTML = upcoming.map((d,i) => {
+    const dt = new Date(d+'T12:00:00');
+    const dateLabel = dt.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
+    const shortLabel = dt.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+    const weekLabel = i===0 ? 'This Wednesday' : 'Next Wednesday';
+
+    // availability for this date
+    const dateAvail = STATE.availability[d] || {};
+    const yesP  = STATE.players.filter(p=>dateAvail[p.id]?.status==='yes');
+    const maybeP = STATE.players.filter(p=>dateAvail[p.id]?.status==='maybe');
+    const noP   = STATE.players.filter(p=>dateAvail[p.id]?.status==='no');
+    const unkP  = STATE.players.filter(p=>!dateAvail[p.id]||dateAvail[p.id].status==='unknown');
+    const totalAvail = yesP.length + maybeP.length;
+    const availColor = totalAvail >= 8 ? '#27500A' : totalAvail > 0 ? '#791F1F' : '#888';
+    const availBg    = totalAvail >= 8 ? '#EAF3DE' : totalAvail > 0 ? '#FCEBEB' : '#F1EFE8';
+
+    // lineup for this date
+    const lu = STATE.allLineups[d] || {};
+    const hasLineup = LINEUP_KEYS.some(k=>lu[k]);
+
+    return `<div class="card" style="margin-bottom:12px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px">
+        <div>
+          <div style="font-size:12px;color:#888;font-weight:500;text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px">${weekLabel}</div>
+          <div style="font-size:16px;font-weight:500">${dateLabel}</div>
+        </div>
+        <span style="font-size:12px;padding:4px 12px;border-radius:20px;background:${availBg};color:${availColor};font-weight:500">${totalAvail} available</span>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div>
+          <div style="font-size:12px;color:#888;margin-bottom:8px;font-weight:500">AVAILABILITY</div>
+          <div style="font-size:13px;margin-bottom:4px"><span class="tag-in" style="margin-right:6px">${yesP.length}</span>${yesP.map(p=>p.first).join(', ')||'—'}</div>
+          <div style="font-size:13px;margin-bottom:4px"><span class="tag-maybe" style="margin-right:6px">${maybeP.length}</span>${maybeP.map(p=>p.first).join(', ')||'—'}</div>
+          <div style="font-size:13px;margin-bottom:4px"><span class="tag-out" style="margin-right:6px">${noP.length}</span>${noP.map(p=>p.first).join(', ')||'—'}</div>
+          ${unkP.length ? `<div style="font-size:12px;color:#aaa;margin-top:4px">${unkP.length} no response</div>` : ''}
+        </div>
+        <div>
+          <div style="font-size:12px;color:#888;margin-bottom:8px;font-weight:500">LINEUP</div>
+          ${hasLineup ? `
+            <div style="font-size:13px;line-height:1.9">
+              <div style="font-size:11px;color:#888;margin-bottom:2px">DOUBLES</div>
+              <div>D1: ${pn(lu.d1p1)} / ${pn(lu.d1p2)}</div>
+              <div>D2: ${pn(lu.d2p1)} / ${pn(lu.d2p2)}</div>
+              <div>D3: ${pn(lu.d3p1)} / ${pn(lu.d3p2)}</div>
+              <div style="font-size:11px;color:#888;margin:6px 0 2px">SINGLES</div>
+              <div>S1: ${pn(lu.s1)}</div>
+              <div>S2: ${pn(lu.s2)}</div>
+            </div>` : `<div style="font-size:13px;color:#aaa">No lineup set yet.</div>`}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
 
 function renderRoster(){
   const tbody = document.getElementById('roster-body');
@@ -825,14 +866,33 @@ function renderRoster(){
 function renderAvailPlayerDropdown(){
   const sel = document.getElementById('avail-player-select');
   if(!sel) return;
-  const prev = sel.value;
-  sel.innerHTML = STATE.players.map(p =>
-    `<option value="${p.id}">${p.first} ${p.last}</option>`
-  ).join('');
-  // default to Kim Song if found, else first player
-  if(!SELECTED_AVAIL_PLAYER){
-    const kim = STATE.players.find(p => p.first.toLowerCase().includes('kim') || p.last.toLowerCase().includes('song'));
-    SELECTED_AVAIL_PLAYER = kim ? kim.id : (STATE.players[0]?.id || null);
+  const isCaptain = STATE.role === 'captain';
+  const me = STATE.user?.email?.toLowerCase();
+
+  if(isCaptain){
+    // Captain sees all players
+    sel.innerHTML = STATE.players.map(p =>
+      `<option value="${p.id}">${p.first} ${p.last}</option>`
+    ).join('');
+    sel.disabled = false;
+    // default to Kim Song if no selection yet
+    if(!SELECTED_AVAIL_PLAYER){
+      const kim = STATE.players.find(p => p.first.toLowerCase().includes('kim') || p.last.toLowerCase().includes('song'));
+      SELECTED_AVAIL_PLAYER = kim ? kim.id : (STATE.players[0]?.id || null);
+    }
+  } else {
+    // Player sees only themselves
+    const myPlayer = STATE.players.find(p => p.gemail.toLowerCase() === me);
+    if(myPlayer){
+      sel.innerHTML = `<option value="${myPlayer.id}">${myPlayer.first} ${myPlayer.last}</option>`;
+      SELECTED_AVAIL_PLAYER = myPlayer.id;
+      sel.disabled = true;
+    } else {
+      sel.innerHTML = '<option value="">Not found on roster</option>';
+      sel.disabled = true;
+      document.getElementById('avail-body').innerHTML = '<p style="font-size:13px;color:#888">Your Google account is not linked to a player on the roster. Ask the captain to add your Gmail address to your player record.</p>';
+      return;
+    }
   }
   if(SELECTED_AVAIL_PLAYER) sel.value = SELECTED_AVAIL_PLAYER;
   updatePlayerMeta();
