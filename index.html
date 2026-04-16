@@ -112,10 +112,37 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
 .tag-maybe{background:#FAEEDA;color:#633806;padding:2px 8px;border-radius:20px;font-size:12px}
 .tag-unknown{background:#F1EFE8;color:#5F5E5A;padding:2px 8px;border-radius:20px;font-size:12px}
 @media(max-width:640px){
+  /* hide sidebar, shift main */
   .sidebar{display:none}
   .main{margin-left:0}
-  .user-bar{left:0}
-  .mobile-nav{display:flex}
+  .user-bar{left:0;padding:0 1rem}
+  /* bottom tab bar */
+  .mobile-nav{display:flex;position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:0.5px solid #e0ddd5;z-index:20;height:56px}
+  .mobile-nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:10px;color:#888;border:none;background:none;cursor:pointer;padding:4px 0;gap:2px}
+  .mobile-nav-btn.active{color:#0C447C}
+  .mobile-nav-icon{font-size:18px;line-height:1}
+  /* extra bottom padding so content clears tab bar */
+  .content{padding:1rem 1rem 72px}
+  /* stack doubles/singles vertically */
+  #sec-lineup .grid-lineup{grid-template-columns:1fr!important}
+  /* 2x2 stat grid */
+  .grid4{grid-template-columns:1fr 1fr!important}
+  /* hide phone/email cols on roster */
+  .roster-hide-mobile{display:none}
+  /* full-width cards */
+  .card{padding:.75rem 1rem}
+  /* tab bar text smaller */
+  .tab-btn{padding:7px 12px;font-size:12px}
+  /* form groups full width */
+  .grid2{grid-template-columns:1fr!important}
+  /* user bar compact */
+  #user-info{font-size:12px}
+  #last-sync{display:none}
+  h2{font-size:16px}
+  h3{font-size:14px}
+}
+@media(min-width:641px){
+  .mobile-nav{display:none!important}
 }
 </style>
 </head>
@@ -227,7 +254,7 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
         <div id="roster-tab-list" class="tab-pane active">
           <div id="roster-loading" style="color:#888;font-size:13px;padding:1rem">Loading roster...</div>
           <table class="tbl" id="roster-tbl" style="display:none">
-            <thead><tr><th>Player</th><th>Phone</th><th>Email</th><th>Position preference</th><th id="roster-actions-col"></th></tr></thead>
+            <thead><tr><th>Player</th><th class="roster-hide-mobile">Phone</th><th class="roster-hide-mobile">Email</th><th>Position preference</th><th id="roster-actions-col"></th></tr></thead>
             <tbody id="roster-body"></tbody>
           </table>
         </div>
@@ -324,7 +351,7 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
               <select id="lineup-date-select" onchange="selectLineupDate(this.value)" style="font-size:14px;padding:6px 10px;min-width:200px"></select>
               <div id="lineup-date-label" style="font-size:12px;color:#888;margin-top:6px"></div>
             </div>
-            <div style="display:grid;grid-template-columns:3fr 2fr;gap:12px;margin-bottom:12px">
+            <div class="grid-lineup" style="display:grid;grid-template-columns:3fr 2fr;gap:12px;margin-bottom:12px">
               <div class="card" style="margin-bottom:0">
                 <div class="card-title">Doubles</div>
                 <div id="doubles-slots"></div>
@@ -475,6 +502,31 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
 
     </div>
   </div>
+
+  <!-- MOBILE BOTTOM NAV -->
+  <nav class="mobile-nav" id="mobile-nav">
+    <button class="mobile-nav-btn active" onclick="mobileNav('dashboard',this)">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      <span>Dashboard</span>
+    </button>
+    <button class="mobile-nav-btn" onclick="mobileNav('roster',this)">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/><path d="M21 21v-2a4 4 0 0 0-3-3.85"/></svg>
+      <span>Roster</span>
+    </button>
+    <button class="mobile-nav-btn" onclick="mobileNav('availability',this)">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg>
+      <span>Availability</span>
+    </button>
+    <button class="mobile-nav-btn" id="mobile-nav-lineup" onclick="mobileNav('lineup',this)" style="display:none">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3" cy="6" r="1" fill="currentColor"/><circle cx="3" cy="12" r="1" fill="currentColor"/><circle cx="3" cy="18" r="1" fill="currentColor"/></svg>
+      <span>Lineup</span>
+    </button>
+    <button class="mobile-nav-btn" onclick="mobileNav('announcements',this)">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      <span>Announcements</span>
+    </button>
+  </nav>
+
 </div>
 
 <div id="toast" class="toast"></div>
@@ -610,6 +662,7 @@ function applyRoleUI(){
   set('nav-settings', isCaptain ? 'block' : 'none');
   set('nav-entitlements', isCaptain ? 'block' : 'none');
   set('nav-lineup', isCaptain ? 'block' : 'none');
+  set('mobile-nav-lineup', isCaptain ? 'flex' : 'none');
 }
 
 function logout(){
@@ -909,11 +962,33 @@ function renderRoster(){
       <td><div style="display:flex;align-items:center;gap:8px">
         <div class="avatar" style="background:${av[0]};color:${av[1]};width:28px;height:28px;font-size:11px">${p.first[0]}${p.last[0]}</div>
         <span>${p.first} ${p.last}</span></div></td>
-      <td>${p.phone}</td>
-      <td style="color:#185FA5">${p.email}</td>
+      <td class="roster-hide-mobile">${p.phone}</td>
+      <td class="roster-hide-mobile" style="color:#185FA5">${p.email}</td>
       <td><span class="badge badge-gray">${p.pos}</span></td>
       <td>${STATE.role==='captain'?`<button class="btn btn-danger btn-sm" onclick="removePlayer('${p.id}')">Remove</button>`:''}</td>
     </tr>`;}).join('');
+}
+
+function mobileNav(id, btn){
+  // update mobile nav active state
+  document.querySelectorAll('.mobile-nav-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  // also update sidebar nav
+  const sidebarBtn = Array.from(document.querySelectorAll('.nav-item')).find(b=>b.getAttribute('onclick')&&b.getAttribute('onclick').includes("'"+id+"'"));
+  if(sidebarBtn) window.nav(id, sidebarBtn);
+  else {
+    // fallback direct nav
+    document.querySelectorAll('.section').forEach(s=>s.style.display='none');
+    const sec = document.getElementById('sec-'+id);
+    if(sec) sec.style.display='block';
+  }
+}
+
+function syncMobileNav(id){
+  document.querySelectorAll('.mobile-nav-btn').forEach(b=>{
+    const onclick = b.getAttribute('onclick')||'';
+    b.classList.toggle('active', onclick.includes("'"+id+"'"));
+  });
 }
 
 function switchRosterTab(tab, btn){
@@ -1336,7 +1411,7 @@ function toast(msg){
   setTimeout(()=>t.classList.remove('show'),2800);
 }
 
-// patch nav to also load settings form and guard settings from non-captains
+// patch nav to also load settings form, guard captain-only screens, and reset tab state
 const _nav = nav;
 window.nav = function(id, btn){
   if((id==='settings' || id==='entitlements' || id==='lineup') && STATE.role !== 'captain'){
@@ -1345,6 +1420,18 @@ window.nav = function(id, btn){
   }
   _nav(id, btn);
   if(id==='settings') loadSettingsForm();
+  // reset tab bar for the section we just navigated to
+  const sec = document.getElementById('sec-'+id);
+  if(sec){
+    const tabBtns = sec.querySelectorAll('.tab-btn');
+    const tabPanes = sec.querySelectorAll('.tab-pane');
+    if(tabBtns.length){
+      tabBtns.forEach(b=>b.classList.remove('active'));
+      tabPanes.forEach(p=>p.classList.remove('active'));
+      tabBtns[0].classList.add('active');
+      if(tabPanes[0]) tabPanes[0].classList.add('active');
+    }
+  }
 };
 </script>
 </body>
