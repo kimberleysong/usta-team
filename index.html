@@ -217,36 +217,47 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
       <!-- ROSTER -->
       <div id="sec-roster" class="section" style="display:none">
         <h2>Roster</h2>
-        <div id="roster-captain-only" style="display:none">
-          <div class="card" style="margin-bottom:1.5rem">
-            <div class="card-title">Add player</div>
-            <div class="grid2">
-              <div class="form-group"><label>First name</label><input id="r-first" placeholder="Jane"></div>
-              <div class="form-group"><label>Last name</label><input id="r-last" placeholder="Smith"></div>
-            </div>
-            <div class="grid2">
-              <div class="form-group"><label>Phone</label><input id="r-phone" placeholder="(617) 555-0100"></div>
-              <div class="form-group"><label>Email</label><input id="r-email" placeholder="jane@email.com"></div>
-            </div>
-            <div class="grid2">
-              <div class="form-group"><label>NTRP rating</label>
-                <select id="r-rating"><option>2.5</option><option>3.0</option><option selected>3.5</option><option>4.0</option><option>4.5</option><option>5.0</option></select>
-              </div>
-              <div class="form-group"><label>Position preference</label>
-                <select id="r-pos"><option value="either">Either</option><option value="singles">Singles</option><option value="doubles">Doubles</option></select>
-              </div>
-            </div>
-            <div class="form-group"><label>Google email (for login match)</label><input id="r-gemail" placeholder="jane@gmail.com"></div>
-            <button class="btn btn-primary" onclick="addPlayer()">Add player</button>
-          </div>
+
+        <div class="tab-bar">
+          <button class="tab-btn active" onclick="switchRosterTab('list',this)">Player list</button>
+          <button class="tab-btn" id="roster-add-tab-btn" onclick="switchRosterTab('add',this)" style="display:none">Add player</button>
         </div>
-        <div id="roster-table-wrap">
+
+        <!-- PLAYER LIST TAB -->
+        <div id="roster-tab-list" class="tab-pane active">
           <div id="roster-loading" style="color:#888;font-size:13px;padding:1rem">Loading roster...</div>
           <table class="tbl" id="roster-tbl" style="display:none">
-            <thead><tr><th>Player</th><th>Phone</th><th>Email</th><th>Position</th><th id="roster-actions-col"></th></tr></thead>
+            <thead><tr><th>Player</th><th>Phone</th><th>Email</th><th>Position preference</th><th id="roster-actions-col"></th></tr></thead>
             <tbody id="roster-body"></tbody>
           </table>
         </div>
+
+        <!-- ADD PLAYER TAB -->
+        <div id="roster-tab-add" class="tab-pane">
+          <div id="roster-captain-only">
+            <div class="card">
+              <div class="grid2">
+                <div class="form-group"><label>First name</label><input id="r-first" placeholder="Jane"></div>
+                <div class="form-group"><label>Last name</label><input id="r-last" placeholder="Smith"></div>
+              </div>
+              <div class="grid2">
+                <div class="form-group"><label>Phone</label><input id="r-phone" placeholder="(617) 555-0100"></div>
+                <div class="form-group"><label>Email</label><input id="r-email" placeholder="jane@email.com"></div>
+              </div>
+              <div class="grid2">
+                <div class="form-group"><label>NTRP rating</label>
+                  <select id="r-rating"><option>2.5</option><option>3.0</option><option selected>3.5</option><option>4.0</option><option>4.5</option><option>5.0</option></select>
+                </div>
+                <div class="form-group"><label>Position preference</label>
+                  <select id="r-pos"><option value="either">Either</option><option value="singles">Singles</option><option value="doubles">Doubles</option></select>
+                </div>
+              </div>
+              <div class="form-group"><label>Google email (for login match)</label><input id="r-gemail" placeholder="jane@gmail.com"></div>
+              <button class="btn btn-primary" onclick="addPlayer()">Add player</button>
+            </div>
+          </div>
+        </div>
+
       </div>
 
       <!-- AVAILABILITY -->
@@ -477,7 +488,10 @@ let TOKEN = null;
 
 const MATCH_DATES = getMatchDates();
 let SELECTED_DATE = MATCH_DATES[0];
-let SELECTED_LINEUP_DATE = MATCH_DATES[0];
+let SELECTED_LINEUP_DATE = (()=>{
+  const today = new Date().toISOString().slice(0,10);
+  return MATCH_DATES.find(d=>d>=today) || MATCH_DATES[0];
+})();
 let SELECTED_AVAIL_PLAYER = null;
 const WEEK = SELECTED_DATE;
 function getMatchDates(){
@@ -587,6 +601,7 @@ function applyRoleUI(){
   const set = (id, val) => { const el = document.getElementById(id); if(el) el.style.display = val; };
   const setText = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val; };
   set('roster-captain-only', isCaptain ? 'block' : 'none');
+  set('roster-add-tab-btn', isCaptain ? 'block' : 'none');
   setText('roster-actions-col', isCaptain ? 'Actions' : '');
   set('lineup-captain-controls', isCaptain ? 'flex' : 'none');
   set('lineup-lock-notice', 'none');
@@ -705,6 +720,8 @@ async function addPlayer(){
     ['r-first','r-last','r-phone','r-email','r-gemail'].forEach(x=>document.getElementById(x).value='');
     toast('Player added');
     await loadPlayers(); renderRoster(); renderAvailability(); renderDashboard();
+    const listBtn = document.querySelector('#sec-roster .tab-btn');
+    if(listBtn) switchRosterTab('list', listBtn);
   }catch(e){toast('Error: '+e.message)}
 }
 
@@ -884,7 +901,7 @@ function renderRoster(){
   const tbody = document.getElementById('roster-body');
   const tbl = document.getElementById('roster-tbl');
   const loading = document.getElementById('roster-loading');
-  if(!STATE.players.length){loading.textContent='No players yet. Add one above.';loading.style.display='block';tbl.style.display='none';return}
+  if(!STATE.players.length){if(loading){loading.textContent='No players yet.';loading.style.display='block';}if(tbl)tbl.style.display='none';return}
   loading.style.display='none'; tbl.style.display='table';
   tbody.innerHTML = STATE.players.map((p,i)=>{
     const av = AVATAR_COLORS[i%AVATAR_COLORS.length].split(':');
@@ -897,6 +914,13 @@ function renderRoster(){
       <td><span class="badge badge-gray">${p.pos}</span></td>
       <td>${STATE.role==='captain'?`<button class="btn btn-danger btn-sm" onclick="removePlayer('${p.id}')">Remove</button>`:''}</td>
     </tr>`;}).join('');
+}
+
+function switchRosterTab(tab, btn){
+  document.querySelectorAll('#sec-roster .tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('#sec-roster .tab-pane').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('roster-tab-'+tab).classList.add('active');
 }
 
 function switchAvailTab(tab, btn){
@@ -1054,12 +1078,18 @@ function renderAvailSummary(){
     return `<td style="text-align:center;padding:4px 8px;border-bottom:0.5px solid #f0ede8;border-right:0.5px solid #f0ede8"><span style="color:#ccc;font-size:10px">--</span></td>`;
   };
   const headerCells = MATCH_DATES.map(d => `<th style="${thStyle(d)}">${shortDate(d)}</th>`).join('');
+  const headerLineup = `<th style="padding:5px 8px;text-align:center;font-weight:500;border-bottom:0.5px solid #e0ddd5;border-left:0.5px solid #e0ddd5;background:#EEEDFE;color:#3C3489">Lineup</th>`;
   const playerRows = STATE.players.map(p => {
     const isSelected = p.id === SELECTED_AVAIL_PLAYER;
     const cells = MATCH_DATES.map(d => { const av = (STATE.availability[d]||{})[p.id]; return statusCell(av?.status||'unknown'); }).join('');
+    // count how many saved lineups include this player
+    const lineupCount = MATCH_DATES.filter(d => STATE.allLineups[d] && LINEUP_KEYS.some(k=>STATE.allLineups[d][k]===p.id)).length;
+    const lineupCell = `<td style="text-align:center;padding:4px 8px;border-bottom:0.5px solid #f0ede8;border-left:0.5px solid #e0ddd5;background:${isSelected?'#f5f9ff':'#EEEDFE22'}">
+      ${lineupCount > 0 ? `<span style="font-size:12px;font-weight:500;color:#3C3489">${lineupCount}</span>` : `<span style="color:#ccc;font-size:10px">—</span>`}
+    </td>`;
     return `<tr style="${isSelected?'background:#f5f9ff':''}">
       <td onclick="selectAvailPlayer('${p.id}')" style="padding:4px 10px;font-weight:${isSelected?'500':'400'};white-space:nowrap;border-bottom:0.5px solid #f0ede8;border-right:0.5px solid #e0ddd5;position:sticky;left:0;background:${isSelected?'#f5f9ff':'#fff'};cursor:pointer;color:${isSelected?'#0C447C':'#333'}">${p.first}</td>
-      ${cells}
+      ${cells}${lineupCell}
     </tr>`;
   }).join('');
   const totalCells = MATCH_DATES.map(d => {
@@ -1069,15 +1099,18 @@ function renderAvailSummary(){
     const color = !hasData ? '#aaa' : count >= 8 ? '#27500A' : '#791F1F';
     return `<td style="text-align:center;padding:4px 8px;font-weight:500;color:${color};border-top:0.5px solid #e0ddd5;border-right:0.5px solid #f0ede8">${hasData ? count : '--'}</td>`;
   }).join('');
+  // total lineups saved
+  const totalLineupDates = MATCH_DATES.filter(d=>STATE.allLineups[d]&&LINEUP_KEYS.some(k=>STATE.allLineups[d][k])).length;
+  const totalLineupCell = `<td style="text-align:center;padding:4px 8px;font-weight:500;color:#3C3489;border-top:0.5px solid #e0ddd5;border-left:0.5px solid #e0ddd5;background:#EEEDFE22">${totalLineupDates} date${totalLineupDates!==1?'s':''}</td>`;
   el.innerHTML = `
     <thead><tr>
       <th style="padding:5px 10px;text-align:left;border-bottom:0.5px solid #e0ddd5;border-right:0.5px solid #e0ddd5;position:sticky;left:0;background:#fff;font-weight:500">Player</th>
-      ${headerCells}
+      ${headerCells}${headerLineup}
     </tr></thead>
     <tbody>${playerRows}
       <tr>
         <td style="padding:4px 10px;font-size:11px;color:#888;border-top:0.5px solid #e0ddd5;border-right:0.5px solid #e0ddd5;position:sticky;left:0;background:#fff">Available</td>
-        ${totalCells}
+        ${totalCells}${totalLineupCell}
       </tr>
     </tbody>`;
   const legendEl = document.getElementById('avail-summary-legend');
