@@ -1594,7 +1594,7 @@ function requestOAuthToken(){
 async function initSheet(){
   if(!TOKEN){toast('Click "Connect Google Account" first');return}
   toast('Creating sheet tabs...');
-  const sheets = ['Players','Availability','Lineup','Messages'];
+  const sheets = ['Players','Availability','Lineup','Messages','Schedule'];
   const headers = {
     Players:['id','first','last','phone','email','rating','pos','gemail'],
     Availability:['week','player_id','status','note'],
