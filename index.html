@@ -275,11 +275,16 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
 
       <!-- LINEUP -->
       <div id="sec-lineup" class="section" style="display:none">
-        <h2>Wednesday lineup</h2>
+        <h2>Lineup builder</h2>
         <div id="lineup-lock-notice" class="card" style="background:#FAEEDA;border-color:#EF9F27;display:none">
           <p style="font-size:13px;color:#633806">Lineup editing requires captain access.</p>
         </div>
         <div id="lineup-editor">
+          <div class="card" style="margin-bottom:1rem">
+            <label style="font-size:12px;color:#888;display:block;margin-bottom:6px">Match date</label>
+            <div id="lineup-date-tabs" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+            <div id="lineup-date-label" style="font-size:13px;color:#555;margin-top:8px"></div>
+          </div>
           <div class="card">
             <div class="card-title">Doubles</div>
             <div id="doubles-slots"></div>
@@ -288,12 +293,15 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
             <div class="card-title">Singles</div>
             <div id="singles-slots"></div>
           </div>
-          <div id="lineup-captain-controls" style="display:none;gap:8px;flex-wrap:wrap;margin-bottom:1rem">
+          <div id="lineup-captain-controls" style="display:none;gap:8px;flex-wrap:wrap;margin-bottom:1.5rem">
             <button class="btn btn-primary" onclick="autoFill()">Auto-fill from available</button>
             <button class="btn" onclick="clearLineup()">Clear</button>
             <button class="btn btn-green" onclick="saveLineup()">Save lineup</button>
             <button class="btn" onclick="announceLineup()">Announce to team</button>
           </div>
+          <hr style="border:none;border-top:0.5px solid #e0ddd5;margin:0.5rem 0 1.5rem">
+          <h3 style="margin-bottom:1rem">All saved lineups</h3>
+          <div id="all-lineups-list">Loading...</div>
         </div>
       </div>
 
@@ -363,11 +371,12 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
 <script>
 // ─── CONFIG ─────────────────────────────────────────────────────────────────
 let CFG = JSON.parse(localStorage.getItem('usta_cfg') || '{}');
-let STATE = {players:[], availability:{}, lineup:{}, messages:[], role:'guest', user:null};
+let STATE = {players:[], availability:{}, lineup:{}, allLineups:{}, messages:[], role:'guest', user:null};
 let TOKEN = null;
 
 const MATCH_DATES = getMatchDates();
 let SELECTED_DATE = MATCH_DATES[0];
+let SELECTED_LINEUP_DATE = MATCH_DATES[0];
 const WEEK = SELECTED_DATE;
 function getMatchDates(){
   const dates=[];
@@ -531,7 +540,7 @@ async function syncAll(){
   setSyncState(true);
   try {
     await Promise.all([loadPlayers(), loadAvailability(), loadLineup(), loadMessages()]);
-    renderDashboard(); renderRoster(); renderAvailability(); renderLineup(); renderMessages();
+    renderDashboard(); renderRoster(); renderAvailability(); renderLineupDateTabs(); renderLineup(); renderAllLineups(); renderMessages();
   } catch(e){
     toast('Sync error: '+e.message);
     console.error(e);
@@ -559,10 +568,13 @@ async function loadAvailability(){
 
 async function loadLineup(){
   const rows = await sheetsGet('Lineup!A2:C');
-  STATE.lineup = {};
+  STATE.allLineups = {};
   rows.forEach(r=>{
-    if(r[0]===SELECTED_DATE) STATE.lineup[r[1]] = r[2]||'';
+    if(!r[0]) return;
+    if(!STATE.allLineups[r[0]]) STATE.allLineups[r[0]]={};
+    STATE.allLineups[r[0]][r[1]] = r[2]||'';
   });
+  STATE.lineup = STATE.allLineups[SELECTED_LINEUP_DATE] ? {...STATE.allLineups[SELECTED_LINEUP_DATE]} : {};
 }
 
 async function loadMessages(){
@@ -596,6 +608,10 @@ async function removePlayer(id){
 
 // ─── AVAILABILITY ─────────────────────────────────────────────────────────────
 async function setAvailability(playerId, status, note){
+  const today = new Date().toISOString().slice(0,10);
+  if(SELECTED_DATE < today && STATE.role !== "captain"){
+    toast("Cannot update availability for past dates"); return;
+  }
   if(STATE.role !== "captain"){
     const me = STATE.user?.email;
     const player = STATE.players.find(p=>p.id===playerId);
@@ -619,16 +635,20 @@ async function setAvailability(playerId, status, note){
 async function saveLineup(){
   if(!TOKEN){toast('Sign in with Google to save');return}
   const rows = await sheetsGet('Lineup!A2:C');
-  const filtered = rows.filter(r=>r[0]!==SELECTED_DATE);
-  LINEUP_KEYS.forEach(k=>{ if(STATE.lineup[k]) filtered.push([SELECTED_DATE,k,STATE.lineup[k]]); });
+  const filtered = rows.filter(r=>r[0]!==SELECTED_LINEUP_DATE);
+  LINEUP_KEYS.forEach(k=>{ if(STATE.lineup[k]) filtered.push([SELECTED_LINEUP_DATE,k,STATE.lineup[k]]); });
   await sheetsClear('Lineup!A2:C');
   if(filtered.length) await sheetsUpdate('Lineup!A2', filtered);
-  toast('Lineup saved');
+  if(!STATE.allLineups[SELECTED_LINEUP_DATE]) STATE.allLineups[SELECTED_LINEUP_DATE]={};
+  LINEUP_KEYS.forEach(k=>STATE.allLineups[SELECTED_LINEUP_DATE][k]=STATE.lineup[k]||'');
+  toast('Lineup saved for '+SELECTED_LINEUP_DATE);
+  renderLineupDateTabs();
+  renderAllLineups();
   renderDashboard();
 }
 
 function autoFill(){
-  const _da = STATE.availability[SELECTED_DATE]||{};
+  const _da = STATE.availability[SELECTED_LINEUP_DATE]||{};
   const avail = STATE.players.filter(p=>{const a=_da[p.id];return a&&['yes','maybe'].includes(a.status)});
   const used = new Set(Object.values(STATE.lineup).filter(Boolean));
   LINEUP_KEYS.forEach(k=>{
@@ -645,14 +665,14 @@ function clearLineup(){LINEUP_KEYS.forEach(k=>STATE.lineup[k]=''); renderLineup(
 async function announceLineup(){
   const msg = buildLineupText();
   document.getElementById('msg-type').value='lineup';
-  document.getElementById('msg-subject').value='Wednesday lineup — '+SELECTED_DATE;
+  document.getElementById('msg-subject').value='Wednesday lineup — '+SELECTED_LINEUP_DATE;
   document.getElementById('msg-body').value=msg;
   nav('messages', document.querySelectorAll('.nav-item')[4]);
 }
 
 function buildLineupText(){
   const pn=id=>{if(!id)return'TBD';const p=STATE.players.find(x=>x.id===id);return p?p.first+' '+p.last:'TBD'};
-  return `Wednesday ${SELECTED_DATE} Lineup\n\nDoubles:\n  Court 1: ${pn(STATE.lineup.d1p1)} / ${pn(STATE.lineup.d1p2)}\n  Court 2: ${pn(STATE.lineup.d2p1)} / ${pn(STATE.lineup.d2p2)}\n  Court 3: ${pn(STATE.lineup.d3p1)} / ${pn(STATE.lineup.d3p2)}\n\nSingles:\n  Court 1: ${pn(STATE.lineup.s1)}\n  Court 2: ${pn(STATE.lineup.s2)}\n\nGood luck team!`;
+  return `Wednesday ${SELECTED_LINEUP_DATE} Lineup\n\nDoubles:\n  Court 1: ${pn(STATE.lineup.d1p1)} / ${pn(STATE.lineup.d1p2)}\n  Court 2: ${pn(STATE.lineup.d2p1)} / ${pn(STATE.lineup.d2p2)}\n  Court 3: ${pn(STATE.lineup.d3p1)} / ${pn(STATE.lineup.d3p2)}\n\nSingles:\n  Court 1: ${pn(STATE.lineup.s1)}\n  Court 2: ${pn(STATE.lineup.s2)}\n\nGood luck team!`;
 }
 
 // ─── MESSAGES ────────────────────────────────────────────────────────────────
@@ -670,7 +690,7 @@ async function postMessage(){
 
 function genLineupMsg(){
   document.getElementById('msg-type').value='lineup';
-  document.getElementById('msg-subject').value='Wednesday lineup — '+SELECTED_DATE;
+  document.getElementById('msg-subject').value='Wednesday lineup — '+SELECTED_LINEUP_DATE;
   document.getElementById('msg-body').value=buildLineupText();
 }
 
@@ -743,9 +763,26 @@ function renderDateTabs(){
   container.innerHTML = MATCH_DATES.map(d=>{
     const isSelected = d===SELECTED_DATE;
     const isPast = d < today;
+    const dateAvail = STATE.availability[d] || {};
+    const yesCount = STATE.players.filter(p=>dateAvail[p.id]?.status==='yes').length;
+    const maybeCount = STATE.players.filter(p=>dateAvail[p.id]?.status==='maybe').length;
+    const totalAvail = yesCount + maybeCount;
+    const hasData = STATE.players.some(p=>dateAvail[p.id]);
+    // color logic: green if >=8, red if <8 and has some responses, neutral if no data yet
+    let bg, border, color;
+    if(isSelected){
+      bg='#E6F1FB'; border='#378ADD'; color='#0C447C';
+    } else if(!hasData || isPast){
+      bg=isPast?'#f5f5f0':'#fff'; border='#ccc'; color=isPast?'#aaa':'#333';
+    } else if(totalAvail >= 8){
+      bg='#EAF3DE'; border='#97C459'; color='#27500A';
+    } else {
+      bg='#FCEBEB'; border='#F09595'; color='#791F1F';
+    }
     const dt = new Date(d+'T12:00:00');
     const label = dt.toLocaleDateString('en-US',{month:'short',day:'numeric'});
-    return `<button onclick="selectDate('${d}')" style="padding:5px 11px;font-size:12px;border-radius:20px;border:0.5px solid ${isSelected?'#378ADD':'#ccc'};background:${isSelected?'#E6F1FB':isPast?'#f5f5f0':'#fff'};color:${isSelected?'#0C447C':isPast?'#aaa':'#333'};cursor:pointer;font-weight:${isSelected?'500':'400'}">${label}</button>`;
+    const title = totalAvail > 0 ? `${totalAvail} available` : 'No responses yet';
+    return `<button onclick="selectDate('${d}')" title="${title}" style="padding:5px 11px;font-size:12px;border-radius:20px;border:0.5px solid ${border};background:${bg};color:${color};cursor:pointer;font-weight:${isSelected?'500':'400'}">${label}</button>`;
   }).join('');
   const sel = new Date(SELECTED_DATE+'T12:00:00');
   const label = sel.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
@@ -766,7 +803,9 @@ function renderAvailability(){
   const dateAvail = STATE.availability[SELECTED_DATE] || {};
   document.getElementById('avail-body').innerHTML = STATE.players.map(p=>{
     const av = dateAvail[p.id] || {status:'unknown',note:''};
-    const canEdit = STATE.role==='captain' || p.gemail.toLowerCase()===me;
+    const _today = new Date().toISOString().slice(0,10);
+    const isPastDate = SELECTED_DATE < _today;
+    const canEdit = !isPastDate && (STATE.role==='captain' || p.gemail.toLowerCase()===me);
     const statusBadge = av.status==='yes'?'tag-in':av.status==='maybe'?'tag-maybe':av.status==='no'?'tag-out':'tag-unknown';
     const statusLabel = av.status==='yes'?'Available':av.status==='maybe'?'Maybe':av.status==='no'?'Unavailable':'Unknown';
     return `<div style="display:grid;grid-template-columns:1fr 110px 160px;gap:8px;align-items:center;padding:7px 0;border-bottom:0.5px solid #f0ede8">
@@ -786,9 +825,71 @@ function renderAvailability(){
   }).join('') || '<p style="font-size:13px;color:#888;padding:8px 0">No players on roster yet.</p>';
 }
 
+function renderLineupDateTabs(){
+  const container = document.getElementById('lineup-date-tabs');
+  if(!container) return;
+  container.innerHTML = MATCH_DATES.map(d=>{
+    const isSelected = d===SELECTED_LINEUP_DATE;
+    const hasLineup = STATE.allLineups[d] && LINEUP_KEYS.some(k=>STATE.allLineups[d][k]);
+    let bg, border, color;
+    if(isSelected){ bg='#E6F1FB'; border='#378ADD'; color='#0C447C'; }
+    else if(hasLineup){ bg='#EAF3DE'; border='#97C459'; color='#27500A'; }
+    else { bg='#fff'; border='#ccc'; color='#333'; }
+    const dt = new Date(d+'T12:00:00');
+    const label = dt.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+    return `<button onclick="selectLineupDate('${d}')" style="padding:5px 11px;font-size:12px;border-radius:20px;border:0.5px solid ${border};background:${bg};color:${color};cursor:pointer;font-weight:${isSelected?'500':'400'}">${label}</button>`;
+  }).join('');
+  const sel = new Date(SELECTED_LINEUP_DATE+'T12:00:00');
+  const el = document.getElementById('lineup-date-label');
+  if(el) el.textContent = sel.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+}
+
+function selectLineupDate(d){
+  SELECTED_LINEUP_DATE = d;
+  STATE.lineup = STATE.allLineups[d] ? {...STATE.allLineups[d]} : {};
+  renderLineupDateTabs();
+  renderLineup();
+}
+
+function renderAllLineups(){
+  const el = document.getElementById('all-lineups-list');
+  if(!el) return;
+  const datesWithLineups = MATCH_DATES.filter(d=>STATE.allLineups[d] && LINEUP_KEYS.some(k=>STATE.allLineups[d][k]));
+  if(!datesWithLineups.length){
+    el.innerHTML='<p style="font-size:13px;color:#888">No lineups saved yet.</p>';
+    return;
+  }
+  const pn=id=>{if(!id)return'<span style="color:#aaa">TBD</span>';const p=STATE.players.find(x=>x.id===id);return p?p.first+' '+p.last:'TBD'};
+  el.innerHTML = datesWithLineups.map(d=>{
+    const lu = STATE.allLineups[d];
+    const dt = new Date(d+'T12:00:00');
+    const dateLabel = dt.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+    const isSelected = d===SELECTED_LINEUP_DATE;
+    return `<div class="card" style="margin-bottom:8px;${isSelected?'border-color:#378ADD;':''}">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <span style="font-size:14px;font-weight:500">${dateLabel}</span>
+        ${STATE.role==='captain'?`<button class="btn btn-sm btn-primary" onclick="selectLineupDate('${d}')">Edit</button>`:''}
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px">
+        <div>
+          <div style="font-size:11px;color:#888;margin-bottom:4px">DOUBLES</div>
+          <div>D1: ${pn(lu.d1p1)} / ${pn(lu.d1p2)}</div>
+          <div>D2: ${pn(lu.d2p1)} / ${pn(lu.d2p2)}</div>
+          <div>D3: ${pn(lu.d3p1)} / ${pn(lu.d3p2)}</div>
+        </div>
+        <div>
+          <div style="font-size:11px;color:#888;margin-bottom:4px">SINGLES</div>
+          <div>S1: ${pn(lu.s1)}</div>
+          <div>S2: ${pn(lu.s2)}</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
 function renderLineup(){
   const isCaptain = STATE.role === 'captain';
-  const _ld = STATE.availability[SELECTED_DATE]||{};
+  const _ld = STATE.availability[SELECTED_LINEUP_DATE]||{};
   const availP = STATE.players.filter(p=>_ld[p.id]?.status==='yes'||_ld[p.id]?.status==='maybe');
   const opts = `<option value="">— select —</option>` + availP.map(p=>`<option value="${p.id}">${p.first} ${p.last} (${p.rating})</option>`).join('');
   const makeSlot = (k)=>{
