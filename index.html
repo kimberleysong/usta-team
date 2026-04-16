@@ -259,19 +259,22 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
       <!-- AVAILABILITY -->
       <div id="sec-availability" class="section" style="display:none">
         <h2>Availability calendar</h2>
-        <div class="card" style="margin-bottom:1rem">
-          <div style="margin-bottom:10px"><label style="font-size:12px;color:#888;display:block;margin-bottom:6px">Select match date</label><div id="date-tabs" style="display:flex;gap:6px;flex-wrap:wrap"></div></div>
-          <div id="avail-date-label" style="font-size:13px;color:#555"></div>
+        <div class="card" style="margin-bottom:1rem;display:flex;align-items:center;gap:20px;flex-wrap:wrap">
+          <div>
+            <label style="font-size:12px;color:#888;display:block;margin-bottom:4px">Player</label>
+            <select id="avail-player-select" onchange="selectAvailPlayer(this.value)" style="font-size:14px;padding:6px 10px;min-width:180px"></select>
+          </div>
+          <div id="avail-player-meta" style="font-size:13px;color:#888;padding-top:20px"></div>
         </div>
         <div class="card">
-          <div style="display:grid;grid-template-columns:1fr 110px 160px;gap:8px;padding-bottom:8px;border-bottom:0.5px solid #e0ddd5;margin-bottom:4px">
-            <span style="font-size:12px;color:#888">Player</span>
+          <div style="display:grid;grid-template-columns:160px 120px 1fr;gap:8px;padding-bottom:8px;border-bottom:0.5px solid #e0ddd5;margin-bottom:4px">
+            <span style="font-size:12px;color:#888">Date</span>
             <span style="font-size:12px;color:#888;text-align:center">Status</span>
             <span style="font-size:12px;color:#888">Note</span>
           </div>
           <div id="avail-body">Loading...</div>
         </div>
-        <div style="margin-top:12px;font-size:12px;color:#aaa">Players can only update their own row. Captain can update anyone.</div>
+        <div style="margin-top:12px;font-size:12px;color:#aaa">Players can only update their own availability. Captain can update anyone.</div>
         <div class="card" style="margin-top:1rem">
           <div class="card-title">Season availability summary</div>
           <div style="overflow-x:auto">
@@ -281,8 +284,7 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
             <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#639922;margin-right:4px;vertical-align:middle"></span>Available</span>
             <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#EF9F27;margin-right:4px;vertical-align:middle"></span>Maybe</span>
             <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#E24B4A;margin-right:4px;vertical-align:middle"></span>Unavailable</span>
-            <span style="color:#888">— No response</span>
-            <span style="color:#aaa;margin-left:4px">· Click a date to switch</span>
+            <span style="color:#888">-- No response</span>
           </div>
         </div>
       </div>
@@ -460,6 +462,7 @@ let TOKEN = null;
 const MATCH_DATES = getMatchDates();
 let SELECTED_DATE = MATCH_DATES[0];
 let SELECTED_LINEUP_DATE = MATCH_DATES[0];
+let SELECTED_AVAIL_PLAYER = null;
 const WEEK = SELECTED_DATE;
 function getMatchDates(){
   const dates=[];
@@ -625,7 +628,7 @@ async function syncAll(){
   setSyncState(true);
   try {
     await Promise.all([loadPlayers(), loadAvailability(), loadLineup(), loadMessages()]);
-    renderDashboard(); renderRoster(); renderAvailability(); renderAvailSummary(); renderLineupDateTabs(); renderLineup(); renderAllLineups(); renderMessages();
+    renderDashboard(); renderRoster(); renderAvailability(); renderAvailPlayerDropdown(); renderAvailSummary(); renderLineupDateTabs(); renderLineup(); renderAllLineups(); renderMessages();
   } catch(e){
     toast('Sync error: '+e.message);
     console.error(e);
@@ -692,47 +695,7 @@ async function removePlayer(id){
 }
 
 // ─── AVAILABILITY ─────────────────────────────────────────────────────────────
-async function setAvailability(playerId, status, note){
-  const today = new Date().toISOString().slice(0,10);
-  if(SELECTED_DATE < today && STATE.role !== "captain"){
-    toast("Cannot update availability for past dates"); return;
-  }
-  if(STATE.role !== "captain"){
-    const me = STATE.user?.email;
-    const player = STATE.players.find(p=>p.id===playerId);
-    if(!player || player.gemail.toLowerCase() !== me.toLowerCase()){
-      toast("You can only update your own availability"); return;
-    }
-  }
-  if(!TOKEN){toast("Sign in with Google to save changes");return}
 
-  // Update local state immediately so UI feels instant
-  if(!STATE.availability[SELECTED_DATE]) STATE.availability[SELECTED_DATE]={};
-  STATE.availability[SELECTED_DATE][playerId] = {status, note:note||""};
-  renderAvailability();
-  renderAvailSummary();
-  renderDateTabs();
-  renderDashboard();
-
-  try {
-    // Find if a row already exists for this date+player
-    const rows = await sheetsGet("Availability!A2:D");
-    const rowIndex = rows.findIndex(r=>r[0]===SELECTED_DATE && r[1]===playerId);
-
-    if(rowIndex === -1){
-      // No existing row — append a new one (1 API call)
-      await sheetsAppend("Availability", [[SELECTED_DATE, playerId, status, note||""]]);
-    } else {
-      // Existing row found — update that specific row in place (1 API call)
-      const sheetRow = rowIndex + 2; // +1 for header, +1 for 1-based index
-      await sheetsUpdate(`Availability!A${sheetRow}:D${sheetRow}`, [[SELECTED_DATE, playerId, status, note||""]]);
-    }
-    toast("Saved");
-  } catch(e){
-    toast("Save failed: "+e.message);
-    console.error(e);
-  }
-}
 
 // ─── LINEUP ──────────────────────────────────────────────────────────────────
 async function saveLineup(){
@@ -859,17 +822,115 @@ function renderRoster(){
     </tr>`;}).join('');
 }
 
+function renderAvailPlayerDropdown(){
+  const sel = document.getElementById('avail-player-select');
+  if(!sel) return;
+  const prev = sel.value;
+  sel.innerHTML = STATE.players.map(p =>
+    `<option value="${p.id}">${p.first} ${p.last}</option>`
+  ).join('');
+  // default to Kim Song if found, else first player
+  if(!SELECTED_AVAIL_PLAYER){
+    const kim = STATE.players.find(p => p.first.toLowerCase().includes('kim') || p.last.toLowerCase().includes('song'));
+    SELECTED_AVAIL_PLAYER = kim ? kim.id : (STATE.players[0]?.id || null);
+  }
+  if(SELECTED_AVAIL_PLAYER) sel.value = SELECTED_AVAIL_PLAYER;
+  updatePlayerMeta();
+}
+
+function updatePlayerMeta(){
+  const el = document.getElementById('avail-player-meta');
+  if(!el || !SELECTED_AVAIL_PLAYER) return;
+  const p = STATE.players.find(x=>x.id===SELECTED_AVAIL_PLAYER);
+  if(!p){ el.textContent=''; return; }
+  const total = MATCH_DATES.length;
+  const yes = MATCH_DATES.filter(d=>(STATE.availability[d]||{})[p.id]?.status==='yes').length;
+  const maybe = MATCH_DATES.filter(d=>(STATE.availability[d]||{})[p.id]?.status==='maybe').length;
+  el.textContent = `${yes} available · ${maybe} maybe · ${total} total dates`;
+}
+
+function selectAvailPlayer(id){
+  SELECTED_AVAIL_PLAYER = id;
+  updatePlayerMeta();
+  renderAvailability();
+}
+
+function renderAvailability(){
+  renderAvailPlayerDropdown();
+  if(!SELECTED_AVAIL_PLAYER){ document.getElementById('avail-body').innerHTML='<p style="font-size:13px;color:#888">No players on roster yet.</p>'; return; }
+  const p = STATE.players.find(x=>x.id===SELECTED_AVAIL_PLAYER);
+  if(!p){ document.getElementById('avail-body').innerHTML=''; return; }
+  const me = STATE.user?.email?.toLowerCase();
+  const today = new Date().toISOString().slice(0,10);
+  const canEdit = STATE.role==='captain' || p.gemail.toLowerCase()===me;
+
+  document.getElementById('avail-body').innerHTML = MATCH_DATES.map(d=>{
+    const av = (STATE.availability[d]||{})[p.id] || {status:'unknown', note:''};
+    const isPast = d < today;
+    const editable = canEdit && !isPast;
+    const dt = new Date(d+'T12:00:00');
+    const dateLabel = dt.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+    const statusBadge = av.status==='yes'?'tag-in':av.status==='maybe'?'tag-maybe':av.status==='no'?'tag-out':'tag-unknown';
+    const statusLabel = av.status==='yes'?'Available':av.status==='maybe'?'Maybe':av.status==='no'?'Unavailable':'Unknown';
+    return `<div style="display:grid;grid-template-columns:160px 120px 1fr;gap:8px;align-items:center;padding:7px 0;border-bottom:0.5px solid #f0ede8">
+      <span style="font-size:13px;${isPast?'color:#aaa':''}">${dateLabel}</span>
+      <div style="text-align:center">
+        ${editable
+          ? `<select style="font-size:12px;padding:3px 6px;width:auto" onchange="setAvailabilityForPlayer('${p.id}','${d}',this.value,document.getElementById('pnote-${d}').value)">
+              <option value="unknown"${av.status==='unknown'?' selected':''}>Unknown</option>
+              <option value="yes"${av.status==='yes'?' selected':''}>Yes</option>
+              <option value="maybe"${av.status==='maybe'?' selected':''}>Maybe</option>
+              <option value="no"${av.status==='no'?' selected':''}>No</option>
+             </select>`
+          : `<span class="${statusBadge}">${statusLabel}${isPast?' (past)':''}</span>`}
+      </div>
+      <div>
+        <input id="pnote-${d}" style="font-size:12px;padding:3px 6px;width:100%" placeholder="Note" value="${av.note||''}" ${editable?`onblur="setAvailabilityForPlayer('${p.id}','${d}',document.querySelector('[onchange*=\"${p.id}\"][onchange*=\"${d}\"]')?.value||'${av.status}',this.value)"`:' readonly'}>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function setAvailabilityForPlayer(playerId, date, status, note){
+  const today = new Date().toISOString().slice(0,10);
+  if(date < today && STATE.role !== 'captain'){
+    toast('Cannot update availability for past dates'); return;
+  }
+  if(STATE.role !== 'captain'){
+    const me = STATE.user?.email;
+    const player = STATE.players.find(p=>p.id===playerId);
+    if(!player || player.gemail.toLowerCase() !== me.toLowerCase()){
+      toast('You can only update your own availability'); return;
+    }
+  }
+  if(!TOKEN){toast('Sign in with Google to save changes');return}
+  // Update local state immediately
+  if(!STATE.availability[date]) STATE.availability[date]={};
+  STATE.availability[date][playerId] = {status, note:note||''};
+  updatePlayerMeta();
+  renderAvailSummary();
+  renderDashboard();
+  try {
+    const rows = await sheetsGet('Availability!A2:D');
+    const rowIndex = rows.findIndex(r=>r[0]===date && r[1]===playerId);
+    if(rowIndex === -1){
+      await sheetsAppend('Availability', [[date, playerId, status, note||'']]);
+    } else {
+      const sheetRow = rowIndex + 2;
+      await sheetsUpdate(`Availability!A${sheetRow}:D${sheetRow}`, [[date, playerId, status, note||'']]);
+    }
+    toast('Saved');
+  } catch(e){
+    toast('Save failed: '+e.message);
+    console.error(e);
+  }
+}
+
 function renderAvailSummary(){
   const el = document.getElementById('avail-summary-table');
   if(!el) return;
   const today = new Date().toISOString().slice(0,10);
-
-  // header row: blank cell + one cell per date
-  const shortDate = d => {
-    const dt = new Date(d+'T12:00:00');
-    return dt.toLocaleDateString('en-US',{month:'short',day:'numeric'});
-  };
-
+  const shortDate = d => { const dt = new Date(d+'T12:00:00'); return dt.toLocaleDateString('en-US',{month:'short',day:'numeric'}); };
   const thStyle = (d) => {
     const isSelected = d === SELECTED_DATE;
     const dateAvail = STATE.availability[d] || {};
@@ -880,129 +941,47 @@ function renderAvailSummary(){
     if(isSelected) bg = '#E6F1FB';
     else if(hasData && count >= 8) bg = '#EAF3DE';
     else if(hasData && count < 8) bg = '#FCEBEB';
-    return `padding:5px 8px;text-align:center;font-weight:500;background:${bg};border-bottom:0.5px solid #e0ddd5;border-right:0.5px solid #f0ede8;color:${isPast?'#aaa':'#333'};cursor:pointer`;
+    return `padding:5px 8px;text-align:center;font-weight:500;background:${bg};border-bottom:0.5px solid #e0ddd5;border-right:0.5px solid #f0ede8;color:${isPast?'#aaa':'#333'}`;
   };
-
   const statusCell = (status) => {
-    if(status === 'yes')    return `<td style="text-align:center;padding:4px 8px;border-bottom:0.5px solid #f0ede8;border-right:0.5px solid #f0ede8"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#639922"></span></td>`;
-    if(status === 'maybe')  return `<td style="text-align:center;padding:4px 8px;border-bottom:0.5px solid #f0ede8;border-right:0.5px solid #f0ede8"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#EF9F27"></span></td>`;
-    if(status === 'no')     return `<td style="text-align:center;padding:4px 8px;border-bottom:0.5px solid #f0ede8;border-right:0.5px solid #f0ede8"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#E24B4A"></span></td>`;
-    return `<td style="text-align:center;padding:4px 8px;border-bottom:0.5px solid #f0ede8;border-right:0.5px solid #f0ede8"><span style="color:#ccc;font-size:10px">—</span></td>`;
+    if(status === 'yes')   return `<td style="text-align:center;padding:4px 8px;border-bottom:0.5px solid #f0ede8;border-right:0.5px solid #f0ede8"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#639922"></span></td>`;
+    if(status === 'maybe') return `<td style="text-align:center;padding:4px 8px;border-bottom:0.5px solid #f0ede8;border-right:0.5px solid #f0ede8"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#EF9F27"></span></td>`;
+    if(status === 'no')    return `<td style="text-align:center;padding:4px 8px;border-bottom:0.5px solid #f0ede8;border-right:0.5px solid #f0ede8"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#E24B4A"></span></td>`;
+    return `<td style="text-align:center;padding:4px 8px;border-bottom:0.5px solid #f0ede8;border-right:0.5px solid #f0ede8"><span style="color:#ccc;font-size:10px">--</span></td>`;
   };
-
-  const headerCells = MATCH_DATES.map(d =>
-    `<th onclick="selectDate('${d}')" style="${thStyle(d)}">${shortDate(d)}</th>`
-  ).join('');
-
+  const headerCells = MATCH_DATES.map(d => `<th style="${thStyle(d)}">${shortDate(d)}</th>`).join('');
   const playerRows = STATE.players.map(p => {
-    const cells = MATCH_DATES.map(d => {
-      const av = (STATE.availability[d] || {})[p.id];
-      return statusCell(av?.status || 'unknown');
-    }).join('');
-    return `<tr>
-      <td style="padding:4px 10px;font-weight:500;white-space:nowrap;border-bottom:0.5px solid #f0ede8;border-right:0.5px solid #e0ddd5;position:sticky;left:0;background:#fff">${p.first}</td>
+    const isSelected = p.id === SELECTED_AVAIL_PLAYER;
+    const cells = MATCH_DATES.map(d => { const av = (STATE.availability[d]||{})[p.id]; return statusCell(av?.status||'unknown'); }).join('');
+    return `<tr style="${isSelected?'background:#f5f9ff':''}">
+      <td onclick="selectAvailPlayer('${p.id}')" style="padding:4px 10px;font-weight:${isSelected?'500':'400'};white-space:nowrap;border-bottom:0.5px solid #f0ede8;border-right:0.5px solid #e0ddd5;position:sticky;left:0;background:${isSelected?'#f5f9ff':'#fff'};cursor:pointer;color:${isSelected?'#0C447C':'#333'}">${p.first}</td>
       ${cells}
     </tr>`;
   }).join('');
-
-  // totals row
   const totalCells = MATCH_DATES.map(d => {
     const dateAvail = STATE.availability[d] || {};
     const count = STATE.players.filter(p => ['yes','maybe'].includes(dateAvail[p.id]?.status)).length;
     const hasData = STATE.players.some(p => dateAvail[p.id]);
     const color = !hasData ? '#aaa' : count >= 8 ? '#27500A' : '#791F1F';
-    return `<td style="text-align:center;padding:4px 8px;font-weight:500;color:${color};border-top:0.5px solid #e0ddd5;border-right:0.5px solid #f0ede8">${hasData ? count : '—'}</td>`;
+    return `<td style="text-align:center;padding:4px 8px;font-weight:500;color:${color};border-top:0.5px solid #e0ddd5;border-right:0.5px solid #f0ede8">${hasData ? count : '--'}</td>`;
   }).join('');
-
   el.innerHTML = `
-    <thead>
-      <tr>
-        <th style="padding:5px 10px;text-align:left;border-bottom:0.5px solid #e0ddd5;border-right:0.5px solid #e0ddd5;position:sticky;left:0;background:#fff;font-weight:500">Player</th>
-        ${headerCells}
-      </tr>
-    </thead>
-    <tbody>
-      ${playerRows}
+    <thead><tr>
+      <th style="padding:5px 10px;text-align:left;border-bottom:0.5px solid #e0ddd5;border-right:0.5px solid #e0ddd5;position:sticky;left:0;background:#fff;font-weight:500">Player</th>
+      ${headerCells}
+    </tr></thead>
+    <tbody>${playerRows}
       <tr>
         <td style="padding:4px 10px;font-size:11px;color:#888;border-top:0.5px solid #e0ddd5;border-right:0.5px solid #e0ddd5;position:sticky;left:0;background:#fff">Available</td>
         ${totalCells}
       </tr>
     </tbody>`;
-
-  // add legend below table
   const legendEl = document.getElementById('avail-summary-legend');
   if(legendEl) legendEl.style.display='flex';
 }
 
-function renderDateTabs(){
-  const container = document.getElementById('date-tabs');
-  if(!container) return;
-  const today = new Date().toISOString().slice(0,10);
-  container.innerHTML = MATCH_DATES.map(d=>{
-    const isSelected = d===SELECTED_DATE;
-    const isPast = d < today;
-    const dateAvail = STATE.availability[d] || {};
-    const yesCount = STATE.players.filter(p=>dateAvail[p.id]?.status==='yes').length;
-    const maybeCount = STATE.players.filter(p=>dateAvail[p.id]?.status==='maybe').length;
-    const totalAvail = yesCount + maybeCount;
-    const hasData = STATE.players.some(p=>dateAvail[p.id]);
-    // color logic: green if >=8, red if <8 and has some responses, neutral if no data yet
-    let bg, border, color;
-    if(isSelected){
-      bg='#E6F1FB'; border='#378ADD'; color='#0C447C';
-    } else if(!hasData || isPast){
-      bg=isPast?'#f5f5f0':'#fff'; border='#ccc'; color=isPast?'#aaa':'#333';
-    } else if(totalAvail >= 8){
-      bg='#EAF3DE'; border='#97C459'; color='#27500A';
-    } else {
-      bg='#FCEBEB'; border='#F09595'; color='#791F1F';
-    }
-    const dt = new Date(d+'T12:00:00');
-    const label = dt.toLocaleDateString('en-US',{month:'short',day:'numeric'});
-    const title = totalAvail > 0 ? `${totalAvail} available` : 'No responses yet';
-    return `<button onclick="selectDate('${d}')" title="${title}" style="padding:5px 11px;font-size:12px;border-radius:20px;border:0.5px solid ${border};background:${bg};color:${color};cursor:pointer;font-weight:${isSelected?'500':'400'}">${label}</button>`;
-  }).join('');
-  const sel = new Date(SELECTED_DATE+'T12:00:00');
-  const label = sel.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
-  const el = document.getElementById('avail-date-label');
-  if(el) el.textContent = label;
-}
-
-function selectDate(d){
-  SELECTED_DATE = d;
-  renderDateTabs();
-  renderAvailability();
-  renderAvailSummary();
-  renderDashboard();
-}
-
-function renderAvailability(){
-  renderDateTabs();
-  const me = STATE.user?.email?.toLowerCase();
-  const dateAvail = STATE.availability[SELECTED_DATE] || {};
-  document.getElementById('avail-body').innerHTML = STATE.players.map(p=>{
-    const av = dateAvail[p.id] || {status:'unknown',note:''};
-    const _today = new Date().toISOString().slice(0,10);
-    const isPastDate = SELECTED_DATE < _today;
-    const canEdit = !isPastDate && (STATE.role==='captain' || p.gemail.toLowerCase()===me);
-    const statusBadge = av.status==='yes'?'tag-in':av.status==='maybe'?'tag-maybe':av.status==='no'?'tag-out':'tag-unknown';
-    const statusLabel = av.status==='yes'?'Available':av.status==='maybe'?'Maybe':av.status==='no'?'Unavailable':'Unknown';
-    return `<div style="display:grid;grid-template-columns:1fr 110px 160px;gap:8px;align-items:center;padding:7px 0;border-bottom:0.5px solid #f0ede8">
-      <span style="font-size:13px">${p.first} ${p.last}</span>
-      <div style="text-align:center">
-        ${canEdit
-          ? `<select style="font-size:12px;padding:3px 6px;width:auto" onchange="setAvailability('${p.id}',this.value,document.getElementById('anote-${p.id}').value)">
-              <option value="unknown"${av.status==='unknown'?' selected':''}>Unknown</option>
-              <option value="yes"${av.status==='yes'?' selected':''}>Yes</option>
-              <option value="maybe"${av.status==='maybe'?' selected':''}>Maybe</option>
-              <option value="no"${av.status==='no'?' selected':''}>No</option>
-             </select>`
-          : `<span class="${statusBadge}">${statusLabel}</span>`}
-      </div>
-      <div><input id="anote-${p.id}" style="font-size:12px;padding:3px 6px;width:100%" placeholder="Note" value="${av.note||''}" ${canEdit?`onblur="setAvailability('${p.id}',document.querySelector('select[onchange*=${JSON.stringify("'"+p.id+"'")}]')?.value||'${av.status}',this.value)"`:' readonly'}></div>
-    </div>`;
-  }).join('') || '<p style="font-size:13px;color:#888;padding:8px 0">No players on roster yet.</p>';
-}
+function renderDateTabs(){ /* kept for lineup date compat — no longer used in availability */ }
+function selectDate(d){ SELECTED_DATE = d; renderDashboard(); }
 
 function renderLineupDateTabs(){
   const container = document.getElementById('lineup-date-tabs');
