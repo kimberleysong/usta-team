@@ -836,17 +836,39 @@ function requestOAuthToken(){
 
 async function initSheet(){
   if(!TOKEN){toast('Click "Connect Google Account" first');return}
-  toast('Initializing sheet...');
-  const headers = [
-    {sheet:'Players', cols:['id','first','last','phone','email','rating','pos','gemail']},
-    {sheet:'Availability', cols:['week','player_id','status','note']},
-    {sheet:'Lineup', cols:['week','slot','player_id']},
-    {sheet:'Messages', cols:['id','date','type','subject','body','author']},
-  ];
-  for(const h of headers){
-    try{ await sheetsUpdate(h.sheet+'!A1', [h.cols]); } catch(e){ console.warn(h.sheet, e.message); }
+  toast('Creating sheet tabs...');
+  const sheets = ['Players','Availability','Lineup','Messages'];
+  const headers = {
+    Players:['id','first','last','phone','email','rating','pos','gemail'],
+    Availability:['week','player_id','status','note'],
+    Lineup:['week','slot','player_id'],
+    Messages:['id','date','type','subject','body','author']
+  };
+  try {
+    // Step 1: get existing sheet names
+    const metaUrl = `https://sheets.googleapis.com/v4/spreadsheets/${CFG.sheetId}?key=${CFG.apiKey}`;
+    const meta = await axios.get(metaUrl);
+    const existing = meta.data.sheets.map(s=>s.properties.title);
+    // Step 2: create missing tabs
+    const toCreate = sheets.filter(s=>!existing.includes(s));
+    if(toCreate.length){
+      const requests = toCreate.map(title=>({addSheet:{properties:{title}}}));
+      await axios.post(
+        `https://sheets.googleapis.com/v4/spreadsheets/${CFG.sheetId}:batchUpdate`,
+        {requests},
+        {headers:{Authorization:`Bearer ${TOKEN}`}}
+      );
+    }
+    // Step 3: write headers to each tab
+    for(const s of sheets){
+      await sheetsUpdate(s+'!A1', [headers[s]]);
+    }
+    toast('Sheet tabs ready! Check your Google Sheet.');
+    document.getElementById('oauth-status').textContent = 'Sheet initialized successfully.';
+  } catch(e){
+    console.error('initSheet error:', e.response?.data || e.message);
+    toast('Error: '+(e.response?.data?.error?.message || e.message));
   }
-  toast('Sheet headers written. Check your Google Sheet.');
 }
 
 function loadSettingsForm(){
