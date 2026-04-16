@@ -242,9 +242,8 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
         <div id="d-weeks-container"></div>
 
         <div class="card" style="margin-top:12px">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem;flex-wrap:wrap;gap:8px">
+          <div style="margin-bottom:.75rem">
             <div class="card-title" style="margin-bottom:0">Schedule</div>
-            <button id="d-schedule-edit-btn" class="btn btn-sm btn-primary" onclick="toggleScheduleEdit()" style="display:none">Edit schedule</button>
           </div>
           <div id="d-schedule-list">Loading...</div>
         </div>
@@ -697,7 +696,7 @@ function applyRoleUI(){
   const setText = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val; };
   set('roster-captain-only', isCaptain ? 'block' : 'none');
   set('roster-add-tab-btn', isCaptain ? 'block' : 'none');
-  set('d-schedule-edit-btn', isCaptain ? 'block' : 'none');
+
   setText('roster-actions-col', isCaptain ? 'Actions' : '');
   set('lineup-captain-controls', isCaptain ? 'flex' : 'none');
   set('lineup-lock-notice', 'none');
@@ -1059,15 +1058,6 @@ function renderScheduleFull(){
 }
 
 // ─── SCHEDULE ────────────────────────────────────────────────────────────────
-let SCHEDULE_EDIT_MODE = false;
-
-function toggleScheduleEdit(){
-  SCHEDULE_EDIT_MODE = !SCHEDULE_EDIT_MODE;
-  const btn = document.getElementById('d-schedule-edit-btn');
-  if(btn) btn.textContent = SCHEDULE_EDIT_MODE ? 'Done editing' : 'Edit schedule';
-  renderSchedule();
-}
-
 function renderSchedule(){
   const el = document.getElementById('d-schedule-list');
   if(!el) return;
@@ -1079,25 +1069,15 @@ function renderSchedule(){
     const dayLabel = dt.toLocaleDateString('en-US',{weekday:'short'});
     const isPast = d < today;
     const hasData = s.opponent || s.location;
-    if(!SCHEDULE_EDIT_MODE && !hasData) return ''; // hide empty rows in view mode
-    if(SCHEDULE_EDIT_MODE){
-      return `<div style="display:grid;grid-template-columns:70px 1fr 1fr;gap:8px;align-items:center;padding:6px 0;border-bottom:0.5px solid #f0ede8">
-        <span style="font-size:13px;color:${isPast?'#aaa':'#333'};font-weight:500">${dayLabel} ${dateLabel}</span>
-        <input style="font-size:13px;padding:5px 8px" placeholder="Opponent" value="${s.opponent}"
-          onblur="saveScheduleEntry('${d}',this.value,this.closest('div').querySelector('input:last-of-type').value)">
-        <input style="font-size:13px;padding:5px 8px" placeholder="Location (home/away)" value="${s.location}"
-          onblur="saveScheduleEntry('${d}',this.closest('div').querySelector('input:first-of-type').value,this.value)">
-      </div>`;
-    } else {
-      return `<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:0.5px solid #f0ede8;flex-wrap:wrap;gap:4px">
+    if(!hasData) return '';
+    return `<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:0.5px solid #f0ede8;flex-wrap:wrap;gap:4px">
         <div style="display:flex;align-items:center;gap:12px">
           <span style="font-size:12px;font-weight:500;color:${isPast?'#aaa':'#185FA5'};min-width:70px">${dayLabel} ${dateLabel}</span>
           <span style="font-size:13px;color:${isPast?'#aaa':'#333'}">${s.opponent||'<span style="color:#ccc">TBD</span>'}</span>
         </div>
         <span style="font-size:12px;padding:2px 10px;border-radius:20px;background:${s.location.toLowerCase().includes('home')?'#EAF3DE':s.location.toLowerCase().includes('away')?'#FAEEDA':'#F1EFE8'};color:${s.location.toLowerCase().includes('home')?'#27500A':s.location.toLowerCase().includes('away')?'#633806':'#5F5E5A'}">${s.location||'TBD'}</span>
       </div>`;
-    }
-  }).filter(Boolean).join('') || '<p style="font-size:13px;color:#aaa">No schedule entered yet. Captain can add opponent and location for each date.</p>';
+  }).filter(Boolean).join('') || '<p style="font-size:13px;color:#aaa">No schedule entered yet.</p>';
 }
 
 // ─── RENDER ──────────────────────────────────────────────────────────────────
