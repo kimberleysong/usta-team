@@ -182,6 +182,7 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
     <button class="nav-item" onclick="nav('lineup',this)">Lineup</button>
     <button class="nav-item" onclick="nav('messages',this)">Messages</button>
     <div class="nav-section">Account</div>
+    <button class="nav-item" id="nav-entitlements" onclick="nav('entitlements',this)" style="display:none">Entitlements</button>
     <button class="nav-item" id="nav-settings" onclick="nav('settings',this)" style="display:none">Settings</button>
     <button class="nav-item" onclick="logout()" style="color:#A32D2D">Sign out</button>
   </div>
@@ -345,6 +346,73 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
         <div id="msg-list">Loading...</div>
       </div>
 
+      <!-- ENTITLEMENTS -->
+      <div id="sec-entitlements" class="section" style="display:none">
+        <h2>Entitlements</h2>
+        <p style="font-size:13px;color:#555;margin-bottom:1.5rem">Access control for all features in the app. Captain access is granted via the captain password at login.</p>
+
+        <div class="card" style="margin-bottom:12px">
+          <div class="card-title">Roster</div>
+          <table class="tbl">
+            <thead><tr><th>Action</th><th>Captain</th><th>Player</th></tr></thead>
+            <tbody>
+              <tr><td>View roster</td><td><span class="badge badge-green">Yes</span></td><td><span class="badge badge-green">Yes</span></td></tr>
+              <tr><td>Add player</td><td><span class="badge badge-green">Yes</span></td><td><span class="badge badge-red">No</span></td></tr>
+              <tr><td>Remove player</td><td><span class="badge badge-green">Yes</span></td><td><span class="badge badge-red">No</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="card" style="margin-bottom:12px">
+          <div class="card-title">Availability</div>
+          <table class="tbl">
+            <thead><tr><th>Action</th><th>Captain</th><th>Player</th></tr></thead>
+            <tbody>
+              <tr><td>View availability</td><td><span class="badge badge-green">Yes</span></td><td><span class="badge badge-green">Yes</span></td></tr>
+              <tr><td>Update own availability</td><td><span class="badge badge-green">Yes</span></td><td><span class="badge badge-green">Yes</span></td></tr>
+              <tr><td>Update others' availability</td><td><span class="badge badge-green">Yes</span></td><td><span class="badge badge-red">No</span></td></tr>
+              <tr><td>Update past dates</td><td><span class="badge badge-green">Yes</span></td><td><span class="badge badge-red">No</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="card" style="margin-bottom:12px">
+          <div class="card-title">Lineup</div>
+          <table class="tbl">
+            <thead><tr><th>Action</th><th>Captain</th><th>Player</th></tr></thead>
+            <tbody>
+              <tr><td>View lineup</td><td><span class="badge badge-green">Yes</span></td><td><span class="badge badge-green">Yes</span></td></tr>
+              <tr><td>Build &amp; save lineup</td><td><span class="badge badge-green">Yes</span></td><td><span class="badge badge-red">No</span></td></tr>
+              <tr><td>Auto-fill lineup</td><td><span class="badge badge-green">Yes</span></td><td><span class="badge badge-red">No</span></td></tr>
+              <tr><td>Announce lineup</td><td><span class="badge badge-green">Yes</span></td><td><span class="badge badge-red">No</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="card" style="margin-bottom:12px">
+          <div class="card-title">Messages</div>
+          <table class="tbl">
+            <thead><tr><th>Action</th><th>Captain</th><th>Player</th></tr></thead>
+            <tbody>
+              <tr><td>View announcements</td><td><span class="badge badge-green">Yes</span></td><td><span class="badge badge-green">Yes</span></td></tr>
+              <tr><td>Post announcements</td><td><span class="badge badge-green">Yes</span></td><td><span class="badge badge-red">No</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Settings &amp; Entitlements</div>
+          <table class="tbl">
+            <thead><tr><th>Action</th><th>Captain</th><th>Player</th></tr></thead>
+            <tbody>
+              <tr><td>View &amp; edit settings</td><td><span class="badge badge-green">Yes</span></td><td><span class="badge badge-red">No</span></td></tr>
+              <tr><td>View entitlements</td><td><span class="badge badge-green">Yes</span></td><td><span class="badge badge-red">No</span></td></tr>
+              <tr><td>Initialize sheet</td><td><span class="badge badge-green">Yes</span></td><td><span class="badge badge-red">No</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       <!-- SETTINGS -->
       <div id="sec-settings" class="section" style="display:none">
         <h2>Settings</h2>
@@ -503,6 +571,7 @@ function applyRoleUI(){
   document.getElementById('lineup-lock-notice').style.display = isCaptain ? 'none' : 'block';
   document.getElementById('msg-captain-form').style.display = isCaptain ? 'block' : 'none';
   document.getElementById('nav-settings').style.display = isCaptain ? 'block' : 'none';
+  document.getElementById('nav-entitlements').style.display = isCaptain ? 'block' : 'none';
 }
 
 function logout(){
@@ -636,15 +705,33 @@ async function setAvailability(playerId, status, note){
     }
   }
   if(!TOKEN){toast("Sign in with Google to save changes");return}
-  const rows = await sheetsGet("Availability!A2:D");
-  const filtered = rows.filter(r=>!(r[0]===SELECTED_DATE && r[1]===playerId));
-  filtered.push([SELECTED_DATE, playerId, status, note||""]);
-  await sheetsClear("Availability!A2:D");
-  await sheetsUpdate("Availability!A2", filtered);
+
+  // Update local state immediately so UI feels instant
   if(!STATE.availability[SELECTED_DATE]) STATE.availability[SELECTED_DATE]={};
   STATE.availability[SELECTED_DATE][playerId] = {status, note:note||""};
-  renderAvailability(); renderDashboard();
-  toast("Availability saved for "+SELECTED_DATE);
+  renderAvailability();
+  renderAvailSummary();
+  renderDateTabs();
+  renderDashboard();
+
+  try {
+    // Find if a row already exists for this date+player
+    const rows = await sheetsGet("Availability!A2:D");
+    const rowIndex = rows.findIndex(r=>r[0]===SELECTED_DATE && r[1]===playerId);
+
+    if(rowIndex === -1){
+      // No existing row — append a new one (1 API call)
+      await sheetsAppend("Availability", [[SELECTED_DATE, playerId, status, note||""]]);
+    } else {
+      // Existing row found — update that specific row in place (1 API call)
+      const sheetRow = rowIndex + 2; // +1 for header, +1 for 1-based index
+      await sheetsUpdate(`Availability!A${sheetRow}:D${sheetRow}`, [[SELECTED_DATE, playerId, status, note||""]]);
+    }
+    toast("Saved");
+  } catch(e){
+    toast("Save failed: "+e.message);
+    console.error(e);
+  }
 }
 
 // ─── LINEUP ──────────────────────────────────────────────────────────────────
@@ -983,7 +1070,7 @@ function renderLineup(){
   const isCaptain = STATE.role === 'captain';
   const _ld = STATE.availability[SELECTED_LINEUP_DATE]||{};
   const availP = STATE.players.filter(p=>_ld[p.id]?.status==='yes'||_ld[p.id]?.status==='maybe');
-  const opts = `<option value="">— select —</option>` + availP.map(p=>`<option value="${p.id}">${p.first} ${p.last} (${p.rating})</option>`).join('');
+  const opts = `<option value="">— select —</option>` + availP.map(p=>`<option value="${p.id}">${p.first} ${p.last}</option>`).join('');
   const makeSlot = (k)=>{
     const val = STATE.lineup[k]||'';
     const pn = val ? (STATE.players.find(p=>p.id===val)||{first:'?',last:'?'}) : null;
@@ -1122,8 +1209,8 @@ function toast(msg){
 // patch nav to also load settings form and guard settings from non-captains
 const _nav = nav;
 window.nav = function(id, btn){
-  if(id==='settings' && STATE.role !== 'captain'){
-    toast('Settings are only accessible to the captain');
+  if((id==='settings' || id==='entitlements') && STATE.role !== 'captain'){
+    toast('This screen is only accessible to the captain');
     return;
   }
   _nav(id, btn);
