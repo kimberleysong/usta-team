@@ -215,6 +215,7 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
     <button class="nav-item" id="nav-lineup" onclick="nav('lineup',this)">Lineup</button>
     <button class="nav-item" onclick="nav('announcements',this)">Announcements</button>
     <div class="nav-section">Account</div>
+    <button class="nav-item" id="nav-schedule" onclick="nav('schedule',this)" style="display:none">Schedule</button>
     <button class="nav-item" id="nav-entitlements" onclick="nav('entitlements',this)" style="display:none">Entitlements</button>
     <button class="nav-item" id="nav-settings" onclick="nav('settings',this)" style="display:none">Settings</button>
     <button class="nav-item" onclick="logout()" style="color:#A32D2D">Sign out</button>
@@ -239,6 +240,14 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
           <div class="stat"><div class="stat-val" id="d-match">—</div><div class="stat-lbl">Next match</div></div>
         </div>
         <div id="d-weeks-container"></div>
+
+        <div class="card" style="margin-top:12px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem;flex-wrap:wrap;gap:8px">
+            <div class="card-title" style="margin-bottom:0">Schedule</div>
+            <button id="d-schedule-edit-btn" class="btn btn-sm btn-primary" onclick="toggleScheduleEdit()" style="display:none">Edit schedule</button>
+          </div>
+          <div id="d-schedule-list">Loading...</div>
+        </div>
       </div>
 
       <!-- ROSTER -->
@@ -306,7 +315,7 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
             <div id="avail-player-meta" style="font-size:13px;color:#888;padding-top:20px"></div>
           </div>
           <div class="card">
-            <div style="display:grid;grid-template-columns:160px 120px 1fr;gap:8px;padding-bottom:8px;border-bottom:0.5px solid #e0ddd5;margin-bottom:4px">
+            <div style="display:grid;grid-template-columns:100px 120px 1fr;gap:8px;padding-bottom:8px;border-bottom:0.5px solid #e0ddd5;margin-bottom:4px">
               <span style="font-size:12px;color:#888">Date</span>
               <span style="font-size:12px;color:#888;text-align:center">Status</span>
               <span style="font-size:12px;color:#888">Note</span>
@@ -402,6 +411,30 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
         <div id="msg-list">Loading...</div>
       </div>
 
+      <!-- SCHEDULE -->
+      <div id="sec-schedule" class="section" style="display:none">
+        <h2>Schedule</h2>
+
+        <div class="card" style="margin-bottom:1rem">
+          <div class="card-title">Import from TennisLink</div>
+          <p style="font-size:13px;color:#555;margin-bottom:12px">Paste your TennisLink schedule URL and click Import. The schedule will be parsed and saved to your Google Sheet.</p>
+          <div class="form-group">
+            <label>TennisLink schedule URL</label>
+            <input id="tl-url" placeholder="https://tennislink.usta.com/Leagues/Main/StatsAndStandings.aspx?t=..." value="https://tennislink.usta.com/Leagues/Main/StatsAndStandings.aspx?t=R-3#&&s=bD69iCS8MMix3GePOk_hYxV6W2AbB_QI0">
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-primary" onclick="importTennisLink()">Import schedule</button>
+            <button class="btn" onclick="clearSchedule()">Clear schedule</button>
+          </div>
+          <div id="tl-status" style="font-size:13px;margin-top:10px;color:#888"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Current schedule</div>
+          <div id="schedule-full-list">Loading...</div>
+        </div>
+      </div>
+
       <!-- ENTITLEMENTS -->
       <div id="sec-entitlements" class="section" style="display:none">
         <h2>Entitlements</h2>
@@ -456,6 +489,16 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
           </table>
         </div>
 
+        <div class="card" style="margin-bottom:12px">
+          <div class="card-title">Schedule</div>
+          <table class="tbl">
+            <thead><tr><th>Action</th><th>Captain</th><th>Player</th></tr></thead>
+            <tbody>
+              <tr><td>View schedule</td><td><span class="badge badge-green">Yes</span></td><td><span class="badge badge-green">Yes (dashboard)</span></td></tr>
+              <tr><td>Import &amp; edit schedule</td><td><span class="badge badge-green">Yes</span></td><td><span class="badge badge-red">No</span></td></tr>
+            </tbody>
+          </table>
+        </div>
         <div class="card">
           <div class="card-title">Settings &amp; Entitlements</div>
           <table class="tbl">
@@ -535,7 +578,7 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
 <script>
 // ─── CONFIG ─────────────────────────────────────────────────────────────────
 let CFG = JSON.parse(localStorage.getItem('usta_cfg') || '{}');
-let STATE = {players:[], availability:{}, lineup:{}, allLineups:{}, messages:[], role:'guest', user:null};
+let STATE = {players:[], availability:{}, lineup:{}, allLineups:{}, messages:[], schedule:[], role:'guest', user:null};
 let TOKEN = null;
 
 const MATCH_DATES = getMatchDates();
@@ -654,6 +697,7 @@ function applyRoleUI(){
   const setText = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val; };
   set('roster-captain-only', isCaptain ? 'block' : 'none');
   set('roster-add-tab-btn', isCaptain ? 'block' : 'none');
+  set('d-schedule-edit-btn', isCaptain ? 'block' : 'none');
   setText('roster-actions-col', isCaptain ? 'Actions' : '');
   set('lineup-captain-controls', isCaptain ? 'flex' : 'none');
   set('lineup-lock-notice', 'none');
@@ -661,6 +705,7 @@ function applyRoleUI(){
   set('msg-captain-form', isCaptain ? 'block' : 'none');
   set('nav-settings', isCaptain ? 'block' : 'none');
   set('nav-entitlements', isCaptain ? 'block' : 'none');
+  set('nav-schedule', isCaptain ? 'block' : 'none');
   set('nav-lineup', isCaptain ? 'block' : 'none');
   set('mobile-nav-lineup', isCaptain ? 'flex' : 'none');
 }
@@ -714,7 +759,7 @@ async function sheetsClear(range){
 // ─── SYNC ─────────────────────────────────────────────────────────────────────
 async function syncAll(){
   try {
-    await Promise.all([loadPlayers(), loadAvailability(), loadLineup(), loadMessages()]);
+    await Promise.all([loadPlayers(), loadAvailability(), loadLineup(), loadMessages(), loadSchedule()]);
     renderDashboard(); renderRoster(); renderAvailability(); renderAvailPlayerDropdown(); renderAvailSummary(); renderLineupDateTabs(); renderLineup(); renderAllLineups(); renderMessages();
     const now = new Date();
     const t = now.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',hour12:true});
@@ -755,6 +800,26 @@ async function loadLineup(){
     STATE.allLineups[r[0]][r[1]] = r[2]||'';
   });
   STATE.lineup = STATE.allLineups[SELECTED_LINEUP_DATE] ? {...STATE.allLineups[SELECTED_LINEUP_DATE]} : {};
+}
+
+async function loadSchedule(){
+  const rows = await sheetsGet('Schedule!A2:C');
+  STATE.schedule = {};
+  rows.forEach(r=>{ if(r[0]) STATE.schedule[r[0]] = {opponent:r[1]||'', location:r[2]||'', address:r[3]||''}; });
+}
+
+async function saveScheduleEntry(date, opponent, location, address=''){
+  if(!TOKEN){toast('Sign in with Google to save');return}
+  const rows = await sheetsGet('Schedule!A2:D');
+  const idx = rows.findIndex(r=>r[0]===date);
+  if(idx===-1){
+    await sheetsAppend('Schedule',[[date,opponent,location,address]]);
+  } else {
+    await sheetsUpdate(`Schedule!A${idx+2}:D${idx+2}`,[[date,opponent,location,address]]);
+  }
+  STATE.schedule[date] = {opponent, location, address};
+  renderDashboard();
+  toast('Schedule saved');
 }
 
 async function loadMessages(){
@@ -856,6 +921,185 @@ function genLineupMsg(){
   document.getElementById('msg-body').value=buildLineupText();
 }
 
+// ─── SCHEDULE IMPORT ─────────────────────────────────────────────────────────
+async function importTennisLink(){
+  if(!TOKEN){toast('Sign in with Google to save schedule');return}
+  const url = document.getElementById('tl-url').value.trim();
+  if(!url){toast('Enter a TennisLink URL');return}
+  const status = document.getElementById('tl-status');
+  status.textContent = 'Fetching schedule...';
+  status.style.color = '#888';
+  try {
+    const resp = await fetch(url, {credentials:'omit'});
+    if(!resp.ok) throw new Error('HTTP '+resp.status);
+    const html = await resp.text();
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
+    // TennisLink schedule tables — try multiple selectors
+    const rows = Array.from(doc.querySelectorAll('table tr, .schedule-row, [class*="schedule"] tr'));
+    const entries = [];
+    const dateRe = /(\d{1,2}\/\d{1,2}\/\d{2,4})/;
+    rows.forEach(row => {
+      const text = row.innerText || row.textContent || '';
+      const dateMatch = text.match(dateRe);
+      if(!dateMatch) return;
+      const cells = Array.from(row.querySelectorAll('td')).map(td=>(td.innerText||td.textContent||'').trim().replace(/\s+/g,' '));
+      if(cells.length < 2) return;
+      // parse date
+      const rawDate = dateMatch[1];
+      const parts = rawDate.split('/');
+      const year = parts[2].length===2 ? '20'+parts[2] : parts[2];
+      const isoDate = `${year}-${parts[0].padStart(2,'0')}-${parts[1].padStart(2,'0')}`;
+      // find opponent and location from cells
+      const opponent = cells.find(c=>c && c.length>2 && !c.match(/^\d/) && !c.match(/home|away|tbd/i) && c!==rawDate) || '';
+      const location = cells.find(c=>c && /home|away|tbd|court|club|park/i.test(c)) || '';
+      if(isoDate && opponent) entries.push({date:isoDate, opponent, location});
+    });
+    if(!entries.length){
+      // fallback: try to find any text that looks like match data
+      status.textContent = 'Could not auto-parse the page. Try the manual entry below.';
+      status.style.color = '#A32D2D';
+      renderManualEntry(doc, url);
+      return;
+    }
+    // save all entries
+    let saved = 0;
+    for(const e of entries){
+      await saveScheduleEntry(e.date, e.opponent, e.location);
+      saved++;
+    }
+    status.textContent = `Imported ${saved} match${saved!==1?'es':''}. Check the schedule below.`;
+    status.style.color = '#27500A';
+    renderScheduleFull();
+    renderDashboard();
+  } catch(e){
+    console.error(e);
+    if(e.message.includes('CORS') || e.message.includes('Failed to fetch') || e.message.includes('NetworkError')){
+      status.innerHTML = 'TennisLink blocks direct access from web apps (CORS restriction). <strong>Use manual entry below</strong> — copy the schedule details from TennisLink and enter them here.';
+      status.style.color = '#A32D2D';
+      showManualEntry();
+    } else {
+      status.textContent = 'Error: '+e.message;
+      status.style.color = '#A32D2D';
+    }
+  }
+}
+
+function showManualEntry(){
+  const existing = document.getElementById('manual-entry-section');
+  if(existing) return;
+  const card = document.createElement('div');
+  card.id = 'manual-entry-section';
+  card.className = 'card';
+  card.style.marginTop = '12px';
+  card.innerHTML = `
+    <div class="card-title">Manual schedule entry</div>
+    <p style="font-size:13px;color:#555;margin-bottom:12px">Enter each match below. Date must be a Wednesday between May 13 and Jul 30.</p>
+    <div id="manual-rows">
+      ${MATCH_DATES.map(d=>{
+        const s = STATE.schedule[d]||{opponent:'',location:''};
+        const dt = new Date(d+'T12:00:00');
+        const lbl = dt.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+        return `<div style="display:grid;grid-template-columns:80px 1fr 1fr 1fr;gap:8px;margin-bottom:6px;align-items:center">
+          <span style="font-size:13px;font-weight:500">${lbl}</span>
+          <input style="font-size:13px;padding:5px 8px" placeholder="Opponent" value="${s.opponent}" id="ms-opp-${d}">
+          <input style="font-size:13px;padding:5px 8px" placeholder="Home / Away" value="${s.location}" id="ms-loc-${d}">
+          <input style="font-size:13px;padding:5px 8px" placeholder="Club address" value="${s.address||''}" id="ms-addr-${d}">
+        </div>`;
+      }).join('')}
+    </div>
+    <button class="btn btn-primary" style="margin-top:8px" onclick="saveManualSchedule()">Save all</button>`;
+  document.getElementById('sec-schedule').querySelector('.card:last-child').before(card);
+}
+
+async function saveManualSchedule(){
+  if(!TOKEN){toast('Sign in with Google to save');return}
+  for(const d of MATCH_DATES){
+    const opp = document.getElementById('ms-opp-'+d)?.value.trim();
+    const loc = document.getElementById('ms-loc-'+d)?.value.trim();
+    const addr = document.getElementById('ms-addr-'+d)?.value.trim();
+    if(opp||loc||addr) await saveScheduleEntry(d, opp||'', loc||'', addr||'');
+  }
+  toast('Schedule saved');
+  renderScheduleFull();
+  renderDashboard();
+}
+
+async function clearSchedule(){
+  if(!confirm('Clear all schedule data?')) return;
+  if(!TOKEN){toast('Sign in with Google');return}
+  await sheetsClear('Schedule!A2:C');
+  STATE.schedule = {};
+  renderScheduleFull();
+  renderDashboard();
+  toast('Schedule cleared');
+}
+
+function renderScheduleFull(){
+  const el = document.getElementById('schedule-full-list');
+  if(!el) return;
+  const today = new Date().toISOString().slice(0,10);
+  const rows = MATCH_DATES.map(d=>{
+    const s = STATE.schedule[d]||{opponent:'',location:''};
+    const dt = new Date(d+'T12:00:00');
+    const isPast = d < today;
+    const dateLabel = dt.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'});
+    const locColor = s.location.toLowerCase().includes('home') ? '#27500A' : s.location.toLowerCase().includes('away') ? '#633806' : '#5F5E5A';
+    const locBg = s.location.toLowerCase().includes('home') ? '#EAF3DE' : s.location.toLowerCase().includes('away') ? '#FAEEDA' : '#F1EFE8';
+    return `<div style="display:grid;grid-template-columns:180px 1fr 100px;gap:12px;align-items:center;padding:8px 0;border-bottom:0.5px solid #f0ede8;${isPast?'opacity:0.5':''}">
+      <span style="font-size:13px;font-weight:500">${dateLabel}</span>
+      <span style="font-size:13px">${s.opponent||'<span style="color:#aaa">TBD</span>'}</span>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:12px;padding:2px 10px;border-radius:20px;background:${locBg};color:${locColor}">${s.location||'TBD'}</span>
+        ${s.address ? `<a href="https://maps.google.com/?q=${encodeURIComponent(s.address)}" target="_blank" style="font-size:12px;color:#185FA5;text-decoration:none">&#x1F4CD; Map</a>` : ''}
+      </div>
+    </div>`;
+  });
+  el.innerHTML = rows.join('') || '<p style="font-size:13px;color:#aaa">No schedule data yet.</p>';
+}
+
+// ─── SCHEDULE ────────────────────────────────────────────────────────────────
+let SCHEDULE_EDIT_MODE = false;
+
+function toggleScheduleEdit(){
+  SCHEDULE_EDIT_MODE = !SCHEDULE_EDIT_MODE;
+  const btn = document.getElementById('d-schedule-edit-btn');
+  if(btn) btn.textContent = SCHEDULE_EDIT_MODE ? 'Done editing' : 'Edit schedule';
+  renderSchedule();
+}
+
+function renderSchedule(){
+  const el = document.getElementById('d-schedule-list');
+  if(!el) return;
+  const today = new Date().toISOString().slice(0,10);
+  el.innerHTML = MATCH_DATES.map(d=>{
+    const s = STATE.schedule[d] || {opponent:'', location:''};
+    const dt = new Date(d+'T12:00:00');
+    const dateLabel = dt.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+    const dayLabel = dt.toLocaleDateString('en-US',{weekday:'short'});
+    const isPast = d < today;
+    const hasData = s.opponent || s.location;
+    if(!SCHEDULE_EDIT_MODE && !hasData) return ''; // hide empty rows in view mode
+    if(SCHEDULE_EDIT_MODE){
+      return `<div style="display:grid;grid-template-columns:70px 1fr 1fr;gap:8px;align-items:center;padding:6px 0;border-bottom:0.5px solid #f0ede8">
+        <span style="font-size:13px;color:${isPast?'#aaa':'#333'};font-weight:500">${dayLabel} ${dateLabel}</span>
+        <input style="font-size:13px;padding:5px 8px" placeholder="Opponent" value="${s.opponent}"
+          onblur="saveScheduleEntry('${d}',this.value,this.closest('div').querySelector('input:last-of-type').value)">
+        <input style="font-size:13px;padding:5px 8px" placeholder="Location (home/away)" value="${s.location}"
+          onblur="saveScheduleEntry('${d}',this.closest('div').querySelector('input:first-of-type').value,this.value)">
+      </div>`;
+    } else {
+      return `<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:0.5px solid #f0ede8;flex-wrap:wrap;gap:4px">
+        <div style="display:flex;align-items:center;gap:12px">
+          <span style="font-size:12px;font-weight:500;color:${isPast?'#aaa':'#185FA5'};min-width:70px">${dayLabel} ${dateLabel}</span>
+          <span style="font-size:13px;color:${isPast?'#aaa':'#333'}">${s.opponent||'<span style="color:#ccc">TBD</span>'}</span>
+        </div>
+        <span style="font-size:12px;padding:2px 10px;border-radius:20px;background:${s.location.toLowerCase().includes('home')?'#EAF3DE':s.location.toLowerCase().includes('away')?'#FAEEDA':'#F1EFE8'};color:${s.location.toLowerCase().includes('home')?'#27500A':s.location.toLowerCase().includes('away')?'#633806':'#5F5E5A'}">${s.location||'TBD'}</span>
+      </div>`;
+    }
+  }).filter(Boolean).join('') || '<p style="font-size:13px;color:#aaa">No schedule entered yet. Captain can add opponent and location for each date.</p>';
+}
+
 // ─── RENDER ──────────────────────────────────────────────────────────────────
 function getUpcomingWednesdays(n){
   const today = new Date();
@@ -883,6 +1127,7 @@ function renderDashboard(){
     const dt = new Date(next+'T12:00:00');
     document.getElementById('d-match').textContent = dt.toLocaleDateString('en-US',{month:'short',day:'numeric'});
   }
+  renderSchedule();
 
   const pn = id => { if(!id) return '<span style="color:#aaa">TBD</span>'; const p=STATE.players.find(x=>x.id===id); return p?p.first+' '+p.last:'TBD'; };
 
@@ -900,6 +1145,8 @@ function renderDashboard(){
     const shortLabel = dt.toLocaleDateString('en-US',{month:'short',day:'numeric'});
     const weekLabel = i===0 ? 'This Wednesday' : 'Next Wednesday';
 
+    // schedule for this date
+    const sched = STATE.schedule[d] || {opponent:'',location:'',address:''};
     // availability for this date
     const dateAvail = STATE.availability[d] || {};
     const yesP  = STATE.players.filter(p=>dateAvail[p.id]?.status==='yes');
@@ -919,6 +1166,11 @@ function renderDashboard(){
         <div>
           <div style="font-size:12px;color:#888;font-weight:500;text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px">${weekLabel}</div>
           <div style="font-size:16px;font-weight:500">${dateLabel}</div>
+          ${sched.opponent ? `<div style="font-size:13px;color:#555;margin-top:3px">vs ${sched.opponent}</div>` : ''}
+          ${sched.location ? `<div style="font-size:12px;margin-top:3px;display:flex;align-items:center;gap:6px">
+            <span style="padding:2px 8px;border-radius:20px;background:${sched.location.toLowerCase().includes('home')?'#EAF3DE':sched.location.toLowerCase().includes('away')?'#FAEEDA':'#F1EFE8'};color:${sched.location.toLowerCase().includes('home')?'#27500A':sched.location.toLowerCase().includes('away')?'#633806':'#5F5E5A'};font-size:11px">${sched.location}</span>
+            ${sched.address ? `<a href="https://maps.google.com/?q=${encodeURIComponent(sched.address)}" target="_blank" style="font-size:11px;color:#185FA5;text-decoration:none">&#x1F4CD; Directions</a>` : ''}
+          </div>` : ''}
         </div>
         <span style="font-size:12px;padding:4px 12px;border-radius:20px;background:${availBg};color:${availColor};font-weight:500">${totalAvail} available</span>
       </div>
@@ -1072,10 +1324,10 @@ function renderAvailability(){
     const isPast = d < today;
     const editable = canEdit && !isPast;
     const dt = new Date(d+'T12:00:00');
-    const dateLabel = dt.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+    const dateLabel = dt.toLocaleDateString('en-US',{month:'short',day:'numeric'});
     const statusBadge = av.status==='yes'?'tag-in':av.status==='maybe'?'tag-maybe':av.status==='no'?'tag-out':'tag-unknown';
     const statusLabel = av.status==='yes'?'Available':av.status==='maybe'?'Maybe':av.status==='no'?'Unavailable':'Unknown';
-    return `<div style="display:grid;grid-template-columns:160px 120px 1fr;gap:8px;align-items:center;padding:7px 0;border-bottom:0.5px solid #f0ede8">
+    return `<div style="display:grid;grid-template-columns:100px 120px 1fr;gap:8px;align-items:center;padding:7px 0;border-bottom:0.5px solid #f0ede8">
       <span style="font-size:13px;${isPast?'color:#aaa':''}">${dateLabel}</span>
       <div style="text-align:center">
         ${editable
@@ -1367,7 +1619,8 @@ async function initSheet(){
     Players:['id','first','last','phone','email','rating','pos','gemail'],
     Availability:['week','player_id','status','note'],
     Lineup:['week','slot','player_id'],
-    Messages:['id','date','type','subject','body','author']
+    Messages:['id','date','type','subject','body','author'],
+    Schedule:['date','opponent','location','address']
   };
   try {
     // Step 1: get existing sheet names
@@ -1414,12 +1667,13 @@ function toast(msg){
 // patch nav to also load settings form, guard captain-only screens, and reset tab state
 const _nav = nav;
 window.nav = function(id, btn){
-  if((id==='settings' || id==='entitlements' || id==='lineup') && STATE.role !== 'captain'){
+  if((id==='settings' || id==='entitlements' || id==='lineup' || id==='schedule') && STATE.role !== 'captain'){
     toast('This screen is only accessible to the captain');
     return;
   }
   _nav(id, btn);
   if(id==='settings') loadSettingsForm();
+  if(id==='schedule') renderScheduleFull();
   // reset tab bar for the section we just navigated to
   const sec = document.getElementById('sec-'+id);
   if(sec){
