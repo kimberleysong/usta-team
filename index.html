@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>USTA Team Manager</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f0;color:#1a1a1a;font-size:15px;line-height:1.6}
+a{color:#185FA5}
+h1{font-size:22px;font-weight:500}
+h2{font-size:18px;font-weight:500;margin-bottom:1rem}
+h3{font-size:15px;font-weight:500;margin-bottom:.75rem}
+
+/* Layout */
+.app{display:none;min-height:100vh}
+.sidebar{width:220px;background:#fff;border-right:0.5px solid #e0ddd5;padding:1.5rem 1rem;position:fixed;top:0;left:0;height:100vh;overflow-y:auto}
+.main{margin-left:220px;padding:2rem;max-width:900px}
+.brand{font-size:15px;font-weight:500;color:#185FA5;margin-bottom:.25rem}
+.brand-sub{font-size:12px;color:#888;margin-bottom:1.5rem}
+.nav-item{display:block;padding:8px 12px;border-radius:8px;font-size:14px;color:#555;cursor:pointer;border:none;background:none;width:100%;text-align:left;margin-bottom:2px}
+.nav-item:hover{background:#f5f5f0}
+.nav-item.active{background:#E6F1FB;color:#0C447C;font-weight:500}
+.nav-section{font-size:11px;color:#aaa;text-transform:uppercase;letter-spacing:.05em;padding:8px 12px 4px;margin-top:.5rem}
+.user-bar{position:fixed;top:0;left:220px;right:0;height:52px;background:#fff;border-bottom:0.5px solid #e0ddd5;display:flex;align-items:center;justify-content:flex-end;padding:0 2rem;gap:12px;z-index:10}
+.content{margin-top:52px;padding:2rem;max-width:900px}
+
+/* Cards */
+.card{background:#fff;border:0.5px solid #e0ddd5;border-radius:12px;padding:1rem 1.25rem;margin-bottom:12px}
+.card-title{font-size:15px;font-weight:500;margin-bottom:.75rem}
+
+/* Badges */
+.badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:20px;font-weight:500}
+.badge-green{background:#EAF3DE;color:#27500A}
+.badge-amber{background:#FAEEDA;color:#633806}
+.badge-red{background:#FCEBEB;color:#791F1F}
+.badge-blue{background:#E6F1FB;color:#0C447C}
+.badge-gray{background:#F1EFE8;color:#444441}
+.badge-captain{background:#EEEDFE;color:#3C3489}
+
+/* Forms */
+input,select,textarea{width:100%;padding:8px 10px;border:0.5px solid #ccc;border-radius:8px;font-size:14px;background:#fff;color:#1a1a1a;font-family:inherit}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#378ADD;box-shadow:0 0 0 2px rgba(55,138,221,.15)}
+label{font-size:13px;color:#666;display:block;margin-bottom:4px}
+.form-group{margin-bottom:12px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.grid4{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px}
+
+/* Buttons */
+.btn{padding:8px 16px;font-size:13px;border-radius:8px;border:0.5px solid #ccc;background:#fff;color:#1a1a1a;cursor:pointer;font-family:inherit}
+.btn:hover{background:#f5f5f0}
+.btn:active{transform:scale(.98)}
+.btn-primary{background:#E6F1FB;color:#0C447C;border-color:#85B7EB}
+.btn-primary:hover{background:#B5D4F4}
+.btn-green{background:#EAF3DE;color:#27500A;border-color:#97C459}
+.btn-green:hover{background:#C0DD97}
+.btn-danger{background:#FCEBEB;color:#791F1F;border-color:#F09595}
+.btn-danger:hover{background:#F7C1C1}
+.btn-sm{padding:4px 10px;font-size:12px}
+
+/* Stats */
+.stat{background:#f5f5f0;border-radius:8px;padding:1rem;text-align:center}
+.stat-val{font-size:24px;font-weight:500}
+.stat-lbl{font-size:12px;color:#888;margin-top:2px}
+
+/* Avatar */
+.avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;flex-shrink:0}
+
+/* Table */
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{text-align:left;padding:8px 10px;font-size:12px;color:#888;font-weight:500;border-bottom:0.5px solid #e0ddd5}
+.tbl td{padding:8px 10px;border-bottom:0.5px solid #f0ede8;vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:#fafaf8}
+
+/* Lineup slots */
+.lineup-slot{border:0.5px solid #e0ddd5;border-radius:8px;padding:10px 12px;margin-bottom:6px;display:flex;align-items:center;gap:10px}
+.slot-label{font-size:12px;color:#888;min-width:90px;flex-shrink:0}
+.slot-select{flex:1;font-size:13px;padding:6px 8px}
+
+/* Msg */
+.msg-card{background:#f5f5f0;border-radius:8px;padding:10px 14px;margin-bottom:8px}
+.msg-body{font-size:13px;color:#555;white-space:pre-wrap;margin-top:6px}
+
+/* Availability grid */
+.avail-grid{display:grid;grid-template-columns:1fr 100px 100px;gap:8px;align-items:center}
+.avail-header{font-size:12px;color:#888;padding:0 0 6px;border-bottom:0.5px solid #e0ddd5;margin-bottom:4px}
+.avail-row{padding:6px 0;border-bottom:0.5px solid #f0ede8}
+.avail-row:last-child{border-bottom:none}
+
+/* Setup/login screens */
+.screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:#f5f5f0;padding:1rem}
+.screen-card{background:#fff;border-radius:16px;padding:2.5rem;max-width:560px;width:100%;border:0.5px solid #e0ddd5}
+.screen-logo{font-size:20px;font-weight:500;color:#185FA5;margin-bottom:.25rem}
+.screen-sub{font-size:13px;color:#888;margin-bottom:2rem}
+.divider{border:none;border-top:0.5px solid #e0ddd5;margin:1.5rem 0}
+.setup-step{background:#f5f5f0;border-radius:8px;padding:1rem;margin-bottom:12px}
+.setup-step-num{font-size:11px;font-weight:500;color:#185FA5;margin-bottom:4px}
+.code{background:#1a1a1a;color:#9FE1CB;border-radius:6px;padding:8px 12px;font-family:monospace;font-size:12px;margin:6px 0;word-break:break-all}
+.toast{position:fixed;bottom:1.5rem;right:1.5rem;background:#1a1a1a;color:#fff;padding:10px 16px;border-radius:8px;font-size:13px;z-index:100;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.show{opacity:1}
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid #ccc;border-top-color:#185FA5;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.tag-in{background:#EAF3DE;color:#27500A;padding:2px 8px;border-radius:20px;font-size:12px}
+.tag-out{background:#FCEBEB;color:#791F1F;padding:2px 8px;border-radius:20px;font-size:12px}
+.tag-maybe{background:#FAEEDA;color:#633806;padding:2px 8px;border-radius:20px;font-size:12px}
+.tag-unknown{background:#F1EFE8;color:#5F5E5A;padding:2px 8px;border-radius:20px;font-size:12px}
+@media(max-width:640px){
+  .sidebar{display:none}
+  .main{margin-left:0}
+  .user-bar{left:0}
+  .mobile-nav{display:flex}
+}
+</style>
+</head>
+<body>
+
+<!-- SETUP SCREEN -->
+<div id="setup-screen" class="screen" style="display:none">
+  <div class="screen-card">
+    <div class="screen-logo">USTA Team Manager</div>
+    <div class="screen-sub">One-time setup — connect your Google Sheet</div>
+
+    <div class="setup-step">
+      <div class="setup-step-num">STEP 1 — Create your Google Sheet</div>
+      <p style="font-size:13px;color:#555;margin-bottom:8px">Go to <a href="https://sheets.google.com" target="_blank">sheets.google.com</a> and create a new spreadsheet. Name it <strong>USTA Team Manager</strong>. Copy the Sheet ID from the URL:</p>
+      <div class="code">https://docs.google.com/spreadsheets/d/<span style="color:#FAC775">YOUR_SHEET_ID_HERE</span>/edit</div>
+      <div class="form-group" style="margin-top:8px"><label>Sheet ID</label><input id="setup-sheet-id" placeholder="1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms"></div>
+    </div>
+
+    <div class="setup-step">
+      <div class="setup-step-num">STEP 2 — Google Cloud project &amp; API key</div>
+      <p style="font-size:13px;color:#555;margin-bottom:6px">1. Go to <a href="https://console.cloud.google.com" target="_blank">console.cloud.google.com</a> → New Project<br>2. Enable the <strong>Google Sheets API</strong> and <strong>Google Identity Services</strong><br>3. Create an <strong>API Key</strong> (restrict to Sheets API)<br>4. Create an <strong>OAuth 2.0 Client ID</strong> (Web application type)<br>&nbsp;&nbsp;&nbsp;— Authorized origins: your GitHub Pages URL (e.g. <code>https://yourname.github.io</code>)<br>&nbsp;&nbsp;&nbsp;— Also add <code>http://localhost</code> for local testing</p>
+      <div class="form-group"><label>API Key</label><input id="setup-api-key" placeholder="AIza..."></div>
+      <div class="form-group"><label>OAuth Client ID</label><input id="setup-client-id" placeholder="123456789-abc...apps.googleusercontent.com"></div>
+    </div>
+
+    <div class="setup-step">
+      <div class="setup-step-num">STEP 3 — Share your sheet</div>
+      <p style="font-size:13px;color:#555">Share the Google Sheet with <strong>anyone with the link can view</strong>. Players will write via OAuth (their own Google login), and the captain writes via OAuth too.</p>
+    </div>
+
+    <div class="setup-step">
+      <div class="setup-step-num">STEP 4 — Set captain password</div>
+      <div class="form-group"><label>Captain password (you'll use this to unlock edit mode)</label><input id="setup-captain-pw" type="password" placeholder="Choose a strong password"></div>
+    </div>
+
+    <div class="setup-step">
+      <div class="setup-step-num">STEP 5 — Team name</div>
+      <div class="form-group"><label>Team name</label><input id="setup-team-name" placeholder="Ace Breakers 3.5 Mixed"></div>
+    </div>
+
+    <button class="btn btn-primary" style="width:100%;padding:10px" onclick="saveSetup()">Save &amp; launch app</button>
+    <p style="font-size:12px;color:#aaa;margin-top:10px;text-align:center">Settings saved to your browser. Players visiting the URL will be prompted to sign in with Google.</p>
+  </div>
+</div>
+
+<!-- LOGIN SCREEN -->
+<div id="login-screen" class="screen" style="display:none">
+  <div class="screen-card" style="max-width:400px;text-align:center">
+    <div class="screen-logo" id="login-team-name">USTA Team Manager</div>
+    <div class="screen-sub">Sign in to view and update your availability</div>
+    <div id="g-signin-btn" style="display:flex;justify-content:center;margin-bottom:1rem"></div>
+    <hr class="divider">
+    <p style="font-size:13px;color:#888;margin-bottom:.75rem">Captain? Enter your password to unlock full edit access.</p>
+    <div style="display:flex;gap:8px">
+      <input type="password" id="captain-pw-input" placeholder="Captain password" style="flex:1">
+      <button class="btn btn-primary" onclick="captainLogin()">Login</button>
+    </div>
+    <div id="login-error" style="font-size:12px;color:#A32D2D;margin-top:8px;display:none">Incorrect password.</div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app" class="app">
+  <div class="sidebar">
+    <div class="brand" id="app-team-name">USTA Team</div>
+    <div class="brand-sub">Team Manager</div>
+    <button class="nav-item active" onclick="nav('dashboard',this)">Dashboard</button>
+    <button class="nav-item" onclick="nav('roster',this)">Roster</button>
+    <button class="nav-item" onclick="nav('availability',this)">Availability</button>
+    <button class="nav-item" onclick="nav('lineup',this)">Lineup</button>
+    <button class="nav-item" onclick="nav('messages',this)">Messages</button>
+    <div class="nav-section">Account</div>
+    <button class="nav-item" onclick="nav('settings',this)">Settings</button>
+    <button class="nav-item" onclick="logout()" style="color:#A32D2D">Sign out</button>
+  </div>
+
+  <div class="main">
+    <div class="user-bar">
+      <div id="user-info" style="font-size:13px;color:#555"></div>
+      <span id="role-badge"></span>
+      <button class="btn btn-sm" onclick="syncAll()" id="sync-btn">Sync</button>
+    </div>
+
+    <div class="content">
+
+      <!-- DASHBOARD -->
+      <div id="sec-dashboard" class="section">
+        <h2>Dashboard</h2>
+        <div class="grid4" style="margin-bottom:1.5rem">
+          <div class="stat"><div class="stat-val" id="d-players">—</div><div class="stat-lbl">Players</div></div>
+          <div class="stat"><div class="stat-val" id="d-avail">—</div><div class="stat-lbl">Available Wed</div></div>
+          <div class="stat"><div class="stat-val" id="d-slots">0/8</div><div class="stat-lbl">Lineup filled</div></div>
+          <div class="stat"><div class="stat-val" id="d-match">Wed</div><div class="stat-lbl">Match day</div></div>
+        </div>
+        <div class="grid2">
+          <div class="card">
+            <div class="card-title">This Wednesday lineup</div>
+            <div id="d-lineup">No lineup set yet.</div>
+          </div>
+          <div class="card">
+            <div class="card-title">Latest announcement</div>
+            <div id="d-message">No announcements yet.</div>
+          </div>
+        </div>
+        <div class="card" style="margin-top:0">
+          <div class="card-title">Availability summary</div>
+          <div id="d-avail-summary">Loading...</div>
+        </div>
+      </div>
+
+      <!-- ROSTER -->
+      <div id="sec-roster" class="section" style="display:none">
+        <h2>Roster</h2>
+        <div id="roster-captain-only" style="display:none">
+          <div class="card" style="margin-bottom:1.5rem">
+            <div class="card-title">Add player</div>
+            <div class="grid2">
+              <div class="form-group"><label>First name</label><input id="r-first" placeholder="Jane"></div>
+              <div class="form-group"><label>Last name</label><input id="r-last" placeholder="Smith"></div>
+            </div>
+            <div class="grid2">
+              <div class="form-group"><label>Phone</label><input id="r-phone" placeholder="(617) 555-0100"></div>
+              <div class="form-group"><label>Email</label><input id="r-email" placeholder="jane@email.com"></div>
+            </div>
+            <div class="grid2">
+              <div class="form-group"><label>NTRP rating</label>
+                <select id="r-rating"><option>2.5</option><option>3.0</option><option selected>3.5</option><option>4.0</option><option>4.5</option><option>5.0</option></select>
+              </div>
+              <div class="form-group"><label>Position preference</label>
+                <select id="r-pos"><option value="either">Either</option><option value="singles">Singles</option><option value="doubles">Doubles</option></select>
+              </div>
+            </div>
+            <div class="form-group"><label>Google email (for login match)</label><input id="r-gemail" placeholder="jane@gmail.com"></div>
+            <button class="btn btn-primary" onclick="addPlayer()">Add player</button>
+          </div>
+        </div>
+        <div id="roster-table-wrap">
+          <div id="roster-loading" style="color:#888;font-size:13px;padding:1rem">Loading roster...</div>
+          <table class="tbl" id="roster-tbl" style="display:none">
+            <thead><tr><th>Player</th><th>Phone</th><th>Email</th><th>Rating</th><th>Position</th><th id="roster-actions-col"></th></tr></thead>
+            <tbody id="roster-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- AVAILABILITY -->
+      <div id="sec-availability" class="section" style="display:none">
+        <h2>Availability — this Wednesday</h2>
+        <div class="card" style="margin-bottom:1rem">
+          <p style="font-size:13px;color:#555">Players: update your own row. Captain can update anyone.</p>
+        </div>
+        <div class="card">
+          <div class="avail-grid avail-header">
+            <span>Player</span><span style="text-align:center">Status</span><span style="text-align:center">Note</span>
+          </div>
+          <div id="avail-body">Loading...</div>
+        </div>
+      </div>
+
+      <!-- LINEUP -->
+      <div id="sec-lineup" class="section" style="display:none">
+        <h2>Wednesday lineup</h2>
+        <div id="lineup-lock-notice" class="card" style="background:#FAEEDA;border-color:#EF9F27;display:none">
+          <p style="font-size:13px;color:#633806">Lineup editing requires captain access.</p>
+        </div>
+        <div id="lineup-editor">
+          <div class="card">
+            <div class="card-title">Doubles</div>
+            <div id="doubles-slots"></div>
+          </div>
+          <div class="card">
+            <div class="card-title">Singles</div>
+            <div id="singles-slots"></div>
+          </div>
+          <div id="lineup-captain-controls" style="display:none;gap:8px;flex-wrap:wrap;margin-bottom:1rem">
+            <button class="btn btn-primary" onclick="autoFill()">Auto-fill from available</button>
+            <button class="btn" onclick="clearLineup()">Clear</button>
+            <button class="btn btn-green" onclick="saveLineup()">Save lineup</button>
+            <button class="btn" onclick="announceLineup()">Announce to team</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- MESSAGES -->
+      <div id="sec-messages" class="section" style="display:none">
+        <h2>Messages &amp; announcements</h2>
+        <div id="msg-captain-form" style="display:none">
+          <div class="card" style="margin-bottom:1rem">
+            <div class="card-title">New announcement</div>
+            <div class="form-group"><label>Type</label>
+              <select id="msg-type">
+                <option value="lineup">Lineup announcement</option>
+                <option value="reminder">Availability reminder</option>
+                <option value="announcement">General announcement</option>
+              </select>
+            </div>
+            <div class="form-group"><label>Subject</label><input id="msg-subject" placeholder="Wednesday lineup — Apr 16"></div>
+            <div class="form-group"><label>Message</label><textarea id="msg-body" rows="5" placeholder="Write your message..."></textarea></div>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-primary" onclick="postMessage()">Post announcement</button>
+              <button class="btn" onclick="genLineupMsg()">Generate from lineup</button>
+            </div>
+          </div>
+        </div>
+        <h3>Announcements</h3>
+        <div id="msg-list">Loading...</div>
+      </div>
+
+      <!-- SETTINGS -->
+      <div id="sec-settings" class="section" style="display:none">
+        <h2>Settings</h2>
+        <div class="card">
+          <div class="card-title">Configuration</div>
+          <div class="form-group"><label>Team name</label><input id="cfg-team-name"></div>
+          <div class="form-group"><label>Sheet ID</label><input id="cfg-sheet-id"></div>
+          <div class="form-group"><label>API Key</label><input id="cfg-api-key"></div>
+          <div class="form-group"><label>OAuth Client ID</label><input id="cfg-client-id"></div>
+          <div class="form-group"><label>Change captain password</label><input type="password" id="cfg-captain-pw" placeholder="Leave blank to keep current"></div>
+          <button class="btn btn-primary" onclick="saveConfig()">Save settings</button>
+          <button class="btn btn-danger" style="margin-left:8px" onclick="resetSetup()">Reset &amp; re-run setup</button>
+        </div>
+        <div class="card" style="margin-top:0">
+          <div class="card-title">Sheet structure</div>
+          <p style="font-size:13px;color:#555;margin-bottom:8px">Your Google Sheet needs these tabs (created automatically on first save):</p>
+          <table class="tbl">
+            <tr><th>Tab name</th><th>Columns</th></tr>
+            <tr><td><code>Players</code></td><td style="font-size:12px">id, first, last, phone, email, rating, pos, gemail</td></tr>
+            <tr><td><code>Availability</code></td><td style="font-size:12px">week, player_id, status, note</td></tr>
+            <tr><td><code>Lineup</code></td><td style="font-size:12px">week, slot, player_id</td></tr>
+            <tr><td><code>Messages</code></td><td style="font-size:12px">id, date, type, subject, body, author</td></tr>
+          </table>
+          <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+            <button class="btn btn-green" onclick="requestOAuthToken()">1. Connect Google Account</button>
+            <button class="btn btn-primary" onclick="initSheet()">2. Initialize sheet tabs</button>
+          </div>
+          <div id="oauth-status" style="font-size:12px;color:#888;margin-top:8px">Not connected to Google yet.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script>
+// ─── CONFIG ─────────────────────────────────────────────────────────────────
+let CFG = JSON.parse(localStorage.getItem('usta_cfg') || '{}');
+let STATE = {players:[], availability:{}, lineup:{}, messages:[], role:'guest', user:null};
+let TOKEN = null;
+
+const WEEK = getWeekKey();
+function getWeekKey(){
+  const d=new Date(); const day=d.getDay();
+  const wed=new Date(d); wed.setDate(d.getDate()+(3-day+7)%7);
+  return wed.toISOString().slice(0,10);
+}
+const LINEUP_KEYS=['d1p1','d1p2','d2p1','d2p2','d3p1','d3p2','s1','s2'];
+const SLOT_LABELS={d1p1:'D1 · Player 1',d1p2:'D1 · Player 2',d2p1:'D2 · Player 1',d2p2:'D2 · Player 2',d3p1:'D3 · Player 1',d3p2:'D3 · Player 2',s1:'Singles 1',s2:'Singles 2'};
+const AVATAR_COLORS=['#E6F1FB:#0C447C','#E1F5EE:#085041','#FAEEDA:#633806','#EEEDFE:#3C3489','#FAECE7:#712B13','#EAF3DE:#27500A'];
+
+// ─── BOOT ────────────────────────────────────────────────────────────────────
+window.onload = function(){
+  if(!CFG.sheetId || !CFG.apiKey || !CFG.clientId){
+    showScreen('setup');
+    return;
+  }
+  loadGoogleIdentity();
+};
+
+function loadGoogleIdentity(){
+  const s=document.createElement('script');
+  s.src='https://accounts.google.com/gsi/client';
+  s.onload=initGSI;
+  document.head.appendChild(s);
+}
+
+function initGSI(){
+  google.accounts.id.initialize({
+    client_id: CFG.clientId,
+    callback: handleCredential,
+    auto_select: false
+  });
+  google.accounts.oauth2 && (TOKEN = null);
+  const savedUser = JSON.parse(sessionStorage.getItem('usta_user')||'null');
+  if(savedUser && savedUser.role === 'captain'){
+    STATE.role = 'captain'; STATE.user = savedUser;
+    launchApp();
+  } else if(savedUser && savedUser.email){
+    STATE.role = 'player'; STATE.user = savedUser;
+    launchApp();
+  } else {
+    showScreen('login');
+    google.accounts.id.renderButton(document.getElementById('g-signin-btn'),{theme:'outline',size:'large',text:'signin_with',width:260});
+    google.accounts.id.prompt();
+  }
+  document.getElementById('login-team-name').textContent = CFG.teamName || 'USTA Team Manager';
+}
+
+function handleCredential(response){
+  const payload = parseJwt(response.credential);
+  STATE.user = {name:payload.name, email:payload.email, picture:payload.picture};
+  STATE.role = 'player';
+  sessionStorage.setItem('usta_user', JSON.stringify(STATE.user));
+  // get OAuth token for writes
+  const client = google.accounts.oauth2.initTokenClient({
+    client_id: CFG.clientId,
+    scope: 'https://www.googleapis.com/auth/spreadsheets',
+    callback: (r)=>{ TOKEN = r.access_token; },
+  });
+  client.requestAccessToken({prompt:''});
+  launchApp();
+}
+
+function parseJwt(token){
+  const b = token.split('.')[1];
+  return JSON.parse(atob(b.replace(/-/g,'+').replace(/_/g,'/')));
+}
+
+function captainLogin(){
+  const pw = document.getElementById('captain-pw-input').value;
+  if(pw === CFG.captainPw){
+    STATE.role = 'captain';
+    STATE.user = {name:'Captain', email:'captain', picture:null};
+    sessionStorage.setItem('usta_user', JSON.stringify({...STATE.user, role:'captain'}));
+    // get OAuth token for writes
+    if(typeof google !== 'undefined' && google.accounts && google.accounts.oauth2){
+      const client = google.accounts.oauth2.initTokenClient({
+        client_id: CFG.clientId,
+        scope: 'https://www.googleapis.com/auth/spreadsheets',
+        callback: (r)=>{ TOKEN = r.access_token; },
+      });
+      client.requestAccessToken({prompt:'consent'});
+    }
+    launchApp();
+  } else {
+    document.getElementById('login-error').style.display='block';
+  }
+}
+
+function launchApp(){
+  showScreen('app');
+  document.getElementById('app-team-name').textContent = CFG.teamName || 'USTA Team';
+  document.getElementById('user-info').textContent = STATE.user?.name || '';
+  document.getElementById('role-badge').innerHTML = STATE.role==='captain'
+    ? '<span class="badge badge-captain">Captain</span>'
+    : '<span class="badge badge-blue">Player</span>';
+  applyRoleUI();
+  syncAll();
+}
+
+function applyRoleUI(){
+  const isCaptain = STATE.role === 'captain';
+  document.getElementById('roster-captain-only').style.display = isCaptain ? 'block' : 'none';
+  document.getElementById('roster-actions-col').textContent = isCaptain ? 'Actions' : '';
+  document.getElementById('lineup-captain-controls').style.display = isCaptain ? 'flex' : 'none';
+  document.getElementById('lineup-lock-notice').style.display = isCaptain ? 'none' : 'block';
+  document.getElementById('msg-captain-form').style.display = isCaptain ? 'block' : 'none';
+}
+
+function logout(){
+  sessionStorage.removeItem('usta_user');
+  TOKEN = null;
+  location.reload();
+}
+
+// ─── NAVIGATION ──────────────────────────────────────────────────────────────
+function nav(id, btn){
+  document.querySelectorAll('.section').forEach(s=>s.style.display='none');
+  document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
+  document.getElementById('sec-'+id).style.display='block';
+  btn.classList.add('active');
+}
+function showScreen(s){
+  document.getElementById('setup-screen').style.display = s==='setup'?'flex':'none';
+  document.getElementById('login-screen').style.display = s==='login'?'flex':'none';
+  document.getElementById('app').style.display = s==='app'?'flex':'none';
+}
+
+// ─── SHEETS API ───────────────────────────────────────────────────────────────
+const BASE = `https://sheets.googleapis.com/v4/spreadsheets/${()=>CFG.sheetId}`;
+
+async function sheetsGet(range){
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${CFG.sheetId}/values/${encodeURIComponent(range)}?key=${CFG.apiKey}`;
+  const r = await axios.get(url);
+  return r.data.values || [];
+}
+
+async function sheetsUpdate(range, values){
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${CFG.sheetId}/values/${encodeURIComponent(range)}?valueInputOption=RAW`;
+  const headers = TOKEN ? {Authorization:`Bearer ${TOKEN}`} : {};
+  await axios.put(url, {range, majorDimension:'ROWS', values}, {headers});
+}
+
+async function sheetsAppend(sheetName, values){
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${CFG.sheetId}/values/${encodeURIComponent(sheetName+'!A1')}:append?valueInputOption=RAW&insertDataOption=INSERT_ROWS`;
+  const headers = TOKEN ? {Authorization:`Bearer ${TOKEN}`} : {};
+  await axios.post(url, {majorDimension:'ROWS', values}, {headers});
+}
+
+async function sheetsClear(range){
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${CFG.sheetId}/values/${encodeURIComponent(range)}:clear`;
+  const headers = TOKEN ? {Authorization:`Bearer ${TOKEN}`} : {};
+  await axios.post(url, {}, {headers});
+}
+
+// ─── SYNC ─────────────────────────────────────────────────────────────────────
+async function syncAll(){
+  setSyncState(true);
+  try {
+    await Promise.all([loadPlayers(), loadAvailability(), loadLineup(), loadMessages()]);
+    renderDashboard(); renderRoster(); renderAvailability(); renderLineup(); renderMessages();
+  } catch(e){
+    toast('Sync error: '+e.message);
+    console.error(e);
+  }
+  setSyncState(false);
+}
+function setSyncState(loading){
+  document.getElementById('sync-btn').innerHTML = loading ? '<span class="spinner"></span>Syncing' : 'Sync';
+}
+
+async function loadPlayers(){
+  const rows = await sheetsGet('Players!A2:H');
+  STATE.players = rows.map(r=>({id:r[0]||'',first:r[1]||'',last:r[2]||'',phone:r[3]||'',email:r[4]||'',rating:r[5]||'',pos:r[6]||'either',gemail:r[7]||''}));
+}
+
+async function loadAvailability(){
+  const rows = await sheetsGet('Availability!A2:D');
+  STATE.availability = {};
+  rows.forEach(r=>{
+    if(r[0]===WEEK) STATE.availability[r[1]] = {status:r[2]||'unknown', note:r[3]||''};
+  });
+}
+
+async function loadLineup(){
+  const rows = await sheetsGet('Lineup!A2:C');
+  STATE.lineup = {};
+  rows.forEach(r=>{
+    if(r[0]===WEEK) STATE.lineup[r[1]] = r[2]||'';
+  });
+}
+
+async function loadMessages(){
+  const rows = await sheetsGet('Messages!A2:F');
+  STATE.messages = rows.map(r=>({id:r[0],date:r[1],type:r[2],subject:r[3],body:r[4],author:r[5]})).reverse();
+}
+
+// ─── PLAYERS ──────────────────────────────────────────────────────────────────
+async function addPlayer(){
+  const f=v('r-first'),l=v('r-last');
+  if(!f||!l){toast('Name required');return}
+  const id='p'+Date.now();
+  const row=[id,f,l,v('r-phone'),v('r-email'),v('r-rating'),v('r-pos'),v('r-gemail')];
+  try{
+    await sheetsAppend('Players',[row]);
+    ['r-first','r-last','r-phone','r-email','r-gemail'].forEach(x=>document.getElementById(x).value='');
+    toast('Player added');
+    await loadPlayers(); renderRoster(); renderAvailability(); renderDashboard();
+  }catch(e){toast('Error: '+e.message)}
+}
+
+async function removePlayer(id){
+  if(!confirm('Remove this player?')) return;
+  const rows = await sheetsGet('Players!A2:H');
+  const newRows = rows.filter(r=>r[0]!==id);
+  await sheetsClear('Players!A2:H');
+  if(newRows.length) await sheetsUpdate('Players!A2', newRows);
+  toast('Player removed');
+  await loadPlayers(); renderRoster(); renderDashboard();
+}
+
+// ─── AVAILABILITY ─────────────────────────────────────────────────────────────
+async function setAvailability(playerId, status, note){
+  // check permission
+  if(STATE.role !== 'captain'){
+    const me = STATE.user?.email;
+    const player = STATE.players.find(p=>p.id===playerId);
+    if(!player || player.gemail.toLowerCase() !== me.toLowerCase()){
+      toast('You can only update your own availability'); return;
+    }
+  }
+  if(!TOKEN){toast('Sign in with Google to save changes');return}
+  // read all avail rows, remove existing for this week+player, append new
+  const rows = await sheetsGet('Availability!A2:D');
+  const filtered = rows.filter(r=>!(r[0]===WEEK && r[1]===playerId));
+  filtered.push([WEEK, playerId, status, note||'']);
+  await sheetsClear('Availability!A2:D');
+  await sheetsUpdate('Availability!A2', filtered);
+  STATE.availability[playerId] = {status, note:note||''};
+  renderAvailability(); renderDashboard();
+  toast('Availability saved');
+}
+
+// ─── LINEUP ──────────────────────────────────────────────────────────────────
+async function saveLineup(){
+  if(!TOKEN){toast('Sign in with Google to save');return}
+  const rows = await sheetsGet('Lineup!A2:C');
+  const filtered = rows.filter(r=>r[0]!==WEEK);
+  LINEUP_KEYS.forEach(k=>{ if(STATE.lineup[k]) filtered.push([WEEK,k,STATE.lineup[k]]); });
+  await sheetsClear('Lineup!A2:C');
+  if(filtered.length) await sheetsUpdate('Lineup!A2', filtered);
+  toast('Lineup saved');
+  renderDashboard();
+}
+
+function autoFill(){
+  const avail = STATE.players.filter(p=>{const a=STATE.availability[p.id];return a&&['yes','maybe'].includes(a.status)});
+  const used = new Set(Object.values(STATE.lineup).filter(Boolean));
+  LINEUP_KEYS.forEach(k=>{
+    if(!STATE.lineup[k]){
+      const next = avail.find(p=>!used.has(p.id));
+      if(next){STATE.lineup[k]=next.id; used.add(next.id)}
+    }
+  });
+  renderLineup();
+}
+
+function clearLineup(){LINEUP_KEYS.forEach(k=>STATE.lineup[k]=''); renderLineup();}
+
+async function announceLineup(){
+  const msg = buildLineupText();
+  document.getElementById('msg-type').value='lineup';
+  document.getElementById('msg-subject').value='Wednesday lineup — '+WEEK;
+  document.getElementById('msg-body').value=msg;
+  nav('messages', document.querySelectorAll('.nav-item')[4]);
+}
+
+function buildLineupText(){
+  const pn=id=>{if(!id)return'TBD';const p=STATE.players.find(x=>x.id===id);return p?p.first+' '+p.last:'TBD'};
+  return `Wednesday ${WEEK} Lineup\n\nDoubles:\n  Court 1: ${pn(STATE.lineup.d1p1)} / ${pn(STATE.lineup.d1p2)}\n  Court 2: ${pn(STATE.lineup.d2p1)} / ${pn(STATE.lineup.d2p2)}\n  Court 3: ${pn(STATE.lineup.d3p1)} / ${pn(STATE.lineup.d3p2)}\n\nSingles:\n  Court 1: ${pn(STATE.lineup.s1)}\n  Court 2: ${pn(STATE.lineup.s2)}\n\nGood luck team!`;
+}
+
+// ─── MESSAGES ────────────────────────────────────────────────────────────────
+async function postMessage(){
+  if(!TOKEN){toast('Sign in with Google to post');return}
+  const subj=v('msg-subject'),body=v('msg-body');
+  if(!subj||!body){toast('Subject and message required');return}
+  const row=['m'+Date.now(), new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}), v('msg-type'), subj, body, STATE.user?.name||'Captain'];
+  await sheetsAppend('Messages',[row]);
+  document.getElementById('msg-subject').value='';
+  document.getElementById('msg-body').value='';
+  toast('Announcement posted');
+  await loadMessages(); renderMessages(); renderDashboard();
+}
+
+function genLineupMsg(){
+  document.getElementById('msg-type').value='lineup';
+  document.getElementById('msg-subject').value='Wednesday lineup — '+WEEK;
+  document.getElementById('msg-body').value=buildLineupText();
+}
+
+// ─── RENDER ──────────────────────────────────────────────────────────────────
+function renderDashboard(){
+  const avail = STATE.players.filter(p=>STATE.availability[p.id]?.status==='yes').length;
+  const filled = LINEUP_KEYS.filter(k=>STATE.lineup[k]).length;
+  document.getElementById('d-players').textContent = STATE.players.length;
+  document.getElementById('d-avail').textContent = avail;
+  document.getElementById('d-slots').textContent = filled+'/8';
+
+  const pn=id=>{if(!id)return'<span style="color:#aaa">TBD</span>';const p=STATE.players.find(x=>x.id===id);return p?p.first+' '+p.last:'TBD'};
+  const hasLineup = LINEUP_KEYS.some(k=>STATE.lineup[k]);
+  document.getElementById('d-lineup').innerHTML = hasLineup
+    ? `<div style="font-size:13px;line-height:1.8">
+        <strong>Doubles</strong><br>
+        D1: ${pn(STATE.lineup.d1p1)} / ${pn(STATE.lineup.d1p2)}<br>
+        D2: ${pn(STATE.lineup.d2p1)} / ${pn(STATE.lineup.d2p2)}<br>
+        D3: ${pn(STATE.lineup.d3p1)} / ${pn(STATE.lineup.d3p2)}<br>
+        <strong>Singles</strong><br>
+        S1: ${pn(STATE.lineup.s1)}<br>S2: ${pn(STATE.lineup.s2)}
+       </div>`
+    : '<span style="font-size:13px;color:#aaa">No lineup set yet.</span>';
+
+  const msg = STATE.messages[0];
+  document.getElementById('d-message').innerHTML = msg
+    ? `<div style="font-size:13px"><strong>${msg.subject}</strong><div style="color:#888;font-size:12px">${msg.date}</div><div style="color:#555;margin-top:4px;white-space:pre-wrap">${msg.body.slice(0,200)}${msg.body.length>200?'…':''}</div></div>`
+    : '<span style="font-size:13px;color:#aaa">No announcements yet.</span>';
+
+  const yesP=STATE.players.filter(p=>STATE.availability[p.id]?.status==='yes');
+  const maybeP=STATE.players.filter(p=>STATE.availability[p.id]?.status==='maybe');
+  const noP=STATE.players.filter(p=>STATE.availability[p.id]?.status==='no');
+  const unkP=STATE.players.filter(p=>!STATE.availability[p.id]||STATE.availability[p.id].status==='unknown');
+  document.getElementById('d-avail-summary').innerHTML=`
+    <div style="display:flex;gap:1.5rem;flex-wrap:wrap;font-size:13px">
+      <div><span class="tag-in">${yesP.length} available</span><div style="margin-top:4px;color:#555">${yesP.map(p=>p.first+' '+p.last).join(', ')||'—'}</div></div>
+      <div><span class="tag-maybe">${maybeP.length} maybe</span><div style="margin-top:4px;color:#555">${maybeP.map(p=>p.first+' '+p.last).join(', ')||'—'}</div></div>
+      <div><span class="tag-out">${noP.length} unavailable</span><div style="margin-top:4px;color:#555">${noP.map(p=>p.first+' '+p.last).join(', ')||'—'}</div></div>
+      <div><span class="tag-unknown">${unkP.length} no response</span></div>
+    </div>`;
+}
+
+function renderRoster(){
+  const tbody = document.getElementById('roster-body');
+  const tbl = document.getElementById('roster-tbl');
+  const loading = document.getElementById('roster-loading');
+  if(!STATE.players.length){loading.textContent='No players yet. Add one above.';loading.style.display='block';tbl.style.display='none';return}
+  loading.style.display='none'; tbl.style.display='table';
+  tbody.innerHTML = STATE.players.map((p,i)=>{
+    const av = AVATAR_COLORS[i%AVATAR_COLORS.length].split(':');
+    return `<tr>
+      <td><div style="display:flex;align-items:center;gap:8px">
+        <div class="avatar" style="background:${av[0]};color:${av[1]};width:28px;height:28px;font-size:11px">${p.first[0]}${p.last[0]}</div>
+        <span>${p.first} ${p.last}</span></div></td>
+      <td>${p.phone}</td>
+      <td style="color:#185FA5">${p.email}</td>
+      <td><span class="badge badge-blue">${p.rating}</span></td>
+      <td><span class="badge badge-gray">${p.pos}</span></td>
+      <td>${STATE.role==='captain'?`<button class="btn btn-danger btn-sm" onclick="removePlayer('${p.id}')">Remove</button>`:''}</td>
+    </tr>`;}).join('');
+}
+
+function renderAvailability(){
+  const me = STATE.user?.email?.toLowerCase();
+  document.getElementById('avail-body').innerHTML = STATE.players.map(p=>{
+    const av = STATE.availability[p.id] || {status:'unknown',note:''};
+    const canEdit = STATE.role==='captain' || p.gemail.toLowerCase()===me;
+    const statusBadge = av.status==='yes'?'tag-in':av.status==='maybe'?'tag-maybe':av.status==='no'?'tag-out':'tag-unknown';
+    const statusLabel = av.status==='yes'?'Available':av.status==='maybe'?'Maybe':av.status==='no'?'Unavailable':'Unknown';
+    return `<div class="avail-row">
+      <div class="avail-grid">
+        <span style="font-size:13px">${p.first} ${p.last}</span>
+        <div style="text-align:center">
+          ${canEdit
+            ? `<select style="font-size:12px;padding:3px 6px;width:auto" onchange="setAvailability('${p.id}',this.value,document.getElementById('note-${p.id}').value)">
+                <option value="unknown"${av.status==='unknown'?' selected':''}>Unknown</option>
+                <option value="yes"${av.status==='yes'?' selected':''}>Yes</option>
+                <option value="maybe"${av.status==='maybe'?' selected':''}>Maybe</option>
+                <option value="no"${av.status==='no'?' selected':''}>No</option>
+               </select>`
+            : `<span class="${statusBadge}">${statusLabel}</span>`}
+        </div>
+        <div><input id="note-${p.id}" style="font-size:12px;padding:3px 6px" placeholder="Note" value="${av.note||''}" ${canEdit?`onblur="setAvailability('${p.id}',document.querySelector('[onchange*=\\'${p.id}\\']')?.value||'${av.status}',this.value)"`:' readonly'}></div>
+      </div>
+    </div>`;}).join('') || '<p style="font-size:13px;color:#888;padding:8px 0">No players on roster yet.</p>';
+}
+
+function renderLineup(){
+  const isCaptain = STATE.role === 'captain';
+  const availP = STATE.players.filter(p=>STATE.availability[p.id]?.status==='yes'||STATE.availability[p.id]?.status==='maybe');
+  const opts = `<option value="">— select —</option>` + availP.map(p=>`<option value="${p.id}">${p.first} ${p.last} (${p.rating})</option>`).join('');
+  const makeSlot = (k)=>{
+    const val = STATE.lineup[k]||'';
+    const pn = val ? (STATE.players.find(p=>p.id===val)||{first:'?',last:'?'}) : null;
+    return `<div class="lineup-slot">
+      <span class="slot-label">${SLOT_LABELS[k]}</span>
+      ${isCaptain
+        ? `<select class="slot-select" onchange="STATE.lineup['${k}']=this.value;renderDashboard()">${opts.replace(`value="${val}"`,`value="${val}" selected`)}</select>`
+        : `<span style="font-size:13px;color:#333">${pn?pn.first+' '+pn.last:'<span style="color:#aaa">TBD</span>'}</span>`}
+    </div>`;
+  };
+  document.getElementById('doubles-slots').innerHTML = ['d1p1','d1p2','d2p1','d2p2','d3p1','d3p2'].map(makeSlot).join('');
+  document.getElementById('singles-slots').innerHTML = ['s1','s2'].map(makeSlot).join('');
+}
+
+function renderMessages(){
+  const el = document.getElementById('msg-list');
+  if(!STATE.messages.length){el.innerHTML='<p style="font-size:13px;color:#888">No announcements yet.</p>';return}
+  el.innerHTML = STATE.messages.map(m=>`
+    <div class="msg-card">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:14px;font-weight:500">${m.subject}</span>
+        <span style="font-size:11px;color:#aaa">${m.date}</span>
+      </div>
+      <span class="badge ${m.type==='lineup'?'badge-blue':m.type==='reminder'?'badge-amber':'badge-gray'}" style="margin:4px 0;display:inline-block">${m.type}</span>
+      <div class="msg-body">${m.body}</div>
+      <div style="font-size:11px;color:#aaa;margin-top:4px">— ${m.author}</div>
+    </div>`).join('');
+}
+
+// ─── SETUP ───────────────────────────────────────────────────────────────────
+function saveSetup(){
+  CFG = {
+    sheetId: v('setup-sheet-id'),
+    apiKey: v('setup-api-key'),
+    clientId: v('setup-client-id'),
+    captainPw: v('setup-captain-pw'),
+    teamName: v('setup-team-name')||'USTA Team Manager'
+  };
+  if(!CFG.sheetId||!CFG.apiKey||!CFG.clientId||!CFG.captainPw){toast('All fields required');return}
+  localStorage.setItem('usta_cfg', JSON.stringify(CFG));
+  toast('Setup saved — loading app...');
+  setTimeout(()=>location.reload(), 800);
+}
+
+function saveConfig(){
+  CFG.teamName = v('cfg-team-name')||CFG.teamName;
+  CFG.sheetId = v('cfg-sheet-id')||CFG.sheetId;
+  CFG.apiKey = v('cfg-api-key')||CFG.apiKey;
+  CFG.clientId = v('cfg-client-id')||CFG.clientId;
+  const pw = v('cfg-captain-pw');
+  if(pw) CFG.captainPw = pw;
+  localStorage.setItem('usta_cfg', JSON.stringify(CFG));
+  toast('Settings saved');
+}
+
+function resetSetup(){
+  if(!confirm('This will clear all local config. Continue?')) return;
+  localStorage.removeItem('usta_cfg');
+  sessionStorage.removeItem('usta_user');
+  location.reload();
+}
+
+function requestOAuthToken(){
+  if(typeof google === 'undefined' || !google.accounts || !google.accounts.oauth2){
+    toast('Google Identity Services not loaded yet — wait a moment and try again'); return;
+  }
+  const client = google.accounts.oauth2.initTokenClient({
+    client_id: CFG.clientId,
+    scope: 'https://www.googleapis.com/auth/spreadsheets',
+    callback: (r)=>{
+      if(r.access_token){
+        TOKEN = r.access_token;
+        document.getElementById('oauth-status').textContent = 'Connected to Google — ready to write to sheet.';
+        document.getElementById('oauth-status').style.color = '#27500A';
+        toast('Google account connected. Now click Initialize sheet tabs.');
+      } else {
+        toast('Google authorization failed — try again');
+      }
+    },
+  });
+  client.requestAccessToken({prompt:'consent'});
+}
+
+async function initSheet(){
+  if(!TOKEN){toast('Click "Connect Google Account" first');return}
+  toast('Initializing sheet...');
+  const headers = [
+    {sheet:'Players', cols:['id','first','last','phone','email','rating','pos','gemail']},
+    {sheet:'Availability', cols:['week','player_id','status','note']},
+    {sheet:'Lineup', cols:['week','slot','player_id']},
+    {sheet:'Messages', cols:['id','date','type','subject','body','author']},
+  ];
+  for(const h of headers){
+    try{ await sheetsUpdate(h.sheet+'!A1', [h.cols]); } catch(e){ console.warn(h.sheet, e.message); }
+  }
+  toast('Sheet headers written. Check your Google Sheet.');
+}
+
+function loadSettingsForm(){
+  document.getElementById('cfg-team-name').value = CFG.teamName||'';
+  document.getElementById('cfg-sheet-id').value = CFG.sheetId||'';
+  document.getElementById('cfg-api-key').value = CFG.apiKey||'';
+  document.getElementById('cfg-client-id').value = CFG.clientId||'';
+}
+
+// ─── UTILS ───────────────────────────────────────────────────────────────────
+function v(id){return document.getElementById(id)?.value?.trim()||''}
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+// patch nav to also load settings form
+const _nav = nav;
+window.nav = function(id, btn){
+  _nav(id, btn);
+  if(id==='settings') loadSettingsForm();
+};
+</script>
+</body>
+</html>
