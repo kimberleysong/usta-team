@@ -182,7 +182,7 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
     <button class="nav-item" onclick="nav('lineup',this)">Lineup</button>
     <button class="nav-item" onclick="nav('messages',this)">Messages</button>
     <div class="nav-section">Account</div>
-    <button class="nav-item" onclick="nav('settings',this)">Settings</button>
+    <button class="nav-item" id="nav-settings" onclick="nav('settings',this)" style="display:none">Settings</button>
     <button class="nav-item" onclick="logout()" style="color:#A32D2D">Sign out</button>
   </div>
 
@@ -271,6 +271,19 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
           <div id="avail-body">Loading...</div>
         </div>
         <div style="margin-top:12px;font-size:12px;color:#aaa">Players can only update their own row. Captain can update anyone.</div>
+        <div class="card" style="margin-top:1rem">
+          <div class="card-title">Season availability summary</div>
+          <div style="overflow-x:auto">
+            <table id="avail-summary-table" style="border-collapse:collapse;font-size:12px;white-space:nowrap;width:100%"></table>
+          </div>
+          <div id="avail-summary-legend" style="display:none;gap:16px;flex-wrap:wrap;font-size:12px;color:#555;margin-top:10px;align-items:center;padding:0 4px">
+            <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#639922;margin-right:4px;vertical-align:middle"></span>Available</span>
+            <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#EF9F27;margin-right:4px;vertical-align:middle"></span>Maybe</span>
+            <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#E24B4A;margin-right:4px;vertical-align:middle"></span>Unavailable</span>
+            <span style="color:#888">— No response</span>
+            <span style="color:#aaa;margin-left:4px">· Click a date to switch</span>
+          </div>
+        </div>
       </div>
 
       <!-- LINEUP -->
@@ -285,13 +298,15 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
             <div id="lineup-date-tabs" style="display:flex;gap:6px;flex-wrap:wrap"></div>
             <div id="lineup-date-label" style="font-size:13px;color:#555;margin-top:8px"></div>
           </div>
-          <div class="card">
-            <div class="card-title">Doubles</div>
-            <div id="doubles-slots"></div>
-          </div>
-          <div class="card">
-            <div class="card-title">Singles</div>
-            <div id="singles-slots"></div>
+          <div style="display:grid;grid-template-columns:3fr 2fr;gap:12px;margin-bottom:12px">
+            <div class="card" style="margin-bottom:0">
+              <div class="card-title">Doubles</div>
+              <div id="doubles-slots"></div>
+            </div>
+            <div class="card" style="margin-bottom:0">
+              <div class="card-title">Singles</div>
+              <div id="singles-slots"></div>
+            </div>
           </div>
           <div id="lineup-captain-controls" style="display:none;gap:8px;flex-wrap:wrap;margin-bottom:1.5rem">
             <button class="btn btn-primary" onclick="autoFill()">Auto-fill from available</button>
@@ -487,6 +502,7 @@ function applyRoleUI(){
   document.getElementById('lineup-captain-controls').style.display = isCaptain ? 'flex' : 'none';
   document.getElementById('lineup-lock-notice').style.display = isCaptain ? 'none' : 'block';
   document.getElementById('msg-captain-form').style.display = isCaptain ? 'block' : 'none';
+  document.getElementById('nav-settings').style.display = isCaptain ? 'block' : 'none';
 }
 
 function logout(){
@@ -540,7 +556,7 @@ async function syncAll(){
   setSyncState(true);
   try {
     await Promise.all([loadPlayers(), loadAvailability(), loadLineup(), loadMessages()]);
-    renderDashboard(); renderRoster(); renderAvailability(); renderLineupDateTabs(); renderLineup(); renderAllLineups(); renderMessages();
+    renderDashboard(); renderRoster(); renderAvailability(); renderAvailSummary(); renderLineupDateTabs(); renderLineup(); renderAllLineups(); renderMessages();
   } catch(e){
     toast('Sync error: '+e.message);
     console.error(e);
@@ -756,6 +772,81 @@ function renderRoster(){
     </tr>`;}).join('');
 }
 
+function renderAvailSummary(){
+  const el = document.getElementById('avail-summary-table');
+  if(!el) return;
+  const today = new Date().toISOString().slice(0,10);
+
+  // header row: blank cell + one cell per date
+  const shortDate = d => {
+    const dt = new Date(d+'T12:00:00');
+    return dt.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+  };
+
+  const thStyle = (d) => {
+    const isSelected = d === SELECTED_DATE;
+    const dateAvail = STATE.availability[d] || {};
+    const count = STATE.players.filter(p => ['yes','maybe'].includes(dateAvail[p.id]?.status)).length;
+    const hasData = STATE.players.some(p => dateAvail[p.id]);
+    const isPast = d < today;
+    let bg = 'transparent';
+    if(isSelected) bg = '#E6F1FB';
+    else if(hasData && count >= 8) bg = '#EAF3DE';
+    else if(hasData && count < 8) bg = '#FCEBEB';
+    return `padding:5px 8px;text-align:center;font-weight:500;background:${bg};border-bottom:0.5px solid #e0ddd5;border-right:0.5px solid #f0ede8;color:${isPast?'#aaa':'#333'};cursor:pointer`;
+  };
+
+  const statusCell = (status) => {
+    if(status === 'yes')    return `<td style="text-align:center;padding:4px 8px;border-bottom:0.5px solid #f0ede8;border-right:0.5px solid #f0ede8"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#639922"></span></td>`;
+    if(status === 'maybe')  return `<td style="text-align:center;padding:4px 8px;border-bottom:0.5px solid #f0ede8;border-right:0.5px solid #f0ede8"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#EF9F27"></span></td>`;
+    if(status === 'no')     return `<td style="text-align:center;padding:4px 8px;border-bottom:0.5px solid #f0ede8;border-right:0.5px solid #f0ede8"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#E24B4A"></span></td>`;
+    return `<td style="text-align:center;padding:4px 8px;border-bottom:0.5px solid #f0ede8;border-right:0.5px solid #f0ede8"><span style="color:#ccc;font-size:10px">—</span></td>`;
+  };
+
+  const headerCells = MATCH_DATES.map(d =>
+    `<th onclick="selectDate('${d}')" style="${thStyle(d)}">${shortDate(d)}</th>`
+  ).join('');
+
+  const playerRows = STATE.players.map(p => {
+    const cells = MATCH_DATES.map(d => {
+      const av = (STATE.availability[d] || {})[p.id];
+      return statusCell(av?.status || 'unknown');
+    }).join('');
+    return `<tr>
+      <td style="padding:4px 10px;font-weight:500;white-space:nowrap;border-bottom:0.5px solid #f0ede8;border-right:0.5px solid #e0ddd5;position:sticky;left:0;background:#fff">${p.first}</td>
+      ${cells}
+    </tr>`;
+  }).join('');
+
+  // totals row
+  const totalCells = MATCH_DATES.map(d => {
+    const dateAvail = STATE.availability[d] || {};
+    const count = STATE.players.filter(p => ['yes','maybe'].includes(dateAvail[p.id]?.status)).length;
+    const hasData = STATE.players.some(p => dateAvail[p.id]);
+    const color = !hasData ? '#aaa' : count >= 8 ? '#27500A' : '#791F1F';
+    return `<td style="text-align:center;padding:4px 8px;font-weight:500;color:${color};border-top:0.5px solid #e0ddd5;border-right:0.5px solid #f0ede8">${hasData ? count : '—'}</td>`;
+  }).join('');
+
+  el.innerHTML = `
+    <thead>
+      <tr>
+        <th style="padding:5px 10px;text-align:left;border-bottom:0.5px solid #e0ddd5;border-right:0.5px solid #e0ddd5;position:sticky;left:0;background:#fff;font-weight:500">Player</th>
+        ${headerCells}
+      </tr>
+    </thead>
+    <tbody>
+      ${playerRows}
+      <tr>
+        <td style="padding:4px 10px;font-size:11px;color:#888;border-top:0.5px solid #e0ddd5;border-right:0.5px solid #e0ddd5;position:sticky;left:0;background:#fff">Available</td>
+        ${totalCells}
+      </tr>
+    </tbody>`;
+
+  // add legend below table
+  const legendEl = document.getElementById('avail-summary-legend');
+  if(legendEl) legendEl.style.display='flex';
+}
+
 function renderDateTabs(){
   const container = document.getElementById('date-tabs');
   if(!container) return;
@@ -794,6 +885,7 @@ function selectDate(d){
   SELECTED_DATE = d;
   renderDateTabs();
   renderAvailability();
+  renderAvailSummary();
   renderDashboard();
 }
 
@@ -1027,9 +1119,13 @@ function toast(msg){
   setTimeout(()=>t.classList.remove('show'),2800);
 }
 
-// patch nav to also load settings form
+// patch nav to also load settings form and guard settings from non-captains
 const _nav = nav;
 window.nav = function(id, btn){
+  if(id==='settings' && STATE.role !== 'captain'){
+    toast('Settings are only accessible to the captain');
+    return;
+  }
   _nav(id, btn);
   if(id==='settings') loadSettingsForm();
 };
