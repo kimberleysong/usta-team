@@ -584,15 +584,17 @@ function launchApp(){
 
 function applyRoleUI(){
   const isCaptain = STATE.role === 'captain';
-  document.getElementById('roster-captain-only').style.display = isCaptain ? 'block' : 'none';
-  document.getElementById('roster-actions-col').textContent = isCaptain ? 'Actions' : '';
-  document.getElementById('lineup-captain-controls').style.display = isCaptain ? 'flex' : 'none';
-  document.getElementById('lineup-lock-notice').style.display = 'none';
-  document.getElementById('lineup-builder-section').style.display = isCaptain ? 'block' : 'none';
-  document.getElementById('msg-captain-form').style.display = isCaptain ? 'block' : 'none';
-  document.getElementById('nav-settings').style.display = isCaptain ? 'block' : 'none';
-  document.getElementById('nav-entitlements').style.display = isCaptain ? 'block' : 'none';
-  document.getElementById('nav-lineup').style.display = isCaptain ? 'block' : 'none';
+  const set = (id, val) => { const el = document.getElementById(id); if(el) el.style.display = val; };
+  const setText = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val; };
+  set('roster-captain-only', isCaptain ? 'block' : 'none');
+  setText('roster-actions-col', isCaptain ? 'Actions' : '');
+  set('lineup-captain-controls', isCaptain ? 'flex' : 'none');
+  set('lineup-lock-notice', 'none');
+  set('lineup-builder-section', isCaptain ? 'block' : 'none');
+  set('msg-captain-form', isCaptain ? 'block' : 'none');
+  set('nav-settings', isCaptain ? 'block' : 'none');
+  set('nav-entitlements', isCaptain ? 'block' : 'none');
+  set('nav-lineup', isCaptain ? 'block' : 'none');
 }
 
 function logout(){
