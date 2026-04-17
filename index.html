@@ -639,7 +639,7 @@ function getMatchDates(){
   return dates;
 }
 const LINEUP_KEYS=['d1p1','d1p2','d2p1','d2p2','d3p1','d3p2','s1','s2'];
-const SLOT_LABELS={d1p1:'D1 · Player 1',d1p2:'D1 · Player 2',d2p1:'D2 · Player 1',d2p2:'D2 · Player 2',d3p1:'D3 · Player 1',d3p2:'D3 · Player 2',s1:'Singles 1',s2:'Singles 2'};
+const SLOT_LABELS={d1p1:'D1',d1p2:'D1',d2p1:'D2',d2p2:'D2',d3p1:'D3',d3p2:'D3',s1:'Singles 1',s2:'Singles 2'};
 const AVATAR_COLORS=['#E6F1FB:#0C447C','#E1F5EE:#085041','#FAEEDA:#633806','#EEEDFE:#3C3489','#FAECE7:#712B13','#EAF3DE:#27500A'];
 
 // ─── BOOT ────────────────────────────────────────────────────────────────────
@@ -1278,9 +1278,9 @@ function renderDashboard(){
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
         <div>
           <div style="font-size:12px;color:#888;margin-bottom:8px;font-weight:500">AVAILABILITY</div>
-          <div style="font-size:13px;margin-bottom:4px"><span class="tag-in" style="margin-right:6px">${yesP.length}</span>${yesP.map(p=>p.first).join(', ')||'—'}</div>
-          <div style="font-size:13px;margin-bottom:4px"><span class="tag-maybe" style="margin-right:6px">${maybeP.length}</span>${maybeP.map(p=>p.first).join(', ')||'—'}</div>
-          <div style="font-size:13px;margin-bottom:4px"><span class="tag-out" style="margin-right:6px">${noP.length}</span>${noP.map(p=>p.first).join(', ')||'—'}</div>
+          <div style="font-size:13px;margin-bottom:4px;display:flex;align-items:center;gap:8px"><span class="tag-in">${yesP.length} available</span></div>
+          <div style="font-size:13px;margin-bottom:4px;display:flex;align-items:center;gap:8px"><span class="tag-maybe">${maybeP.length} maybe</span></div>
+          <div style="font-size:13px;margin-bottom:4px;display:flex;align-items:center;gap:8px"><span class="tag-out">${noP.length} unavailable</span></div>
 
         </div>
         <div>
