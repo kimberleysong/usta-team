@@ -111,7 +111,10 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
 .tag-out{background:#FCEBEB;color:#791F1F;padding:2px 8px;border-radius:20px;font-size:12px}
 .tag-maybe{background:#FAEEDA;color:#633806;padding:2px 8px;border-radius:20px;font-size:12px}
 .tag-unknown{background:#F1EFE8;color:#5F5E5A;padding:2px 8px;border-radius:20px;font-size:12px}
+.d-lineup-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 16px}
 @media(max-width:640px){
+  .d-lineup-grid{grid-template-columns:1fr}
+
   /* hide sidebar, shift main */
   .sidebar{display:none}
   .main{margin-left:0}
@@ -1284,14 +1287,18 @@ function renderDashboard(){
       <div>
         <div style="font-size:12px;color:#888;margin-bottom:6px;font-weight:500">LINEUP</div>
         ${hasLineup ? `
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;font-size:13px;line-height:1.8">
-            <div style="font-size:11px;color:#888;grid-column:1/-1;margin-bottom:0">DOUBLES</div>
-            <div>D1: ${pnf(lu.d1p1)} / ${pnf(lu.d1p2)}</div>
-            <div>D2: ${pnf(lu.d2p1)} / ${pnf(lu.d2p2)}</div>
-            <div>D3: ${pnf(lu.d3p1)} / ${pnf(lu.d3p2)}</div>
-            <div style="font-size:11px;color:#888;grid-column:1/-1;margin-top:4px">SINGLES</div>
-            <div>S1: ${pnf(lu.s1)}</div>
-            <div>S2: ${pnf(lu.s2)}</div>
+          <div class="d-lineup-grid" style="font-size:13px;line-height:1.8">
+            <div>
+              <div style="font-size:11px;color:#888;margin-bottom:2px">DOUBLES</div>
+              <div>D1: ${pnf(lu.d1p1)} / ${pnf(lu.d1p2)}</div>
+              <div>D2: ${pnf(lu.d2p1)} / ${pnf(lu.d2p2)}</div>
+              <div>D3: ${pnf(lu.d3p1)} / ${pnf(lu.d3p2)}</div>
+            </div>
+            <div>
+              <div style="font-size:11px;color:#888;margin-bottom:2px">SINGLES</div>
+              <div>S1: ${pnf(lu.s1)}</div>
+              <div>S2: ${pnf(lu.s2)}</div>
+            </div>
           </div>` : `<div style="font-size:13px;color:#aaa">No lineup set yet.</div>`}
       </div>
     </div>`;
@@ -1504,7 +1511,8 @@ function renderAvailSummary(){
   };
   const headerCells = MATCH_DATES.map(d => `<th style="${thStyle(d)}">${shortDate(d)}</th>`).join('');
   const headerLineup = `<th style="padding:5px 8px;text-align:center;font-weight:500;border-bottom:0.5px solid #e0ddd5;border-left:0.5px solid #e0ddd5;background:#EEEDFE;color:#3C3489">Lineup</th>`;
-  const playerRows = STATE.players.map(p => {
+  const sortedPlayers = [...STATE.players].sort((a,b)=>a.first.localeCompare(b.first));
+  const playerRows = sortedPlayers.map(p => {
     const isSelected = p.id === SELECTED_AVAIL_PLAYER;
     const cells = MATCH_DATES.map(d => { const av = (STATE.availability[d]||{})[p.id]; return statusCell(av?.status||'unknown'); }).join('');
     // count how many saved lineups include this player
