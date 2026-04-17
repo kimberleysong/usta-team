@@ -1230,6 +1230,7 @@ function renderDashboard(){
 
 
   const pn = id => { if(!id) return '<span style="color:#aaa">TBD</span>'; const p=STATE.players.find(x=>x.id===id); return p?p.first+' '+p.last:'TBD'; };
+  const pnf = id => { if(!id) return '<span style="color:#aaa">TBD</span>'; const p=STATE.players.find(x=>x.id===id); return p?p.first:'TBD'; };
 
   const container = document.getElementById('d-weeks-container');
   if(!container) return;
@@ -1272,30 +1273,26 @@ function renderDashboard(){
             ${sched.venue ? '<span style="font-size:12px;color:#555">'+sched.venue+'</span>' : ''}
           </div>` : ''}
         </div>
-        <span style="font-size:12px;padding:4px 12px;border-radius:20px;background:${availBg};color:${availColor};font-weight:500">${totalAvail} available</span>
+
       </div>
 
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-        <div>
-          <div style="font-size:12px;color:#888;margin-bottom:8px;font-weight:500">AVAILABILITY</div>
-          <div style="font-size:13px;margin-bottom:4px;display:flex;align-items:center;gap:8px"><span class="tag-in">${yesP.length} available</span></div>
-          <div style="font-size:13px;margin-bottom:4px;display:flex;align-items:center;gap:8px"><span class="tag-maybe">${maybeP.length} maybe</span></div>
-          <div style="font-size:13px;margin-bottom:4px;display:flex;align-items:center;gap:8px"><span class="tag-out">${noP.length} unavailable</span></div>
-
-        </div>
-        <div>
-          <div style="font-size:12px;color:#888;margin-bottom:8px;font-weight:500">LINEUP</div>
-          ${hasLineup ? `
-            <div style="font-size:13px;line-height:1.9">
-              <div style="font-size:11px;color:#888;margin-bottom:2px">DOUBLES</div>
-              <div>D1: ${pn(lu.d1p1)} / ${pn(lu.d1p2)}</div>
-              <div>D2: ${pn(lu.d2p1)} / ${pn(lu.d2p2)}</div>
-              <div>D3: ${pn(lu.d3p1)} / ${pn(lu.d3p2)}</div>
-              <div style="font-size:11px;color:#888;margin:6px 0 2px">SINGLES</div>
-              <div>S1: ${pn(lu.s1)}</div>
-              <div>S2: ${pn(lu.s2)}</div>
-            </div>` : `<div style="font-size:13px;color:#aaa">No lineup set yet.</div>`}
-        </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+          <span class="tag-in">${yesP.length} available</span>
+          <span class="tag-maybe">${maybeP.length} maybe</span>
+          <span class="tag-out">${noP.length} unavailable</span>
+      </div>
+      <div>
+        <div style="font-size:12px;color:#888;margin-bottom:6px;font-weight:500">LINEUP</div>
+        ${hasLineup ? `
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;font-size:13px;line-height:1.8">
+            <div style="font-size:11px;color:#888;grid-column:1/-1;margin-bottom:0">DOUBLES</div>
+            <div>D1: ${pnf(lu.d1p1)} / ${pnf(lu.d1p2)}</div>
+            <div>D2: ${pnf(lu.d2p1)} / ${pnf(lu.d2p2)}</div>
+            <div>D3: ${pnf(lu.d3p1)} / ${pnf(lu.d3p2)}</div>
+            <div style="font-size:11px;color:#888;grid-column:1/-1;margin-top:4px">SINGLES</div>
+            <div>S1: ${pnf(lu.s1)}</div>
+            <div>S2: ${pnf(lu.s2)}</div>
+          </div>` : `<div style="font-size:13px;color:#aaa">No lineup set yet.</div>`}
       </div>
     </div>`;
   }).join('');
