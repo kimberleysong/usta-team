@@ -254,12 +254,7 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
         </div>
         <div id="d-weeks-container"></div>
 
-        <div class="card" style="margin-top:12px">
-          <div style="margin-bottom:.75rem">
-            <div class="card-title" style="margin-bottom:0">Schedule</div>
-          </div>
-          <div id="d-schedule-list">Loading...</div>
-        </div>
+
       </div>
 
       <!-- ROSTER -->
@@ -442,7 +437,39 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
         </div>
 
         <div class="card">
-          <div class="card-title">Current schedule</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem">
+            <div class="card-title" style="margin-bottom:0">Current schedule</div>
+            <div style="display:flex;gap:8px">
+              <button id="schedule-edit-toggle" class="btn btn-sm btn-primary" data-editing="false"
+                onclick="
+                  const editing = this.dataset.editing==='true';
+                  if(editing){ saveScheduleEdits(); }
+                  else {
+                    this.dataset.editing='true'; this.textContent='Save changes';
+                    document.getElementById('schedule-header-view').style.display='none';
+                    document.getElementById('schedule-header-edit').style.display='grid';
+                    document.getElementById('schedule-cancel-btn').style.display='inline-block';
+                    renderScheduleFull();
+                  }
+                ">Edit schedule</button>
+              <button class="btn btn-sm" onclick="
+                  const btn=document.getElementById('schedule-edit-toggle');
+                  btn.dataset.editing='false'; btn.textContent='Edit schedule'; renderScheduleFull();
+                " id="schedule-cancel-btn" style="display:none">Cancel</button>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:110px 1fr 100px auto;gap:12px;padding-bottom:6px;border-bottom:0.5px solid #e0ddd5;margin-bottom:2px" id="schedule-header-view">
+            <span style="font-size:11px;color:#888;font-weight:500">DATE</span>
+            <span style="font-size:11px;color:#888;font-weight:500">OPPONENT</span>
+            <span style="font-size:11px;color:#888;font-weight:500">LOCATION</span>
+            <span></span>
+          </div>
+          <div style="display:none;grid-template-columns:110px 1fr 120px 1fr;gap:8px;padding-bottom:6px;border-bottom:0.5px solid #e0ddd5;margin-bottom:2px" id="schedule-header-edit">
+            <span style="font-size:11px;color:#888;font-weight:500">DATE</span>
+            <span style="font-size:11px;color:#888;font-weight:500">OPPONENT</span>
+            <span style="font-size:11px;color:#888;font-weight:500">HOME/AWAY</span>
+            <span style="font-size:11px;color:#888;font-weight:500">ADDRESS (optional)</span>
+          </div>
           <div id="schedule-full-list">Loading...</div>
         </div>
       </div>
@@ -546,6 +573,7 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
             <tr><td><code>Availability</code></td><td style="font-size:12px">week, player_id, status, note</td></tr>
             <tr><td><code>Lineup</code></td><td style="font-size:12px">week, slot, player_id</td></tr>
             <tr><td><code>Announcements</code></td><td style="font-size:12px">id, date, type, subject, body, author</td></tr>
+            <tr><td><code>Schedule</code></td><td style="font-size:12px">date, opponent, location, address</td></tr>
           </table>
           <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
             <button class="btn btn-green" onclick="requestOAuthToken()">1. Connect Google Account</button>
@@ -1068,26 +1096,67 @@ function renderScheduleFull(){
   const el = document.getElementById('schedule-full-list');
   if(!el) return;
   const today = new Date().toISOString().slice(0,10);
-  const rows = MATCH_DATES.map(d=>{
-    const s = STATE.schedule[d]||{opponent:'',location:''};
+  const editBtn = document.getElementById('schedule-edit-toggle');
+  const isEditing = editBtn && editBtn.dataset.editing === 'true';
+
+  el.innerHTML = MATCH_DATES.map(d=>{
+    const s = STATE.schedule[d] || {opponent:'', location:'', address:''};
     const dt = new Date(d+'T12:00:00');
     const isPast = d < today;
-    const dateLabel = dt.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'});
+    const dateLabel = dt.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}).replace(',','').replace(' ','-').replace(' ','-');
     const locColor = s.location.toLowerCase().includes('home') ? '#27500A' : s.location.toLowerCase().includes('away') ? '#633806' : '#5F5E5A';
     const locBg = s.location.toLowerCase().includes('home') ? '#EAF3DE' : s.location.toLowerCase().includes('away') ? '#FAEEDA' : '#F1EFE8';
-    return `<div style="display:grid;grid-template-columns:180px 1fr 100px;gap:12px;align-items:center;padding:8px 0;border-bottom:0.5px solid #f0ede8;${isPast?'opacity:0.5':''}">
-      <span style="font-size:13px;font-weight:500">${dateLabel}</span>
-      <span style="font-size:13px">${s.opponent||'<span style="color:#aaa">TBD</span>'}</span>
-      <div style="display:flex;align-items:center;gap:8px">
-        <span style="font-size:12px;padding:2px 10px;border-radius:20px;background:${locBg};color:${locColor}">${s.location||'TBD'}</span>
-        ${s.address ? '<a href="https://maps.google.com/?q='+encodeURIComponent(s.address)+'" target="_blank" style="font-size:12px;color:#185FA5;text-decoration:none">&#x1F4CD; Map</a>' : ''}
-      </div>
-    </div>`;
-  });
-  el.innerHTML = rows.join('') || '<p style="font-size:13px;color:#aaa">No schedule data yet.</p>';
+
+    if(isEditing){
+      return `<div style="display:grid;grid-template-columns:110px 1fr 120px 1fr;gap:8px;align-items:center;padding:7px 0;border-bottom:0.5px solid #f0ede8">
+        <span style="font-size:13px;font-weight:500;color:${isPast?'#aaa':'#333'}">${dateLabel}</span>
+        <input id="se-opp-${d}" style="font-size:13px;padding:5px 8px" placeholder="Opponent" value="${s.opponent}">
+        <select id="se-loc-${d}" style="font-size:13px;padding:5px 8px">
+          <option value=""${!s.location?' selected':''}>--</option>
+          <option value="Home"${s.location==='Home'?' selected':''}>Home</option>
+          <option value="Away"${s.location==='Away'?' selected':''}>Away</option>
+          <option value="TBD"${s.location==='TBD'?' selected':''}>TBD</option>
+        </select>
+        <input id="se-addr-${d}" style="font-size:13px;padding:5px 8px" placeholder="Club address (optional)" value="${s.address||''}">
+      </div>`;
+    } else {
+      if(!s.opponent && !s.location) return `<div style="display:grid;grid-template-columns:110px 1fr 100px;gap:12px;align-items:center;padding:7px 0;border-bottom:0.5px solid #f0ede8;opacity:0.4">
+        <span style="font-size:13px;font-weight:500">${dateLabel}</span>
+        <span style="font-size:13px;color:#aaa">TBD</span>
+        <span style="font-size:12px;padding:2px 10px;border-radius:20px;background:#F1EFE8;color:#5F5E5A">TBD</span>
+      </div>`;
+      return `<div style="display:grid;grid-template-columns:110px 1fr 100px auto;gap:12px;align-items:center;padding:7px 0;border-bottom:0.5px solid #f0ede8;${isPast?'opacity:0.5':''}">
+        <span style="font-size:13px;font-weight:500;color:${isPast?'#aaa':'#185FA5'}">${dateLabel}</span>
+        <span style="font-size:13px;color:${isPast?'#aaa':'#333'}">${s.opponent||'<span style="color:#ccc">TBD</span>'}</span>
+        <span style="font-size:12px;padding:2px 10px;border-radius:20px;background:${locBg};color:${locColor};text-align:center">${s.location||'TBD'}</span>
+        <div>${s.address ? '<a href="https://maps.google.com/?q='+encodeURIComponent(s.address)+'" target="_blank" style="font-size:12px;color:#185FA5;text-decoration:none">&#x1F4CD; Map</a>' : ''}</div>
+      </div>`;
+    }
+  }).join('');
 }
 
-// ─── SCHEDULE ────────────────────────────────────────────────────────────────
+async function saveScheduleEdits(){
+  if(!TOKEN){toast('Connect Google Account first');return}
+  toast('Saving...');
+  for(const d of MATCH_DATES){
+    const opp = document.getElementById('se-opp-'+d);
+    const loc = document.getElementById('se-loc-'+d);
+    const addr = document.getElementById('se-addr-'+d);
+    if(opp||loc){
+      await saveScheduleEntry(d, opp?.value||'', loc?.value||'', addr?.value||'');
+    }
+  }
+  // exit edit mode
+  const btn = document.getElementById('schedule-edit-toggle');
+  if(btn){ btn.dataset.editing='false'; btn.textContent='Edit schedule'; }
+  document.getElementById('schedule-header-view').style.display='grid';
+  document.getElementById('schedule-header-edit').style.display='none';
+  document.getElementById('schedule-cancel-btn').style.display='none';
+  toast('Schedule saved');
+  renderScheduleFull();
+}
+
+
 function renderSchedule(){
   const el = document.getElementById('d-schedule-list');
   if(!el) return;
@@ -1137,7 +1206,7 @@ function renderDashboard(){
     const dt = new Date(next+'T12:00:00');
     document.getElementById('d-match').textContent = dt.toLocaleDateString('en-US',{month:'short',day:'numeric'});
   }
-  renderSchedule();
+
 
   const pn = id => { if(!id) return '<span style="color:#aaa">TBD</span>'; const p=STATE.players.find(x=>x.id===id); return p?p.first+' '+p.last:'TBD'; };
 
