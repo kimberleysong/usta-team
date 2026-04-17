@@ -132,6 +132,8 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
   .grid4{grid-template-columns:1fr 1fr!important}
   /* hide phone/email cols on roster */
   .roster-hide-mobile{display:none}
+  .roster-mobile-only{display:inline}
+.roster-mobile-only{display:none}
   /* full-width cards */
   .card{padding:.75rem 1rem}
   /* tab bar text smaller */
@@ -195,28 +197,34 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
 <div id="login-screen" class="screen" style="display:none">
   <div class="screen-card" style="max-width:420px">
     <div class="screen-logo" id="login-team-name">USTA Team Manager</div>
-    <div class="screen-sub">Sign in to view and manage your team</div>
+    <div class="screen-sub" style="margin-bottom:1.5rem">Please sign in to continue</div>
 
-    <div style="background:#E6F1FB;border-radius:8px;padding:12px 14px;margin-bottom:1.5rem">
-      <div style="font-size:13px;font-weight:500;color:#0C447C;margin-bottom:4px">Players</div>
-      <div style="font-size:13px;color:#185FA5">Sign in with the Google account your captain registered for you. You can view the roster, update your availability, see announcements and the schedule.</div>
+    <div style="text-align:center;margin-bottom:1.5rem">
+      <div style="font-size:28px;margin-bottom:.5rem">&#127934;</div>
+      <div style="font-size:15px;font-weight:500;color:#1a1a1a;margin-bottom:.5rem">Welcome to your team app</div>
+      <div style="font-size:13px;color:#888">Sign in with your Google account to view the schedule, update your availability, and see the lineup.</div>
     </div>
 
-    <div id="g-signin-btn" style="display:flex;justify-content:center;margin-bottom:1rem"></div>
-    <div id="login-google-status" style="font-size:12px;color:#888;text-align:center;margin-bottom:1rem;min-height:16px"></div>
+    <div id="g-signin-btn" style="display:flex;justify-content:center;margin-bottom:8px"></div>
+    <div id="login-google-status" style="font-size:12px;color:#27500A;text-align:center;margin-bottom:1rem;min-height:16px;background:#EAF3DE;border-radius:6px;padding:4px 8px;display:none"></div>
+
+    <div style="font-size:11px;color:#aaa;text-align:center;margin-bottom:1.5rem">First time? Ask your captain to add your Gmail address to the roster.</div>
 
     <hr class="divider">
 
-    <div style="font-size:13px;font-weight:500;color:#555;margin-bottom:.5rem">Captain access</div>
-    <div style="font-size:12px;color:#888;margin-bottom:.75rem">Sign in with Google first, then enter the captain password to unlock full edit access.</div>
-    <div style="display:flex;gap:8px">
-      <input type="password" id="captain-pw-input" placeholder="Captain password" style="flex:1" onkeydown="if(event.key==='Enter')captainLogin()">
-      <button class="btn btn-primary" onclick="captainLogin()">Unlock</button>
-    </div>
-    <div id="login-error" style="font-size:12px;color:#A32D2D;margin-top:8px;display:none">Incorrect password.</div>
-
-    <hr class="divider">
-    <div style="font-size:12px;color:#aaa;text-align:center">First time? Ask your captain to add your Gmail address to the roster.</div>
+    <details style="margin-top:0">
+      <summary style="font-size:13px;color:#888;cursor:pointer;list-style:none;display:flex;align-items:center;gap:6px">
+        <span>&#9654;</span> Captain access
+      </summary>
+      <div style="margin-top:.75rem">
+        <div style="font-size:12px;color:#888;margin-bottom:.75rem">Sign in with Google above first, then enter the captain password.</div>
+        <div style="display:flex;gap:8px">
+          <input type="password" id="captain-pw-input" placeholder="Captain password" style="flex:1" onkeydown="if(event.key==='Enter')captainLogin()">
+          <button class="btn btn-primary" onclick="captainLogin()">Unlock</button>
+        </div>
+        <div id="login-error" style="font-size:12px;color:#A32D2D;margin-top:8px;display:none">Incorrect password.</div>
+      </div>
+    </details>
   </div>
 </div>
 
@@ -268,7 +276,7 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
         <div id="roster-tab-list" class="tab-pane active">
           <div id="roster-loading" style="color:#888;font-size:13px;padding:1rem">Loading roster...</div>
           <table class="tbl" id="roster-tbl" style="display:none">
-            <thead><tr><th>Player</th><th class="roster-hide-mobile">Phone</th><th class="roster-hide-mobile">Contact email</th><th>Position preference</th><th id="roster-actions-col"></th></tr></thead>
+            <thead><tr><th>Player</th><th>Contact email</th><th>Phone</th><th class="roster-hide-mobile">Position preference</th><th id="roster-actions-col"></th></tr></thead>
             <tbody id="roster-body"></tbody>
           </table>
         </div>
@@ -695,7 +703,7 @@ function handleCredential(response){
   });
   client.requestAccessToken({prompt:''});
   const status = document.getElementById('login-google-status');
-  if(status) status.textContent = 'Signed in as '+payload.email+' — entering app...';
+  if(status){ status.textContent = 'Signed in as '+payload.email+' — entering app...'; status.style.display='block'; }
   setTimeout(()=>launchApp(), 600);
 }
 
@@ -1268,7 +1276,6 @@ function renderDashboard(){
     return `<div class="card" style="margin-bottom:12px">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px">
         <div>
-          <div style="font-size:12px;color:#888;font-weight:500;text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px">${weekLabel}</div>
           <div style="font-size:16px;font-weight:500">${dateLabel}</div>
           ${sched.opponent ? `<div style="font-size:13px;color:#555;margin-top:3px">vs ${sched.opponent}</div>` : ''}
           ${sched.location ? `<div style="font-size:12px;margin-top:3px;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
@@ -1318,10 +1325,12 @@ function renderRoster(){
     return `<tr>
       <td><div style="display:flex;align-items:center;gap:8px">
         <div class="avatar" style="background:${av[0]};color:${av[1]};width:28px;height:28px;font-size:11px">${p.first[0]}${p.last[0]}</div>
-        <span>${p.first} ${p.last}</span></div></td>
-      <td class="roster-hide-mobile">${p.phone}</td>
-      <td class="roster-hide-mobile" style="color:#185FA5">${p.email}</td>
-      <td><span class="badge badge-gray">${p.pos}</span></td>
+        <span class="roster-hide-mobile">${p.first} ${p.last}</span>
+        <span class="roster-mobile-only" style="font-size:12px;font-weight:500">${p.first[0]}${p.last[0]}</span>
+      </div></td>
+      <td style="color:#185FA5;font-size:13px">${p.email}</td>
+      <td>${p.phone}</td>
+      <td class="roster-hide-mobile"><span class="badge badge-gray">${p.pos}</span></td>
       <td>${STATE.role==='captain'?`<button class="btn btn-danger btn-sm" onclick="removePlayer('${p.id}')">Remove</button>`:''}</td>
     </tr>`;}).join('');
 }
