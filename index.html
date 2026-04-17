@@ -246,12 +246,7 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
       <!-- DASHBOARD -->
       <div id="sec-dashboard" class="section">
         <h2>Dashboard</h2>
-        <div class="grid4" style="margin-bottom:1.5rem">
-          <div class="stat"><div class="stat-val" id="d-players">—</div><div class="stat-lbl">Total players</div></div>
-          <div class="stat"><div class="stat-val" id="d-avail">—</div><div class="stat-lbl">Available next Wed</div></div>
-          <div class="stat"><div class="stat-val" id="d-slots">0/8</div><div class="stat-lbl">Next lineup filled</div></div>
-          <div class="stat"><div class="stat-val" id="d-match">—</div><div class="stat-lbl">Next match</div></div>
-        </div>
+
         <div id="d-weeks-container"></div>
 
 
@@ -270,7 +265,7 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
         <div id="roster-tab-list" class="tab-pane active">
           <div id="roster-loading" style="color:#888;font-size:13px;padding:1rem">Loading roster...</div>
           <table class="tbl" id="roster-tbl" style="display:none">
-            <thead><tr><th>Player</th><th class="roster-hide-mobile">Phone</th><th class="roster-hide-mobile">Email</th><th>Position preference</th><th id="roster-actions-col"></th></tr></thead>
+            <thead><tr><th>Player</th><th class="roster-hide-mobile">Phone</th><th class="roster-hide-mobile">Contact email</th><th>Position preference</th><th id="roster-actions-col"></th></tr></thead>
             <tbody id="roster-body"></tbody>
           </table>
         </div>
@@ -285,7 +280,7 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
               </div>
               <div class="grid2">
                 <div class="form-group"><label>Phone</label><input id="r-phone" placeholder="(617) 555-0100"></div>
-                <div class="form-group"><label>Email</label><input id="r-email" placeholder="jane@email.com"></div>
+                <div class="form-group"><label>Email <span style="font-size:11px;color:#888;font-weight:400">— contact email for announcements</span></label><input id="r-email" placeholder="jane@email.com"></div>
               </div>
               <div class="grid2">
                 <div class="form-group"><label>NTRP rating</label>
@@ -295,7 +290,9 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
                   <select id="r-pos"><option value="either">Either</option><option value="singles">Singles</option><option value="doubles">Doubles</option></select>
                 </div>
               </div>
-              <div class="form-group"><label>Google email (for login match)</label><input id="r-gemail" placeholder="jane@gmail.com"></div>
+              <div class="form-group"><label>Google email <span style="font-size:11px;color:#888;font-weight:400">— Gmail address used to sign into the app</span></label><input id="r-gemail" placeholder="jane@gmail.com">
+                <div style="font-size:11px;color:#888;margin-top:4px">Must match exactly what the player uses to sign in with Google. Often the same as their contact email.</div>
+              </div>
               <button class="btn btn-primary" onclick="addPlayer()">Add player</button>
             </div>
           </div>
@@ -458,17 +455,17 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
                 " id="schedule-cancel-btn" style="display:none">Cancel</button>
             </div>
           </div>
-          <div style="display:grid;grid-template-columns:110px 1fr 100px auto;gap:12px;padding-bottom:6px;border-bottom:0.5px solid #e0ddd5;margin-bottom:2px" id="schedule-header-view">
+          <div style="display:grid;grid-template-columns:110px 90px 1fr 1fr;gap:12px;padding-bottom:6px;border-bottom:0.5px solid #e0ddd5;margin-bottom:2px" id="schedule-header-view">
             <span style="font-size:11px;color:#888;font-weight:500">DATE</span>
-            <span style="font-size:11px;color:#888;font-weight:500">OPPONENT</span>
-            <span style="font-size:11px;color:#888;font-weight:500">LOCATION</span>
-            <span></span>
-          </div>
-          <div style="display:none;grid-template-columns:110px 1fr 120px 1fr;gap:8px;padding-bottom:6px;border-bottom:0.5px solid #e0ddd5;margin-bottom:2px" id="schedule-header-edit">
-            <span style="font-size:11px;color:#888;font-weight:500">DATE</span>
-            <span style="font-size:11px;color:#888;font-weight:500">OPPONENT</span>
             <span style="font-size:11px;color:#888;font-weight:500">HOME/AWAY</span>
-            <span style="font-size:11px;color:#888;font-weight:500">ADDRESS (optional)</span>
+            <span style="font-size:11px;color:#888;font-weight:500">OPPONENT</span>
+            <span style="font-size:11px;color:#888;font-weight:500">VENUE</span>
+          </div>
+          <div style="display:none;grid-template-columns:110px 100px 1fr 1fr;gap:8px;padding-bottom:6px;border-bottom:0.5px solid #e0ddd5;margin-bottom:2px" id="schedule-header-edit">
+            <span style="font-size:11px;color:#888;font-weight:500">DATE</span>
+            <span style="font-size:11px;color:#888;font-weight:500">HOME/AWAY</span>
+            <span style="font-size:11px;color:#888;font-weight:500">OPPONENT</span>
+            <span style="font-size:11px;color:#888;font-weight:500">VENUE</span>
           </div>
           <div id="schedule-full-list">Loading...</div>
         </div>
@@ -573,7 +570,7 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
             <tr><td><code>Availability</code></td><td style="font-size:12px">week, player_id, status, note</td></tr>
             <tr><td><code>Lineup</code></td><td style="font-size:12px">week, slot, player_id</td></tr>
             <tr><td><code>Announcements</code></td><td style="font-size:12px">id, date, type, subject, body, author</td></tr>
-            <tr><td><code>Schedule</code></td><td style="font-size:12px">date, opponent, location, address</td></tr>
+            <tr><td><code>Schedule</code></td><td style="font-size:12px">date, home_away, opponent, venue</td></tr>
           </table>
           <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
             <button class="btn btn-green" onclick="requestOAuthToken()">1. Connect Google Account</button>
@@ -607,6 +604,10 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
     <button class="mobile-nav-btn" onclick="mobileNav('announcements',this)">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
       <span>Announcements</span>
+    </button>
+    <button class="mobile-nav-btn" onclick="if(confirm('Sign out?'))logout()" style="color:#A32D2D">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      <span>Sign out</span>
     </button>
   </nav>
 
@@ -860,21 +861,21 @@ async function loadLineup(){
 }
 
 async function loadSchedule(){
-  const rows = await sheetsGet('Schedule!A2:C');
+  const rows = await sheetsGet('Schedule!A2:D');
   STATE.schedule = {};
-  rows.forEach(r=>{ if(r[0]) STATE.schedule[r[0]] = {opponent:r[1]||'', location:r[2]||'', address:r[3]||''}; });
+  rows.forEach(r=>{ if(r[0]) STATE.schedule[r[0]] = {location:r[1]||'', opponent:r[2]||'', venue:r[3]||''}; });
 }
 
-async function saveScheduleEntry(date, opponent, location, address=''){
+async function saveScheduleEntry(date, location, opponent, venue=''){
   if(!TOKEN){toast('Sign in with Google to save');return}
   const rows = await sheetsGet('Schedule!A2:D');
   const idx = rows.findIndex(r=>r[0]===date);
   if(idx===-1){
-    await sheetsAppend('Schedule',[[date,opponent,location,address]]);
+    await sheetsAppend('Schedule',[[date,location,opponent,venue]]);
   } else {
-    await sheetsUpdate(`Schedule!A${idx+2}:D${idx+2}`,[[date,opponent,location,address]]);
+    await sheetsUpdate(`Schedule!A${idx+2}:D${idx+2}`,[[date,location,opponent,venue]]);
   }
-  STATE.schedule[date] = {opponent, location, address};
+  STATE.schedule[date] = {location, opponent, venue};
   renderDashboard();
   toast('Schedule saved');
 }
@@ -933,12 +934,33 @@ function autoFill(){
   const _da = STATE.availability[SELECTED_LINEUP_DATE]||{};
   const avail = STATE.players.filter(p=>{const a=_da[p.id];return a&&['yes','maybe'].includes(a.status)});
   const used = new Set(Object.values(STATE.lineup).filter(Boolean));
-  LINEUP_KEYS.forEach(k=>{
+
+  const singlesKeys = ['s1','s2'];
+  const doublesKeys = ['d1p1','d1p2','d2p1','d2p2','d3p1','d3p2'];
+
+  // prefer singles players for singles slots
+  const singlesPrefer = avail.filter(p=>p.pos==='singles');
+  const doublesPrefer = avail.filter(p=>p.pos==='doubles');
+  const either = avail.filter(p=>p.pos==='either'||!p.pos);
+
+  // fill singles slots: singles-pref first, then either, then doubles-pref
+  const singlesPool = [...singlesPrefer, ...either, ...doublesPrefer];
+  singlesKeys.forEach(k=>{
     if(!STATE.lineup[k]){
-      const next = avail.find(p=>!used.has(p.id));
-      if(next){STATE.lineup[k]=next.id; used.add(next.id)}
+      const next = singlesPool.find(p=>!used.has(p.id));
+      if(next){STATE.lineup[k]=next.id; used.add(next.id);}
     }
   });
+
+  // fill doubles slots: doubles-pref first, then either, then singles-pref
+  const doublesPool = [...doublesPrefer, ...either, ...singlesPrefer];
+  doublesKeys.forEach(k=>{
+    if(!STATE.lineup[k]){
+      const next = doublesPool.find(p=>!used.has(p.id));
+      if(next){STATE.lineup[k]=next.id; used.add(next.id);}
+    }
+  });
+
   renderLineup();
 }
 
@@ -1057,11 +1079,16 @@ function showManualEntry(){
         const s = STATE.schedule[d]||{opponent:'',location:''};
         const dt = new Date(d+'T12:00:00');
         const lbl = dt.toLocaleDateString('en-US',{month:'short',day:'numeric'});
-        return `<div style="display:grid;grid-template-columns:80px 1fr 1fr 1fr;gap:8px;margin-bottom:6px;align-items:center">
+        return `<div style="display:grid;grid-template-columns:80px 90px 1fr 1fr;gap:8px;margin-bottom:6px;align-items:center">
           <span style="font-size:13px;font-weight:500">${lbl}</span>
+          <select id="ms-loc-${d}" style="font-size:13px;padding:5px 8px">
+            <option value=""${!s.location?' selected':''}>--</option>
+            <option value="Home"${s.location==='Home'?' selected':''}>Home</option>
+            <option value="Away"${s.location==='Away'?' selected':''}>Away</option>
+            <option value="TBD"${s.location==='TBD'?' selected':''}>TBD</option>
+          </select>
           <input style="font-size:13px;padding:5px 8px" placeholder="Opponent" value="${s.opponent}" id="ms-opp-${d}">
-          <input style="font-size:13px;padding:5px 8px" placeholder="Home / Away" value="${s.location}" id="ms-loc-${d}">
-          <input style="font-size:13px;padding:5px 8px" placeholder="Club address" value="${s.address||''}" id="ms-addr-${d}">
+          <input style="font-size:13px;padding:5px 8px" placeholder="Venue" value="${s.venue||''}" id="ms-ven-${d}">
         </div>`;
       }).join('')}
     </div>
@@ -1074,8 +1101,8 @@ async function saveManualSchedule(){
   for(const d of MATCH_DATES){
     const opp = document.getElementById('ms-opp-'+d)?.value.trim();
     const loc = document.getElementById('ms-loc-'+d)?.value.trim();
-    const addr = document.getElementById('ms-addr-'+d)?.value.trim();
-    if(opp||loc||addr) await saveScheduleEntry(d, opp||'', loc||'', addr||'');
+    const ven = document.getElementById('ms-ven-'+d)?.value.trim();
+    if(opp||loc||ven) await saveScheduleEntry(d, loc||'', opp||'', ven||'');
   }
   toast('Schedule saved');
   renderScheduleFull();
@@ -1108,28 +1135,29 @@ function renderScheduleFull(){
     const locBg = s.location.toLowerCase().includes('home') ? '#EAF3DE' : s.location.toLowerCase().includes('away') ? '#FAEEDA' : '#F1EFE8';
 
     if(isEditing){
-      return `<div style="display:grid;grid-template-columns:110px 1fr 120px 1fr;gap:8px;align-items:center;padding:7px 0;border-bottom:0.5px solid #f0ede8">
+      return `<div style="display:grid;grid-template-columns:110px 100px 1fr 1fr;gap:8px;align-items:center;padding:7px 0;border-bottom:0.5px solid #f0ede8">
         <span style="font-size:13px;font-weight:500;color:${isPast?'#aaa':'#333'}">${dateLabel}</span>
-        <input id="se-opp-${d}" style="font-size:13px;padding:5px 8px" placeholder="Opponent" value="${s.opponent}">
         <select id="se-loc-${d}" style="font-size:13px;padding:5px 8px">
           <option value=""${!s.location?' selected':''}>--</option>
           <option value="Home"${s.location==='Home'?' selected':''}>Home</option>
           <option value="Away"${s.location==='Away'?' selected':''}>Away</option>
           <option value="TBD"${s.location==='TBD'?' selected':''}>TBD</option>
         </select>
-        <input id="se-addr-${d}" style="font-size:13px;padding:5px 8px" placeholder="Club address (optional)" value="${s.address||''}">
+        <input id="se-opp-${d}" style="font-size:13px;padding:5px 8px" placeholder="Opponent" value="${s.opponent}">
+        <input id="se-ven-${d}" style="font-size:13px;padding:5px 8px" placeholder="Venue" value="${s.venue||''}">
       </div>`;
     } else {
-      if(!s.opponent && !s.location) return `<div style="display:grid;grid-template-columns:110px 1fr 100px;gap:12px;align-items:center;padding:7px 0;border-bottom:0.5px solid #f0ede8;opacity:0.4">
+      if(!s.opponent && !s.location) return `<div style="display:grid;grid-template-columns:110px 90px 1fr 1fr;gap:12px;align-items:center;padding:7px 0;border-bottom:0.5px solid #f0ede8;opacity:0.4">
         <span style="font-size:13px;font-weight:500">${dateLabel}</span>
+        <span style="font-size:12px;padding:2px 8px;border-radius:20px;background:#F1EFE8;color:#5F5E5A">TBD</span>
         <span style="font-size:13px;color:#aaa">TBD</span>
-        <span style="font-size:12px;padding:2px 10px;border-radius:20px;background:#F1EFE8;color:#5F5E5A">TBD</span>
+        <span></span>
       </div>`;
-      return `<div style="display:grid;grid-template-columns:110px 1fr 100px auto;gap:12px;align-items:center;padding:7px 0;border-bottom:0.5px solid #f0ede8;${isPast?'opacity:0.5':''}">
+      return `<div style="display:grid;grid-template-columns:110px 90px 1fr 1fr;gap:12px;align-items:center;padding:7px 0;border-bottom:0.5px solid #f0ede8;${isPast?'opacity:0.5':''}">
         <span style="font-size:13px;font-weight:500;color:${isPast?'#aaa':'#185FA5'}">${dateLabel}</span>
+        <span style="font-size:12px;padding:2px 8px;border-radius:20px;background:${locBg};color:${locColor};text-align:center">${s.location||'TBD'}</span>
         <span style="font-size:13px;color:${isPast?'#aaa':'#333'}">${s.opponent||'<span style="color:#ccc">TBD</span>'}</span>
-        <span style="font-size:12px;padding:2px 10px;border-radius:20px;background:${locBg};color:${locColor};text-align:center">${s.location||'TBD'}</span>
-        <div>${s.address ? '<a href="https://maps.google.com/?q='+encodeURIComponent(s.address)+'" target="_blank" style="font-size:12px;color:#185FA5;text-decoration:none">&#x1F4CD; Map</a>' : ''}</div>
+        <span style="font-size:13px;color:${isPast?'#aaa':'#888'}">${s.venue||''}</span>
       </div>`;
     }
   }).join('');
@@ -1142,8 +1170,9 @@ async function saveScheduleEdits(){
     const opp = document.getElementById('se-opp-'+d);
     const loc = document.getElementById('se-loc-'+d);
     const addr = document.getElementById('se-addr-'+d);
-    if(opp||loc){
-      await saveScheduleEntry(d, opp?.value||'', loc?.value||'', addr?.value||'');
+    const ven = document.getElementById('se-ven-'+d);
+    if(opp||loc||ven){
+      await saveScheduleEntry(d, loc?.value||'', opp?.value||'', ven?.value||'');
     }
   }
   // exit edit mode
@@ -1197,15 +1226,7 @@ function renderDashboard(){
   const next = upcoming[0];
 
   // stat bar uses first upcoming date
-  const nextAvail = next ? STATE.players.filter(p=>['yes','maybe'].includes((STATE.availability[next]||{})[p.id]?.status)).length : 0;
-  const nextFilled = next ? LINEUP_KEYS.filter(k=>(STATE.allLineups[next]||{})[k]).length : 0;
-  document.getElementById('d-players').textContent = STATE.players.length;
-  document.getElementById('d-avail').textContent = nextAvail;
-  document.getElementById('d-slots').textContent = nextFilled+'/8';
-  if(next){
-    const dt = new Date(next+'T12:00:00');
-    document.getElementById('d-match').textContent = dt.toLocaleDateString('en-US',{month:'short',day:'numeric'});
-  }
+
 
 
   const pn = id => { if(!id) return '<span style="color:#aaa">TBD</span>'; const p=STATE.players.find(x=>x.id===id); return p?p.first+' '+p.last:'TBD'; };
@@ -1246,9 +1267,9 @@ function renderDashboard(){
           <div style="font-size:12px;color:#888;font-weight:500;text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px">${weekLabel}</div>
           <div style="font-size:16px;font-weight:500">${dateLabel}</div>
           ${sched.opponent ? `<div style="font-size:13px;color:#555;margin-top:3px">vs ${sched.opponent}</div>` : ''}
-          ${sched.location ? `<div style="font-size:12px;margin-top:3px;display:flex;align-items:center;gap:6px">
+          ${sched.location ? `<div style="font-size:12px;margin-top:3px;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
             <span style="padding:2px 8px;border-radius:20px;background:${sched.location.toLowerCase().includes('home')?'#EAF3DE':sched.location.toLowerCase().includes('away')?'#FAEEDA':'#F1EFE8'};color:${sched.location.toLowerCase().includes('home')?'#27500A':sched.location.toLowerCase().includes('away')?'#633806':'#5F5E5A'};font-size:11px">${sched.location}</span>
-            ${sched.address ? '<a href="https://maps.google.com/?q='+encodeURIComponent(sched.address)+'" target="_blank" style="font-size:11px;color:#185FA5;text-decoration:none">&#x1F4CD; Directions</a>' : ''}
+            ${sched.venue ? '<span style="font-size:12px;color:#555">'+sched.venue+'</span>' : ''}
           </div>` : ''}
         </div>
         <span style="font-size:12px;padding:4px 12px;border-radius:20px;background:${availBg};color:${availColor};font-weight:500">${totalAvail} available</span>
@@ -1287,7 +1308,8 @@ function renderRoster(){
   const loading = document.getElementById('roster-loading');
   if(!STATE.players.length){if(loading){loading.textContent='No players yet.';loading.style.display='block';}if(tbl)tbl.style.display='none';return}
   loading.style.display='none'; tbl.style.display='table';
-  tbody.innerHTML = STATE.players.map((p,i)=>{
+  const sorted = [...STATE.players].sort((a,b)=>a.first.localeCompare(b.first));
+  tbody.innerHTML = sorted.map((p,i)=>{
     const av = AVATAR_COLORS[i%AVATAR_COLORS.length].split(':');
     return `<tr>
       <td><div style="display:flex;align-items:center;gap:8px">
@@ -1604,20 +1626,35 @@ function renderLineup(){
   const isCaptain = STATE.role === 'captain';
   const _ld = STATE.availability[SELECTED_LINEUP_DATE]||{};
   const availP = STATE.players.filter(p=>_ld[p.id]?.status==='yes'||_ld[p.id]?.status==='maybe');
-  const opts = `<option value="">— select —</option>` + availP.map(p=>`<option value="${p.id}">${p.first} ${p.last}</option>`).join('');
+
   const makeSlot = (k)=>{
     const val = STATE.lineup[k]||'';
     const pn = val ? (STATE.players.find(p=>p.id===val)||{first:'?',last:'?'}) : null;
+    if(!isCaptain){
+      return `<div class="lineup-slot">
+        <span class="slot-label">${SLOT_LABELS[k]}</span>
+        <span style="font-size:13px;color:#333">${pn?pn.first+' '+pn.last:'<span style="color:#aaa">TBD</span>'}</span>
+      </div>`;
+    }
+    // build options — exclude players already in other slots
+    const otherSlots = LINEUP_KEYS.filter(x=>x!==k);
+    const usedIds = new Set(otherSlots.map(x=>STATE.lineup[x]).filter(Boolean));
+    const opts = '<option value="">— select —</option>' +
+      availP.map(p=>{
+        const disabled = usedIds.has(p.id) ? ' disabled style="color:#aaa"' : '';
+        const selected = p.id===val ? ' selected' : '';
+        return `<option value="${p.id}"${selected}${disabled}>${p.first} ${p.last}${usedIds.has(p.id)?' (assigned)':''}</option>`;
+      }).join('');
     return `<div class="lineup-slot">
       <span class="slot-label">${SLOT_LABELS[k]}</span>
-      ${isCaptain
-        ? `<select class="slot-select" onchange="STATE.lineup['${k}']=this.value;renderDashboard()">${opts.replace(`value="${val}"`,`value="${val}" selected`)}</select>`
-        : `<span style="font-size:13px;color:#333">${pn?pn.first+' '+pn.last:'<span style="color:#aaa">TBD</span>'}</span>`}
+      <select class="slot-select" onchange="STATE.lineup['${k}']=this.value;renderLineup();renderDashboard()">${opts}</select>
     </div>`;
   };
+
   document.getElementById('doubles-slots').innerHTML = ['d1p1','d1p2','d2p1','d2p2','d3p1','d3p2'].map(makeSlot).join('');
   document.getElementById('singles-slots').innerHTML = ['s1','s2'].map(makeSlot).join('');
 }
+
 
 function renderMessages(){
   const el = document.getElementById('msg-list');
@@ -1699,7 +1736,7 @@ async function initSheet(){
     Availability:['week','player_id','status','note'],
     Lineup:['week','slot','player_id'],
     Messages:['id','date','type','subject','body','author'],
-    Schedule:['date','opponent','location','address']
+    Schedule:['date','home_away','opponent','venue']
   };
   try {
     // Step 1: get existing sheet names
