@@ -324,6 +324,10 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
 
         <!-- UPDATE TAB -->
         <div id="avail-tab-update" class="tab-pane active">
+          <div id="avail-token-warning" style="display:none;background:#FAEEDA;border:0.5px solid #EF9F27;border-radius:8px;padding:10px 14px;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+            <span style="font-size:13px;color:#633806">Connect your Google account to save availability changes.</span>
+            <button class="btn btn-sm" style="background:#FAEEDA;border-color:#EF9F27;color:#633806" onclick="requestOAuthToken()">Connect Google Account</button>
+          </div>
           <div class="card" style="margin-bottom:1rem;display:flex;align-items:center;gap:20px;flex-wrap:wrap">
             <div>
               <label style="font-size:12px;color:#888;display:block;margin-bottom:4px">Player</label>
@@ -729,7 +733,7 @@ function captainLogin(){
         scope: 'https://www.googleapis.com/auth/spreadsheets',
         callback: (r)=>{ TOKEN = r.access_token; },
       });
-      client.requestAccessToken({prompt:TOKEN?'':'consent'});
+      client.requestAccessToken({prompt:''});
     }
     launchApp();
   } else {
@@ -1426,6 +1430,9 @@ function selectAvailPlayer(id){
 }
 
 function renderAvailability(){
+  // show token warning if captain has no token
+  const warn = document.getElementById('avail-token-warning');
+  if(warn) warn.style.display = (!TOKEN && STATE.role==='captain') ? 'flex' : 'none';
   renderAvailPlayerDropdown();
   if(!SELECTED_AVAIL_PLAYER){ document.getElementById('avail-body').innerHTML='<p style="font-size:13px;color:#888">No players on roster yet.</p>'; return; }
   const p = STATE.players.find(x=>x.id===SELECTED_AVAIL_PLAYER);
@@ -1731,9 +1738,13 @@ function requestOAuthToken(){
     callback: (r)=>{
       if(r.access_token){
         TOKEN = r.access_token;
-        document.getElementById('oauth-status').textContent = 'Connected to Google — ready to write to sheet.';
-        document.getElementById('oauth-status').style.color = '#27500A';
-        toast('Google account connected. Now click Initialize sheet tabs.');
+        const oauthStatus = document.getElementById('oauth-status');
+        if(oauthStatus){ oauthStatus.textContent = 'Connected to Google — ready to write to sheet.'; oauthStatus.style.color = '#27500A'; }
+        toast('Google account connected.');
+        // hide availability warning and re-render
+        const warn = document.getElementById('avail-token-warning');
+        if(warn) warn.style.display = 'none';
+        renderAvailability();
       } else {
         toast('Google authorization failed — try again');
       }
