@@ -706,7 +706,7 @@ function launchApp(){
   if(STATE.role === 'player' && STATE.players.length){
     const me = STATE.user?.email?.toLowerCase();
     const onRoster = STATE.players.some(p=>p.gemail.toLowerCase()===me);
-    if(!onRoster) toast('Your Google account isn't linked to a player yet. Ask the captain to add your Gmail to the roster.');
+    if(!onRoster) toast("Your Google account isn't linked to a player yet. Ask the captain to add your Gmail to the roster.");
   }
   document.getElementById('role-badge').innerHTML = STATE.role==='captain'
     ? '<span class="badge badge-captain">Captain</span>'
@@ -1080,7 +1080,7 @@ function renderScheduleFull(){
       <span style="font-size:13px">${s.opponent||'<span style="color:#aaa">TBD</span>'}</span>
       <div style="display:flex;align-items:center;gap:8px">
         <span style="font-size:12px;padding:2px 10px;border-radius:20px;background:${locBg};color:${locColor}">${s.location||'TBD'}</span>
-        ${s.address ? `<a href="https://maps.google.com/?q=${encodeURIComponent(s.address)}" target="_blank" style="font-size:12px;color:#185FA5;text-decoration:none">&#x1F4CD; Map</a>` : ''}
+        ${s.address ? '<a href="https://maps.google.com/?q='+encodeURIComponent(s.address)+'" target="_blank" style="font-size:12px;color:#185FA5;text-decoration:none">&#x1F4CD; Map</a>' : ''}
       </div>
     </div>`;
   });
@@ -1179,7 +1179,7 @@ function renderDashboard(){
           ${sched.opponent ? `<div style="font-size:13px;color:#555;margin-top:3px">vs ${sched.opponent}</div>` : ''}
           ${sched.location ? `<div style="font-size:12px;margin-top:3px;display:flex;align-items:center;gap:6px">
             <span style="padding:2px 8px;border-radius:20px;background:${sched.location.toLowerCase().includes('home')?'#EAF3DE':sched.location.toLowerCase().includes('away')?'#FAEEDA':'#F1EFE8'};color:${sched.location.toLowerCase().includes('home')?'#27500A':sched.location.toLowerCase().includes('away')?'#633806':'#5F5E5A'};font-size:11px">${sched.location}</span>
-            ${sched.address ? `<a href="https://maps.google.com/?q=${encodeURIComponent(sched.address)}" target="_blank" style="font-size:11px;color:#185FA5;text-decoration:none">&#x1F4CD; Directions</a>` : ''}
+            ${sched.address ? '<a href="https://maps.google.com/?q='+encodeURIComponent(sched.address)+'" target="_blank" style="font-size:11px;color:#185FA5;text-decoration:none">&#x1F4CD; Directions</a>' : ''}
           </div>` : ''}
         </div>
         <span style="font-size:12px;padding:4px 12px;border-radius:20px;background:${availBg};color:${availColor};font-weight:500">${totalAvail} available</span>
