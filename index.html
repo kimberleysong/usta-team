@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>USTA Team Manager</title>
+<title>Good Vibes Tribe</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f0;color:#1a1a1a;font-size:15px;line-height:1.6}
@@ -75,7 +75,7 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
 
 /* Lineup slots */
 .lineup-slot{border:0.5px solid #e0ddd5;border-radius:8px;padding:10px 12px;margin-bottom:6px;display:flex;align-items:center;gap:10px}
-.slot-label{font-size:12px;color:#888;min-width:90px;flex-shrink:0}
+.slot-label{font-size:12px;color:#888;min-width:32px;flex-shrink:0}
 .slot-select{flex:1;font-size:13px;padding:6px 8px}
 
 /* Msg */
@@ -156,7 +156,7 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
 <!-- SETUP SCREEN -->
 <div id="setup-screen" class="screen" style="display:none">
   <div class="screen-card">
-    <div class="screen-logo">USTA Team Manager</div>
+    <div class="screen-logo">Good Vibes Tribe</div>
     <div class="screen-sub">One-time setup — connect your Google Sheet</div>
 
     <div class="setup-step">
@@ -196,7 +196,7 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
 <!-- LOGIN SCREEN -->
 <div id="login-screen" class="screen" style="display:none">
   <div class="screen-card" style="max-width:420px">
-    <div class="screen-logo" id="login-team-name">USTA Team Manager</div>
+    <div class="screen-logo" id="login-team-name">Good Vibes Tribe</div>
     <div class="screen-sub" style="margin-bottom:1.5rem">Please sign in to continue</div>
 
     <div style="text-align:center;margin-bottom:1.5rem">
@@ -231,8 +231,8 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
 <!-- MAIN APP -->
 <div id="app" class="app">
   <div class="sidebar">
-    <div class="brand" id="app-team-name">USTA Team</div>
-    <div class="brand-sub">Team Manager</div>
+    <div class="brand" id="app-team-name">Good Vibes Tribe</div>
+    <div class="brand-sub">USTA 4.0 18+</div>
     <button class="nav-item active" onclick="nav('dashboard',this)">Dashboard</button>
     <button class="nav-item" onclick="nav('roster',this)">Roster</button>
     <button class="nav-item" onclick="nav('availability',this)">Availability</button>
@@ -275,10 +275,12 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
         <!-- PLAYER LIST TAB -->
         <div id="roster-tab-list" class="tab-pane active">
           <div id="roster-loading" style="color:#888;font-size:13px;padding:1rem">Loading roster...</div>
-          <table class="tbl" id="roster-tbl" style="display:none">
-            <thead><tr><th>Player</th><th>Contact email</th><th>Phone</th><th class="roster-hide-mobile">Position preference</th><th id="roster-actions-col"></th></tr></thead>
+          <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
+          <table class="tbl" id="roster-tbl" style="display:none;table-layout:fixed;min-width:500px;width:100%">
+            <thead><tr><th style="width:120px;white-space:nowrap">Player</th><th style="white-space:nowrap">Contact email</th><th style="width:130px;white-space:nowrap">Phone</th><th class="roster-hide-mobile" style="width:140px;white-space:nowrap">Position preference</th><th id="roster-actions-col" style="width:80px"></th></tr></thead>
             <tbody id="roster-body"></tbody>
           </table>
+          </div>
         </div>
 
         <!-- ADD PLAYER TAB -->
@@ -330,9 +332,9 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
             <div id="avail-player-meta" style="font-size:13px;color:#888;padding-top:20px"></div>
           </div>
           <div class="card">
-            <div style="display:grid;grid-template-columns:100px 120px 1fr;gap:8px;padding-bottom:8px;border-bottom:0.5px solid #e0ddd5;margin-bottom:4px">
+            <div style="display:grid;grid-template-columns:70px 120px 1fr;gap:8px;padding-bottom:8px;border-bottom:0.5px solid #e0ddd5;margin-bottom:4px">
               <span style="font-size:12px;color:#888">Date</span>
-              <span style="font-size:12px;color:#888;text-align:center">Status</span>
+              <span style="font-size:12px;color:#888">Status</span>
               <span style="font-size:12px;color:#888">Note</span>
             </div>
             <div id="avail-body">Loading...</div>
@@ -650,7 +652,7 @@ function getMatchDates(){
   return dates;
 }
 const LINEUP_KEYS=['d1p1','d1p2','d2p1','d2p2','d3p1','d3p2','s1','s2'];
-const SLOT_LABELS={d1p1:'D1',d1p2:'D1',d2p1:'D2',d2p2:'D2',d3p1:'D3',d3p2:'D3',s1:'Singles 1',s2:'Singles 2'};
+const SLOT_LABELS={d1p1:'D1',d1p2:'D1',d2p1:'D2',d2p2:'D2',d3p1:'D3',d3p2:'D3',s1:'S1',s2:'S2'};
 const AVATAR_COLORS=['#E6F1FB:#0C447C','#E1F5EE:#085041','#FAEEDA:#633806','#EEEDFE:#3C3489','#FAECE7:#712B13','#EAF3DE:#27500A'];
 
 // ─── BOOT ────────────────────────────────────────────────────────────────────
@@ -740,7 +742,7 @@ function captainLogin(){
 
 function launchApp(){
   showScreen('app');
-  document.getElementById('app-team-name').textContent = CFG.teamName || 'USTA Team';
+  document.getElementById('app-team-name').textContent = CFG.teamName || 'Good Vibes Tribe';
   document.getElementById('user-info').textContent = STATE.user?.name || '';
   // warn player if their email isn't on the roster (checked after sync)
   if(STATE.role === 'player' && STATE.players.length){
@@ -1326,10 +1328,9 @@ function renderRoster(){
       <td><div style="display:flex;align-items:center;gap:8px">
         <div class="avatar" style="background:${av[0]};color:${av[1]};width:28px;height:28px;font-size:11px">${p.first[0]}${p.last[0]}</div>
         <span class="roster-hide-mobile">${p.first} ${p.last}</span>
-        <span class="roster-mobile-only" style="font-size:12px;font-weight:500">${p.first[0]}${p.last[0]}</span>
       </div></td>
-      <td style="color:#185FA5;font-size:13px">${p.email}</td>
-      <td>${p.phone}</td>
+      <td style="color:#185FA5;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px">${p.email}</td>
+      <td style="white-space:nowrap">${p.phone}</td>
       <td class="roster-hide-mobile"><span class="badge badge-gray">${p.pos}</span></td>
       <td>${STATE.role==='captain'?`<button class="btn btn-danger btn-sm" onclick="removePlayer('${p.id}')">Remove</button>`:''}</td>
     </tr>`;}).join('');
@@ -1441,7 +1442,7 @@ function renderAvailability(){
     const dateLabel = dt.toLocaleDateString('en-US',{month:'short',day:'numeric'});
     const statusBadge = av.status==='yes'?'tag-in':av.status==='maybe'?'tag-maybe':av.status==='no'?'tag-out':'tag-unknown';
     const statusLabel = av.status==='yes'?'Available':av.status==='maybe'?'Maybe':av.status==='no'?'Unavailable':'Unknown';
-    return `<div style="display:grid;grid-template-columns:100px 120px 1fr;gap:8px;align-items:center;padding:7px 0;border-bottom:0.5px solid #f0ede8">
+    return `<div style="display:grid;grid-template-columns:70px 120px 1fr;gap:8px;align-items:center;padding:7px 0;border-bottom:0.5px solid #f0ede8">
       <span style="font-size:13px;${isPast?'color:#aaa':''}">${dateLabel}</span>
       <div style="text-align:center">
         ${editable
