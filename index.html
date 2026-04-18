@@ -257,7 +257,7 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
 <div id="app" class="app">
   <div class="sidebar">
     <div class="brand" id="app-team-name">Good Vibes Tribe</div>
-    <div class="brand-sub">Good Vibes Tribe</div>
+    <div class="brand-sub">USTA 4.0 18+</div>
     <button class="nav-item active" onclick="nav('dashboard',this)">Dashboard</button>
     <button class="nav-item" onclick="nav('roster',this)">Roster</button>
     <button class="nav-item" onclick="nav('availability',this)">Availability</button>
@@ -349,10 +349,7 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
 
         <!-- UPDATE TAB -->
         <div id="avail-tab-update" class="tab-pane active">
-          <div id="avail-token-warning" style="display:none;background:#FAEEDA;border:0.5px solid #EF9F27;border-radius:8px;padding:10px 14px;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
-            <span style="font-size:13px;color:#633806">Connect your Google account to save availability changes.</span>
-            <button class="btn btn-sm" style="background:#FAEEDA;border-color:#EF9F27;color:#633806" onclick="requestOAuthToken()">Connect Google Account</button>
-          </div>
+
           <div class="card" style="margin-bottom:1rem;display:flex;align-items:center;gap:20px;flex-wrap:wrap">
             <div>
               <label style="font-size:12px;color:#888;display:block;margin-bottom:4px">Player</label>
@@ -744,7 +741,14 @@ function handleCredential(response){
   }
   const pwSection = document.getElementById('captain-pw-section');
   if(pwSection){ pwSection.style.opacity='1'; pwSection.style.pointerEvents='auto'; }
-  setTimeout(()=>launchApp(), 600);
+  // if captain details section is open, don't auto-launch — wait for password
+  const captainDetails = document.getElementById('captain-details');
+  if(captainDetails && captainDetails.open){
+    // just update status, don't launch yet
+    document.getElementById('captain-pw-input')?.focus();
+  } else {
+    setTimeout(()=>launchApp(), 600);
+  }
 }
 
 function parseJwt(token){
@@ -767,11 +771,16 @@ function captainLogin(){
       const client = google.accounts.oauth2.initTokenClient({
         client_id: CFG.clientId,
         scope: 'https://www.googleapis.com/auth/spreadsheets',
-        callback: (r)=>{ TOKEN = r.access_token; },
+        callback: (r)=>{
+          TOKEN = r.access_token;
+          launchApp();
+        },
+        error_callback: ()=>{ launchApp(); } // launch even if token fails
       });
       client.requestAccessToken({prompt:''});
+    } else {
+      launchApp(); // fallback if google not loaded
     }
-    launchApp();
   } else {
     const err = document.getElementById('login-error');
     if(err){ err.style.display='block'; err.textContent='Incorrect password.'; }
@@ -783,6 +792,8 @@ function captainLogin(){
 function launchApp(){
   showScreen('app');
   document.getElementById('app-team-name').textContent = CFG.teamName || 'Good Vibes Tribe';
+  // keep brand-sub fixed
+  const brandSub = document.querySelector('.brand-sub'); if(brandSub) brandSub.textContent = 'USTA 4.0 18+';
   document.getElementById('user-info').textContent = STATE.user?.name || '';
   // warn player if their email isn't on the roster (checked after sync)
   if(STATE.role === 'player' && STATE.players.length){
@@ -1468,9 +1479,6 @@ function selectAvailPlayer(id){
 }
 
 function renderAvailability(){
-  // show token warning if captain has no token
-  const warn = document.getElementById('avail-token-warning');
-  if(warn) warn.style.display = (!TOKEN && STATE.role==='captain') ? 'flex' : 'none';
   renderAvailPlayerDropdown();
   if(!SELECTED_AVAIL_PLAYER){ document.getElementById('avail-body').innerHTML='<p style="font-size:13px;color:#888">No players on roster yet.</p>'; return; }
   const p = STATE.players.find(x=>x.id===SELECTED_AVAIL_PLAYER);
@@ -1489,7 +1497,7 @@ function renderAvailability(){
     const statusLabel = av.status==='yes'?'Available':av.status==='maybe'?'Maybe':av.status==='no'?'Unavailable':'Unknown';
     return `<div style="display:grid;grid-template-columns:70px 120px 1fr;gap:8px;align-items:center;padding:7px 0;border-bottom:0.5px solid #f0ede8">
       <span style="font-size:13px;${isPast?'color:#aaa':''}">${dateLabel}</span>
-      <div style="text-align:center">
+      <div>
         ${editable
           ? `<select style="font-size:12px;padding:3px 6px;width:auto" onchange="setAvailabilityForPlayer('${p.id}','${d}',this.value,document.getElementById('pnote-${d}').value)">
               <option value="unknown"${av.status==='unknown'?' selected':''}>Unknown</option>
@@ -1779,9 +1787,6 @@ function requestOAuthToken(){
         const oauthStatus = document.getElementById('oauth-status');
         if(oauthStatus){ oauthStatus.textContent = 'Connected to Google — ready to write to sheet.'; oauthStatus.style.color = '#27500A'; }
         toast('Google account connected.');
-        // hide availability warning and re-render
-        const warn = document.getElementById('avail-token-warning');
-        if(warn) warn.style.display = 'none';
         renderAvailability();
       } else {
         toast('Google authorization failed — try again');
