@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Good Vibes Tribe</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%23c8e636'/><path d='M15 35 Q50 50 15 65' fill='none' stroke='white' stroke-width='6'/><path d='M85 35 Q50 50 85 65' fill='none' stroke='white' stroke-width='6'/></svg>">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f0;color:#1a1a1a;font-size:15px;line-height:1.6}
@@ -16,11 +17,11 @@ h3{font-size:15px;font-weight:500;margin-bottom:.75rem}
 .app{display:none;min-height:100vh}
 .sidebar{width:220px;background:#fff;border-right:0.5px solid #e0ddd5;padding:1.5rem 1rem;position:fixed;top:0;left:0;height:100vh;overflow-y:auto}
 .main{margin-left:220px;padding:2rem;max-width:900px}
-.brand{font-size:15px;font-weight:500;color:#185FA5;margin-bottom:.25rem}
-.brand-sub{font-size:12px;color:#888;margin-bottom:1.5rem}
+.brand{font-size:15px;font-weight:500;color:#0F6E56;margin-bottom:.25rem}
+.brand-sub{font-size:11px;color:#1D9E75;letter-spacing:.08em;text-transform:uppercase;margin-bottom:1.5rem;font-weight:500}
 .nav-item{display:block;padding:8px 12px;border-radius:8px;font-size:14px;color:#555;cursor:pointer;border:none;background:none;width:100%;text-align:left;margin-bottom:2px}
 .nav-item:hover{background:#f5f5f0}
-.nav-item.active{background:#E6F1FB;color:#0C447C;font-weight:500}
+.nav-item.active{background:#E1F5EE;color:#0F6E56;font-weight:500;border-left:3px solid #1D9E75;border-radius:0 8px 8px 0}
 .nav-section{font-size:11px;color:#aaa;text-transform:uppercase;letter-spacing:.05em;padding:8px 12px 4px;margin-top:.5rem}
 .user-bar{position:fixed;top:0;left:220px;right:0;height:52px;background:#fff;border-bottom:0.5px solid #e0ddd5;display:flex;align-items:center;justify-content:flex-end;padding:0 2rem;gap:12px;z-index:10}
 .content{margin-top:52px;padding:2rem;max-width:900px}
@@ -194,10 +195,25 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
 </div>
 
 <!-- LOGIN SCREEN -->
-<div id="login-screen" class="screen" style="display:none">
-  <div class="screen-card" style="max-width:420px">
-    <div class="screen-logo" id="login-team-name">Good Vibes Tribe</div>
-    <div class="screen-sub" style="margin-bottom:1.5rem">Please sign in to continue</div>
+<div id="login-screen" class="screen" style="display:none;background:linear-gradient(135deg,#1a4a2e 0%,#2d7a4f 40%,#1a5c3a 100%);min-height:100vh;align-items:center;justify-content:center;padding:1rem;position:relative;overflow:hidden">
+  <!-- tennis court lines SVG background -->
+  <svg style="position:absolute;inset:0;width:100%;height:100%;opacity:0.12" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice">
+    <rect x="40" y="30" width="320" height="240" fill="none" stroke="white" stroke-width="3"/>
+    <line x1="200" y1="30" x2="200" y2="270" stroke="white" stroke-width="2"/>
+    <line x1="40" y1="150" x2="360" y2="150" stroke="white" stroke-width="2"/>
+    <line x1="100" y1="30" x2="100" y2="270" stroke="white" stroke-width="1.5"/>
+    <line x1="300" y1="30" x2="300" y2="270" stroke="white" stroke-width="1.5"/>
+    <line x1="100" y1="90" x2="300" y2="90" stroke="white" stroke-width="1.5"/>
+    <line x1="100" y1="210" x2="300" y2="210" stroke="white" stroke-width="1.5"/>
+    <line x1="200" y1="90" x2="200" y2="210" stroke="white" stroke-width="1.5"/>
+    <circle cx="200" cy="150" r="4" fill="white"/>
+  </svg>
+  <div class="screen-card" style="max-width:420px;position:relative;z-index:1;box-shadow:0 8px 40px rgba(0,0,0,0.3)">
+    <div style="text-align:center;margin-bottom:1.5rem">
+      <div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#1D9E75;font-weight:500;margin-bottom:4px">USTA 4.0 18+</div>
+      <div class="screen-logo" id="login-team-name" style="font-size:28px;color:#1a4a2e;letter-spacing:-.5px">Good Vibes Tribe</div>
+      <div class="screen-sub" style="margin-bottom:0;font-size:13px">Please sign in to continue</div>
+    </div>
 
     <div style="text-align:center;margin-bottom:1.5rem">
       <div style="font-size:28px;margin-bottom:.5rem">&#127934;</div>
@@ -212,17 +228,26 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
 
     <hr class="divider">
 
-    <details style="margin-top:0">
+    <details style="margin-top:0" id="captain-details">
       <summary style="font-size:13px;color:#888;cursor:pointer;list-style:none;display:flex;align-items:center;gap:6px">
         <span>&#9654;</span> Captain access
       </summary>
       <div style="margin-top:.75rem">
-        <div style="font-size:12px;color:#888;margin-bottom:.75rem">Sign in with Google above first, then enter the captain password.</div>
-        <div style="display:flex;gap:8px">
-          <input type="password" id="captain-pw-input" placeholder="Captain password" style="flex:1" onkeydown="if(event.key==='Enter')captainLogin()">
-          <button class="btn btn-primary" onclick="captainLogin()">Unlock</button>
+
+        <div style="margin-bottom:1rem">
+          <div style="font-size:13px;font-weight:500;color:#555;margin-bottom:4px">Step 1 — Sign in with Google</div>
+          <div id="captain-google-status" style="font-size:13px;color:#888;background:#f5f5f0;border-radius:8px;padding:8px 12px">Not signed in yet — use the button above.</div>
         </div>
-        <div id="login-error" style="font-size:12px;color:#A32D2D;margin-top:8px;display:none">Incorrect password.</div>
+
+        <div id="captain-pw-section" style="opacity:0.4;pointer-events:none">
+          <div style="font-size:13px;font-weight:500;color:#555;margin-bottom:4px">Step 2 — Enter captain password</div>
+          <div style="display:flex;gap:8px">
+            <input type="password" id="captain-pw-input" placeholder="Captain password" style="flex:1" onkeydown="if(event.key==='Enter')captainLogin()">
+            <button class="btn btn-primary" onclick="captainLogin()">Unlock</button>
+          </div>
+          <div id="login-error" style="font-size:12px;color:#A32D2D;margin-top:8px;display:none">Incorrect password.</div>
+        </div>
+
       </div>
     </details>
   </div>
@@ -232,7 +257,7 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
 <div id="app" class="app">
   <div class="sidebar">
     <div class="brand" id="app-team-name">Good Vibes Tribe</div>
-    <div class="brand-sub">USTA 4.0 18+</div>
+    <div class="brand-sub">Good Vibes Tribe</div>
     <button class="nav-item active" onclick="nav('dashboard',this)">Dashboard</button>
     <button class="nav-item" onclick="nav('roster',this)">Roster</button>
     <button class="nav-item" onclick="nav('availability',this)">Availability</button>
@@ -710,6 +735,15 @@ function handleCredential(response){
   client.requestAccessToken({prompt:''});
   const status = document.getElementById('login-google-status');
   if(status){ status.textContent = 'Signed in as '+payload.email+' — entering app...'; status.style.display='block'; }
+  // update captain Step 1 status and unlock Step 2
+  const captainStatus = document.getElementById('captain-google-status');
+  if(captainStatus){
+    captainStatus.textContent = 'Signed in as '+payload.email;
+    captainStatus.style.background = '#EAF3DE';
+    captainStatus.style.color = '#27500A';
+  }
+  const pwSection = document.getElementById('captain-pw-section');
+  if(pwSection){ pwSection.style.opacity='1'; pwSection.style.pointerEvents='auto'; }
   setTimeout(()=>launchApp(), 600);
 }
 
@@ -720,11 +754,13 @@ function parseJwt(token){
 
 function captainLogin(){
   const pw = document.getElementById('captain-pw-input').value;
+  // require Google sign-in first
+  if(!STATE.user || !STATE.user.email || STATE.user.email==='captain'){
+    const err = document.getElementById('login-error');
+    if(err){ err.style.display='block'; err.textContent='Please sign in with Google first (Step 1).'; }
+    return;
+  }
   if(pw === CFG.captainPw){
-    // if already google-signed-in, keep their identity but elevate to captain
-    if(!STATE.user || !STATE.user.email || STATE.user.email==='captain'){
-      STATE.user = {name:'Captain', email:'captain', picture:null};
-    }
     STATE.role = 'captain';
     localStorage.setItem('usta_user', JSON.stringify({...STATE.user, role:'captain'}));
     if(typeof google !== 'undefined' && google.accounts && google.accounts.oauth2){
@@ -1279,7 +1315,8 @@ function renderDashboard(){
     const lu = STATE.allLineups[d] || {};
     const hasLineup = LINEUP_KEYS.some(k=>lu[k]);
 
-    return `<div class="card" style="margin-bottom:12px">
+    const cardBorder = sched.location.toLowerCase().includes('home') ? 'border-left:3px solid #1D9E75' : sched.location.toLowerCase().includes('away') ? 'border-left:3px solid #EF9F27' : '';
+    return `<div class="card" style="margin-bottom:12px;${cardBorder}">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px">
         <div>
           <div style="font-size:16px;font-weight:500">${dateLabel}</div>
@@ -1384,15 +1421,16 @@ function renderAvailPlayerDropdown(){
   const me = STATE.user?.email?.toLowerCase();
 
   if(isCaptain){
-    // Captain sees all players
-    sel.innerHTML = STATE.players.map(p =>
+    // Captain sees all players sorted by first name
+    const sorted = [...STATE.players].sort((a,b)=>a.first.localeCompare(b.first));
+    sel.innerHTML = sorted.map(p =>
       `<option value="${p.id}">${p.first} ${p.last}</option>`
     ).join('');
     sel.disabled = false;
     // default to Kim Song if no selection yet
     if(!SELECTED_AVAIL_PLAYER){
       const kim = STATE.players.find(p => p.first.toLowerCase().includes('kim') || p.last.toLowerCase().includes('song'));
-      SELECTED_AVAIL_PLAYER = kim ? kim.id : (STATE.players[0]?.id || null);
+      SELECTED_AVAIL_PLAYER = kim ? kim.id : (sorted[0]?.id || null);
     }
   } else {
     // Player sees only themselves
