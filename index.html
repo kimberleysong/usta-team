@@ -956,12 +956,14 @@ function handleCredential(response){
   STATE.user = {name:payload.name, email:payload.email, picture:payload.picture};
   STATE.role = 'player';
   localStorage.setItem('usta_user', JSON.stringify(STATE.user));
-  const client = google.accounts.oauth2.initTokenClient({
+  // request OAuth token silently — launches app whether token succeeds or not
+  const _tokenClient = google.accounts.oauth2.initTokenClient({
     client_id: CFG.clientId,
     scope: 'https://www.googleapis.com/auth/spreadsheets',
-    callback: (r)=>{ TOKEN = r.access_token; },
+    callback: (r)=>{ if(r.access_token) TOKEN = r.access_token; },
+    error_callback: ()=>{ console.warn('Silent token request failed'); }
   });
-  client.requestAccessToken({prompt:''});
+  _tokenClient.requestAccessToken({prompt:''});
   const status = document.getElementById('login-google-status');
   if(status){ status.textContent = 'Signed in as '+payload.email+' — entering app...'; status.style.display='block'; }
   // update captain Step 1 status and unlock Step 2
@@ -976,7 +978,6 @@ function handleCredential(response){
   // if captain details section is open, don't auto-launch — wait for password
   const captainDetails = document.getElementById('captain-details');
   if(captainDetails && captainDetails.open){
-    // just update status, don't launch yet
     document.getElementById('captain-pw-input')?.focus();
   } else {
     setTimeout(()=>launchApp(), 600);
@@ -1843,7 +1844,25 @@ async function setAvailabilityForPlayer(playerId, date, status, note){
       toast('You can only update your own availability'); return;
     }
   }
-  if(!TOKEN){toast('Sign in with Google to save changes');return}
+  if(!TOKEN){
+    // token missing — try to get it silently then retry
+    toast('Connecting to Google...');
+    const c = google.accounts.oauth2.initTokenClient({
+      client_id: CFG.clientId,
+      scope: 'https://www.googleapis.com/auth/spreadsheets',
+      callback: async (r)=>{
+        if(r.access_token){
+          TOKEN = r.access_token;
+          await setAvailabilityForPlayer(playerId, date, status, note);
+        } else {
+          toast('Could not connect to Google — please sign out and sign in again');
+        }
+      },
+      error_callback: ()=>{ toast('Could not connect to Google — please sign out and sign in again'); }
+    });
+    c.requestAccessToken({prompt:''});
+    return;
+  }
   // Update local state immediately
   if(!STATE.availability[date]) STATE.availability[date]={};
   STATE.availability[date][playerId] = {status, note:note||''};
