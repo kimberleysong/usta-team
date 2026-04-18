@@ -668,7 +668,16 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script>
 // ─── CONFIG ─────────────────────────────────────────────────────────────────
-let CFG = JSON.parse(localStorage.getItem('usta_cfg') || '{}');
+// ── HARDCODED CONFIG — fill these in so players never see setup screen ──
+const DEFAULT_CFG = {
+  sheetId:    '1nXZxwggCeBQCrZ5hBN9KyjtC51LDUMYfOabA4ak8OV4',
+  apiKey:     'AIzaSyCk8ZEcMdjO2VD3L6pfZrc0au3zp_w7FbU',
+  clientId:   '1053306336977-3env1i48fpuh03firf5fbf4qjpbpc10g.apps.googleusercontent.com',
+  captainPwHash: 'a0c545d1914e0d3cdd509d9f2e7de121ce2d495939327253a481c371fad434c6',
+  teamName:   'Good Vibes Tribe'
+};
+// merge: localStorage overrides defaults (captain's saved config wins)
+let CFG = Object.assign({}, DEFAULT_CFG, JSON.parse(localStorage.getItem('usta_cfg') || '{}'));
 let STATE = {players:[], availability:{}, lineup:{}, allLineups:{}, messages:[], schedule:[], role:'guest', user:null};
 let TOKEN = null;
 
@@ -694,7 +703,11 @@ const AVATAR_COLORS=['#E6F1FB:#0C447C','#E1F5EE:#085041','#FAEEDA:#633806','#EEE
 
 // ─── BOOT ────────────────────────────────────────────────────────────────────
 window.onload = function(){
-  if(!CFG.sheetId || !CFG.apiKey || !CFG.clientId){
+  // show setup only if config is completely missing AND no defaults set
+  const hasConfig = CFG.sheetId && CFG.sheetId !== 'YOUR_SHEET_ID_HERE'
+                 && CFG.apiKey  && CFG.apiKey  !== 'YOUR_API_KEY_HERE'
+                 && CFG.clientId && CFG.clientId !== 'YOUR_OAUTH_CLIENT_ID_HERE';
+  if(!hasConfig){
     showScreen('setup');
     return;
   }
@@ -767,7 +780,7 @@ function parseJwt(token){
   return JSON.parse(atob(b.replace(/-/g,'+').replace(/_/g,'/')));
 }
 
-function captainLogin(){
+async function captainLogin(){
   const pw = document.getElementById('captain-pw-input').value;
   // require Google sign-in first
   if(!STATE.user || !STATE.user.email || STATE.user.email==='captain'){
@@ -775,7 +788,11 @@ function captainLogin(){
     if(err){ err.style.display='block'; err.textContent='Please sign in with Google first (Step 1).'; }
     return;
   }
-  if(pw === CFG.captainPw){
+  // hash the entered password and compare
+  const encoder = new TextEncoder();
+  const hashBuffer = await crypto.subtle.digest('SHA-256', encoder.encode(pw));
+  const hashHex = Array.from(new Uint8Array(hashBuffer)).map(b=>b.toString(16).padStart(2,'0')).join('');
+  if(hashHex === CFG.captainPwHash){
     STATE.role = 'captain';
     localStorage.setItem('usta_user', JSON.stringify({...STATE.user, role:'captain'}));
     if(typeof google !== 'undefined' && google.accounts && google.accounts.oauth2){
@@ -1782,17 +1799,22 @@ function renderMessages(){
 
 // ─── SETUP ───────────────────────────────────────────────────────────────────
 function saveSetup(){
-  CFG = {
-    sheetId: v('setup-sheet-id'),
-    apiKey: v('setup-api-key'),
-    clientId: v('setup-client-id'),
-    captainPw: v('setup-captain-pw'),
-    teamName: v('setup-team-name')||'Good Vibes Tribe'
-  };
-  if(!CFG.sheetId||!CFG.apiKey||!CFG.clientId||!CFG.captainPw){toast('All fields required');return}
-  localStorage.setItem('usta_cfg', JSON.stringify(CFG));
-  toast('Setup saved — loading app...');
-  setTimeout(()=>location.reload(), 800);
+  const setupPw = v('setup-captain-pw');
+  if(!v('setup-sheet-id')||!v('setup-api-key')||!v('setup-client-id')||!setupPw){toast('All fields required');return}
+  const encoder = new TextEncoder();
+  crypto.subtle.digest('SHA-256', encoder.encode(setupPw)).then(buf=>{
+    const hash = Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+    CFG = {
+      sheetId: v('setup-sheet-id'),
+      apiKey: v('setup-api-key'),
+      clientId: v('setup-client-id'),
+      captainPwHash: hash,
+      teamName: v('setup-team-name')||'Good Vibes Tribe'
+    };
+    localStorage.setItem('usta_cfg', JSON.stringify(CFG));
+    toast('Setup saved — loading app...');
+    setTimeout(()=>location.reload(), 800);
+  });
 }
 
 function saveConfig(){
@@ -1801,7 +1823,15 @@ function saveConfig(){
   CFG.apiKey = v('cfg-api-key')||CFG.apiKey;
   CFG.clientId = v('cfg-client-id')||CFG.clientId;
   const pw = v('cfg-captain-pw');
-  if(pw) CFG.captainPw = pw;
+  if(pw){
+    const encoder = new TextEncoder();
+    crypto.subtle.digest('SHA-256', encoder.encode(pw)).then(buf=>{
+      CFG.captainPwHash = Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+      localStorage.setItem('usta_cfg', JSON.stringify(CFG));
+      toast('Settings saved');
+    });
+    return;
+  }
   localStorage.setItem('usta_cfg', JSON.stringify(CFG));
   toast('Settings saved');
 }
