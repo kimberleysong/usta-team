@@ -69,8 +69,8 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
 
 /* Table */
 .tbl{width:100%;border-collapse:collapse;font-size:13px}
-.tbl th{text-align:left;padding:8px 10px;font-size:12px;color:#888;font-weight:500;border-bottom:0.5px solid #e0ddd5}
-.tbl td{padding:8px 10px;border-bottom:0.5px solid #f0ede8;vertical-align:middle}
+.tbl th{text-align:left;padding:6px 8px;font-size:12px;color:#888;font-weight:500;border-bottom:0.5px solid #e0ddd5}
+.tbl td{padding:5px 8px;border-bottom:0.5px solid #f0ede8;vertical-align:middle}
 .tbl tr:last-child td{border-bottom:none}
 .tbl tr:hover td{background:#fafaf8}
 
@@ -84,9 +84,9 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
 .msg-body{font-size:13px;color:#555;white-space:pre-wrap;margin-top:6px}
 
 /* Tabs */
-.tab-bar{display:flex;gap:0;border-bottom:0.5px solid #e0ddd5;margin-bottom:1rem}
-.tab-btn{padding:8px 20px;font-size:13px;border:none;background:none;cursor:pointer;color:#888;border-bottom:2px solid transparent;margin-bottom:-1px;font-family:inherit}
-.tab-btn.active{color:#0C447C;border-bottom-color:#378ADD;font-weight:500}
+.tab-bar{display:flex;gap:0;border-bottom:2px solid #e0ddd5;margin-bottom:1rem}
+.tab-btn{padding:8px 20px;font-size:13px;border:none;background:none;cursor:pointer;color:#888;border-bottom:3px solid transparent;margin-bottom:-2px;font-family:inherit}
+.tab-btn.active{color:#0F6E56;border-bottom-color:#1D9E75;font-weight:500}
 .tab-btn:hover:not(.active){color:#555}
 .tab-pane{display:none}.tab-pane.active{display:block}
 /* Availability grid */
@@ -299,8 +299,8 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
         <div id="roster-tab-list" class="tab-pane active">
           <div id="roster-loading" style="color:#888;font-size:13px;padding:1rem">Loading roster...</div>
           <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
-          <table class="tbl" id="roster-tbl" style="display:none;table-layout:fixed;min-width:380px;width:100%">
-            <thead><tr><th style="width:80px;white-space:nowrap">Player</th><th style="white-space:nowrap">Contact email</th><th style="width:110px;white-space:nowrap">Phone</th><th class="roster-hide-mobile" style="width:80px;white-space:nowrap">Singles/Dubs</th><th id="roster-actions-col" style="width:70px"></th></tr></thead>
+          <table class="tbl" id="roster-tbl" style="display:none;width:100%;min-width:420px">
+            <thead><tr><th style="white-space:nowrap;width:140px">Player</th><th style="white-space:nowrap;min-width:160px">Contact email</th><th style="white-space:nowrap;width:120px">Phone</th><th class="roster-hide-mobile" style="white-space:nowrap;width:80px">Singles/Dubs</th><th id="roster-actions-col" style="width:70px"></th></tr></thead>
             <tbody id="roster-body"></tbody>
           </table>
           </div>
@@ -1369,9 +1369,9 @@ function renderRoster(){
   tbody.innerHTML = sorted.map((p,i)=>{
     const av = AVATAR_COLORS[i%AVATAR_COLORS.length].split(':');
     return `<tr>
-      <td><div style="display:flex;align-items:center;gap:8px">
-        <div class="avatar" style="background:${av[0]};color:${av[1]};width:28px;height:28px;font-size:11px">${p.first[0]}${p.last[0]}</div>
-        <span class="roster-hide-mobile">${p.first} ${p.last}</span>
+      <td style="overflow:hidden"><div style="display:flex;align-items:center;gap:6px;overflow:hidden">
+        <div class="avatar" style="background:${av[0]};color:${av[1]};width:24px;height:24px;font-size:10px;flex-shrink:0">${p.first[0]}${p.last[0]}</div>
+        <span class="roster-hide-mobile" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.first} ${p.last}</span>
       </div></td>
       <td style="color:#185FA5;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px">${p.email}</td>
       <td style="white-space:nowrap">${p.phone}</td>
