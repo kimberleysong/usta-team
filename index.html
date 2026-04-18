@@ -24,7 +24,7 @@ h3{font-size:15px;font-weight:500;margin-bottom:.75rem}
 .nav-item.active{background:#E1F5EE;color:#0F6E56;font-weight:500;border-left:3px solid #1D9E75;border-radius:0 8px 8px 0}
 .nav-section{font-size:11px;color:#aaa;text-transform:uppercase;letter-spacing:.05em;padding:8px 12px 4px;margin-top:.5rem}
 .user-bar{position:fixed;top:0;left:220px;right:0;height:52px;background:#fff;border-bottom:0.5px solid #e0ddd5;display:flex;align-items:center;justify-content:flex-end;padding:0 2rem;gap:12px;z-index:10}
-.content{margin-top:52px;padding:2rem;max-width:900px}
+.content{margin-top:52px;padding:1rem 2rem 2rem;max-width:900px}
 
 /* Cards */
 .card{background:#fff;border:0.5px solid #e0ddd5;border-radius:12px;padding:1rem 1.25rem;margin-bottom:12px}
@@ -126,7 +126,7 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
   .mobile-nav-btn.active{color:#0C447C}
   .mobile-nav-icon{font-size:18px;line-height:1}
   /* extra bottom padding so content clears tab bar */
-  .content{padding:1rem 1rem 72px}
+  .content{padding:.5rem 1rem 72px}
   /* stack doubles/singles vertically */
   #sec-lineup .grid-lineup{grid-template-columns:1fr!important}
   /* 2x2 stat grid */
@@ -262,7 +262,7 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
     <button class="nav-item" onclick="nav('roster',this)">Roster</button>
     <button class="nav-item" onclick="nav('availability',this)">Availability</button>
     <button class="nav-item" id="nav-lineup" onclick="nav('lineup',this)">Lineup</button>
-    <button class="nav-item" onclick="nav('announcements',this)">Announcements</button>
+    <button class="nav-item" onclick="nav('news',this)">News</button>
     <div class="nav-section">Account</div>
     <button class="nav-item" id="nav-schedule" onclick="nav('schedule',this)" style="display:none">Schedule</button>
     <button class="nav-item" id="nav-entitlements" onclick="nav('entitlements',this)" style="display:none">Entitlements</button>
@@ -281,7 +281,6 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
 
       <!-- DASHBOARD -->
       <div id="sec-dashboard" class="section">
-        <h2>Dashboard</h2>
 
         <div id="d-weeks-container"></div>
 
@@ -290,8 +289,7 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
 
       <!-- ROSTER -->
       <div id="sec-roster" class="section" style="display:none">
-        <h2>Roster</h2>
-
+        
         <div class="tab-bar">
           <button class="tab-btn active" onclick="switchRosterTab('list',this)">Player list</button>
           <button class="tab-btn" id="roster-add-tab-btn" onclick="switchRosterTab('add',this)" style="display:none">Add player</button>
@@ -301,8 +299,8 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
         <div id="roster-tab-list" class="tab-pane active">
           <div id="roster-loading" style="color:#888;font-size:13px;padding:1rem">Loading roster...</div>
           <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
-          <table class="tbl" id="roster-tbl" style="display:none;table-layout:fixed;min-width:500px;width:100%">
-            <thead><tr><th style="width:120px;white-space:nowrap">Player</th><th style="white-space:nowrap">Contact email</th><th style="width:130px;white-space:nowrap">Phone</th><th class="roster-hide-mobile" style="width:140px;white-space:nowrap">Position preference</th><th id="roster-actions-col" style="width:80px"></th></tr></thead>
+          <table class="tbl" id="roster-tbl" style="display:none;table-layout:fixed;min-width:380px;width:100%">
+            <thead><tr><th style="width:80px;white-space:nowrap">Player</th><th style="white-space:nowrap">Contact email</th><th style="width:110px;white-space:nowrap">Phone</th><th class="roster-hide-mobile" style="width:80px;white-space:nowrap">Singles/Dubs</th><th id="roster-actions-col" style="width:70px"></th></tr></thead>
             <tbody id="roster-body"></tbody>
           </table>
           </div>
@@ -340,8 +338,7 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
 
       <!-- AVAILABILITY -->
       <div id="sec-availability" class="section" style="display:none">
-        <h2>Availability calendar</h2>
-
+        
         <div class="tab-bar">
           <button class="tab-btn active" onclick="switchAvailTab('update',this)">Update availability</button>
           <button class="tab-btn" onclick="switchAvailTab('summary',this)">Season summary</button>
@@ -388,8 +385,7 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
 
       <!-- LINEUP -->
       <div id="sec-lineup" class="section" style="display:none">
-        <h2>Lineup</h2>
-
+        
         <div class="tab-bar">
           <button class="tab-btn active" onclick="switchLineupTab('builder',this)">Lineup builder</button>
           <button class="tab-btn" onclick="switchLineupTab('saved',this)">Saved lineups</button>
@@ -430,16 +426,15 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
       </div>
 
       <!-- ANNOUNCEMENTS -->
-      <div id="sec-announcements" class="section" style="display:none">
-        <h2>Announcements</h2>
-        <div id="msg-captain-form" style="display:none">
+      <div id="sec-news" class="section" style="display:none">
+                <div id="msg-captain-form" style="display:none">
           <div class="card" style="margin-bottom:1rem">
             <div class="card-title">New announcement</div>
             <div class="form-group"><label>Type</label>
               <select id="msg-type">
                 <option value="lineup">Lineup announcement</option>
                 <option value="reminder">Availability reminder</option>
-                <option value="announcement">General announcement</option>
+                <option value="news">General announcement</option>
               </select>
             </div>
             <div class="form-group"><label>Subject</label><input id="msg-subject" placeholder="Wednesday lineup — Apr 16"></div>
@@ -450,14 +445,13 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
             </div>
           </div>
         </div>
-        <h3>Announcements</h3>
+        <h3>News</h3>
         <div id="msg-list">Loading...</div>
       </div>
 
       <!-- SCHEDULE -->
       <div id="sec-schedule" class="section" style="display:none">
-        <h2>Schedule</h2>
-
+        
         <div class="card" style="margin-bottom:1rem">
           <div class="card-title">Import from TennisLink</div>
           <p style="font-size:13px;color:#555;margin-bottom:12px">Paste your TennisLink schedule URL and click Import. The schedule will be parsed and saved to your Google Sheet.</p>
@@ -512,8 +506,7 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
 
       <!-- ENTITLEMENTS -->
       <div id="sec-entitlements" class="section" style="display:none">
-        <h2>Entitlements</h2>
-        <p style="font-size:13px;color:#555;margin-bottom:1.5rem">Access control for all features in the app. Captain access is granted via the captain password at login.</p>
+                <p style="font-size:13px;color:#555;margin-bottom:1.5rem">Access control for all features in the app. Captain access is granted via the captain password at login.</p>
 
         <div class="card" style="margin-bottom:12px">
           <div class="card-title">Roster</div>
@@ -554,12 +547,12 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
         </div>
 
         <div class="card" style="margin-bottom:12px">
-          <div class="card-title">Announcements</div>
+          <div class="card-title">News</div>
           <table class="tbl">
             <thead><tr><th>Action</th><th>Captain</th><th>Player</th></tr></thead>
             <tbody>
-              <tr><td>View announcements</td><td><span class="badge badge-green">Yes</span></td><td><span class="badge badge-green">Yes</span></td></tr>
-              <tr><td>Post announcements</td><td><span class="badge badge-green">Yes</span></td><td><span class="badge badge-red">No</span></td></tr>
+              <tr><td>View news</td><td><span class="badge badge-green">Yes</span></td><td><span class="badge badge-green">Yes</span></td></tr>
+              <tr><td>Post announcement</td><td><span class="badge badge-green">Yes</span></td><td><span class="badge badge-red">No</span></td></tr>
             </tbody>
           </table>
         </div>
@@ -589,8 +582,7 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
 
       <!-- SETTINGS -->
       <div id="sec-settings" class="section" style="display:none">
-        <h2>Settings</h2>
-        <div class="card">
+                <div class="card">
           <div class="card-title">Configuration</div>
           <div class="form-group"><label>Team name</label><input id="cfg-team-name"></div>
           <div class="form-group"><label>Sheet ID</label><input id="cfg-sheet-id"></div>
@@ -608,7 +600,7 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
             <tr><td><code>Players</code></td><td style="font-size:12px">id, first, last, phone, email, rating, pos, gemail</td></tr>
             <tr><td><code>Availability</code></td><td style="font-size:12px">week, player_id, status, note</td></tr>
             <tr><td><code>Lineup</code></td><td style="font-size:12px">week, slot, player_id</td></tr>
-            <tr><td><code>Announcements</code></td><td style="font-size:12px">id, date, type, subject, body, author</td></tr>
+            <tr><td><code>News</code></td><td style="font-size:12px">id, date, type, subject, body, author</td></tr>
             <tr><td><code>Schedule</code></td><td style="font-size:12px">date, home_away, opponent, venue</td></tr>
           </table>
           <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
@@ -640,9 +632,9 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3" cy="6" r="1" fill="currentColor"/><circle cx="3" cy="12" r="1" fill="currentColor"/><circle cx="3" cy="18" r="1" fill="currentColor"/></svg>
       <span>Lineup</span>
     </button>
-    <button class="mobile-nav-btn" onclick="mobileNav('announcements',this)">
+    <button class="mobile-nav-btn" onclick="mobileNav('news',this)">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-      <span>Announcements</span>
+      <span>News</span>
     </button>
     <button class="mobile-nav-btn" onclick="if(confirm('Sign out?'))logout()" style="color:#A32D2D">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
@@ -716,7 +708,7 @@ function initGSI(){
     google.accounts.id.renderButton(document.getElementById('g-signin-btn'),{theme:'outline',size:'large',text:'signin_with',width:260});
     google.accounts.id.prompt();
   }
-  document.getElementById('login-team-name').textContent = CFG.teamName || 'USTA Team Manager';
+  document.getElementById('login-team-name').textContent = CFG.teamName || 'Good Vibes Tribe';
 }
 
 function handleCredential(response){
@@ -1035,7 +1027,7 @@ async function announceLineup(){
   document.getElementById('msg-type').value='lineup';
   document.getElementById('msg-subject').value='Wednesday lineup — '+SELECTED_LINEUP_DATE;
   document.getElementById('msg-body').value=msg;
-  nav('announcements', document.querySelectorAll('.nav-item')[4]);
+  nav('news', document.querySelectorAll('.nav-item')[4]);
 }
 
 function buildLineupText(){
@@ -1726,7 +1718,7 @@ function renderLineup(){
 
 function renderMessages(){
   const el = document.getElementById('msg-list');
-  if(!STATE.messages.length){el.innerHTML='<p style="font-size:13px;color:#888">No announcements yet.</p>';return}
+  if(!STATE.messages.length){el.innerHTML='<p style="font-size:13px;color:#888">No news yet.</p>';return}
   el.innerHTML = STATE.messages.map(m=>`
     <div class="msg-card">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
@@ -1748,7 +1740,7 @@ function saveSetup(){
     apiKey: v('setup-api-key'),
     clientId: v('setup-client-id'),
     captainPw: v('setup-captain-pw'),
-    teamName: v('setup-team-name')||'USTA Team Manager'
+    teamName: v('setup-team-name')||'Good Vibes Tribe'
   };
   if(!CFG.sheetId||!CFG.apiKey||!CFG.clientId||!CFG.captainPw){toast('All fields required');return}
   localStorage.setItem('usta_cfg', JSON.stringify(CFG));
