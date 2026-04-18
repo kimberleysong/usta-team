@@ -297,12 +297,14 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
 
         <!-- PLAYER LIST TAB -->
         <div id="roster-tab-list" class="tab-pane active">
+          <div class="card" style="padding:0;overflow:hidden">
           <div id="roster-loading" style="color:#888;font-size:13px;padding:1rem">Loading roster...</div>
           <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
           <table class="tbl" id="roster-tbl" style="display:none;width:100%;min-width:420px">
             <thead><tr><th style="white-space:nowrap;width:140px">Player</th><th style="white-space:nowrap;min-width:160px">Contact email</th><th style="white-space:nowrap;width:120px">Phone</th><th class="roster-hide-mobile" style="white-space:nowrap;width:80px">Singles/Dubs</th><th id="roster-actions-col" style="width:70px"></th></tr></thead>
             <tbody id="roster-body"></tbody>
           </table>
+          </div>
           </div>
         </div>
 
@@ -628,21 +630,38 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg>
       <span>Availability</span>
     </button>
-    <button class="mobile-nav-btn" id="mobile-nav-lineup" onclick="mobileNav('lineup',this)" style="display:none">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3" cy="6" r="1" fill="currentColor"/><circle cx="3" cy="12" r="1" fill="currentColor"/><circle cx="3" cy="18" r="1" fill="currentColor"/></svg>
-      <span>Lineup</span>
-    </button>
     <button class="mobile-nav-btn" onclick="mobileNav('news',this)">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
       <span>News</span>
     </button>
-    <button class="mobile-nav-btn" onclick="if(confirm('Sign out?'))logout()" style="color:#A32D2D">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-      <span>Sign out</span>
+    <button class="mobile-nav-btn" onclick="toggleMobileMore(this)" id="mobile-more-btn">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="5" cy="12" r="1" fill="currentColor"/><circle cx="12" cy="12" r="1" fill="currentColor"/><circle cx="19" cy="12" r="1" fill="currentColor"/></svg>
+      <span>More</span>
     </button>
   </nav>
 
-</div>
+  <!-- MOBILE MORE MENU -->
+  <div id="mobile-more-menu" style="display:none;position:fixed;bottom:56px;left:0;right:0;background:#fff;border-top:0.5px solid #e0ddd5;z-index:19;padding:.5rem 0;box-shadow:0 -4px 16px rgba(0,0,0,.1)">
+    <button id="mobile-menu-lineup" onclick="mobileMoreNav('lineup')" style="display:none;width:100%;padding:12px 1.5rem;border:none;background:none;font-size:14px;text-align:left;color:#333;cursor:pointer;align-items:center;gap:12px">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3" cy="6" r="1" fill="currentColor"/><circle cx="3" cy="12" r="1" fill="currentColor"/><circle cx="3" cy="18" r="1" fill="currentColor"/></svg>
+      Lineup
+    </button>
+    <button id="mobile-menu-schedule" onclick="mobileMoreNav('schedule')" style="display:none;width:100%;padding:12px 1.5rem;border:none;background:none;font-size:14px;text-align:left;color:#333;cursor:pointer;align-items:center;gap:12px">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      Schedule
+    </button>
+    <button id="mobile-menu-settings" onclick="mobileMoreNav('settings')" style="display:none;width:100%;padding:12px 1.5rem;border:none;background:none;font-size:14px;text-align:left;color:#333;cursor:pointer;align-items:center;gap:12px">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Settings
+    </button>
+    <div style="border-top:0.5px solid #f0ede8;margin:.25rem 0"></div>
+    <button onclick="if(confirm('Sign out?')){toggleMobileMore();logout()}" style="width:100%;padding:12px 1.5rem;border:none;background:none;font-size:14px;text-align:left;color:#A32D2D;cursor:pointer;display:flex;align-items:center;gap:12px">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#A32D2D" stroke-width="2" style="flex-shrink:0"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Sign out
+    </button>
+  </div>
+  <div id="mobile-more-backdrop" onclick="toggleMobileMore()" style="display:none;position:fixed;inset:0;bottom:56px;z-index:18;background:rgba(0,0,0,.2)"></div>
+
 
 <div id="toast" class="toast"></div>
 
@@ -817,6 +836,9 @@ function applyRoleUI(){
   set('nav-schedule', isCaptain ? 'block' : 'none');
   set('nav-lineup', isCaptain ? 'block' : 'none');
   set('mobile-nav-lineup', isCaptain ? 'flex' : 'none');
+  set('mobile-menu-lineup', isCaptain ? 'flex' : 'none');
+  set('mobile-menu-schedule', isCaptain ? 'flex' : 'none');
+  set('mobile-menu-settings', isCaptain ? 'flex' : 'none');
 }
 
 function logout(){
@@ -1378,6 +1400,24 @@ function renderRoster(){
       <td class="roster-hide-mobile"><span class="badge badge-gray">${p.pos}</span></td>
       <td>${STATE.role==='captain'?`<button class="btn btn-danger btn-sm" onclick="removePlayer('${p.id}')">Remove</button>`:''}</td>
     </tr>`;}).join('');
+}
+
+function toggleMobileMore(btn){
+  const menu = document.getElementById('mobile-more-menu');
+  const backdrop = document.getElementById('mobile-more-backdrop');
+  const moreBtn = document.getElementById('mobile-more-btn');
+  const isOpen = menu.style.display !== 'none';
+  menu.style.display = isOpen ? 'none' : 'block';
+  backdrop.style.display = isOpen ? 'none' : 'block';
+  if(moreBtn) moreBtn.classList.toggle('active', !isOpen);
+}
+
+function mobileMoreNav(id){
+  toggleMobileMore();
+  const btn = document.getElementById('mobile-more-btn');
+  if(btn) btn.classList.remove('active');
+  const sidebarBtn = Array.from(document.querySelectorAll('.nav-item')).find(b=>b.getAttribute('onclick')&&b.getAttribute('onclick').includes("'"+id+"'"));
+  if(sidebarBtn) window.nav(id, sidebarBtn);
 }
 
 function mobileNav(id, btn){
