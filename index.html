@@ -7,7 +7,7 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%23c8e636'/><path d='M15 35 Q50 50 15 65' fill='none' stroke='white' stroke-width='6'/><path d='M85 35 Q50 50 85 65' fill='none' stroke='white' stroke-width='6'/></svg>">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f0;color:#1a1a1a;font-size:15px;line-height:1.6}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#ece9e3;color:#1a1a1a;font-size:15px;line-height:1.6}
 a{color:#185FA5}
 h1{font-size:22px;font-weight:500}
 h2{font-size:18px;font-weight:500;margin-bottom:1rem}
@@ -25,11 +25,11 @@ h3{font-size:15px;font-weight:500;margin-bottom:.75rem}
 .nav-section{font-size:10px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:.08em;padding:8px 12px 4px;margin-top:.5rem}
 .brand{font-size:15px;font-weight:600;color:#fff;margin-bottom:.15rem}
 .brand-sub{font-size:11px;color:#5DCAA5;letter-spacing:.08em;text-transform:uppercase;margin-bottom:1.5rem;font-weight:500}
-.user-bar{position:fixed;top:0;left:220px;right:0;height:52px;background:#fff;border-bottom:0.5px solid #e0ddd5;display:flex;align-items:center;justify-content:flex-end;padding:0 2rem;gap:12px;z-index:10}
+.user-bar{position:fixed;top:0;left:220px;right:0;height:52px;background:#fff;border-bottom:0.5px solid #e0ddd5;display:flex;align-items:center;justify-content:space-between;padding:0 2rem;gap:12px;z-index:10}
 
 
 /* Cards */
-.card{background:#fff;border:0.5px solid #e0ddd5;border-radius:12px;padding:1rem 1.25rem;margin-bottom:12px}
+.card{background:#fff;border:0.5px solid #d8d4cc;border-radius:12px;padding:1rem 1.25rem;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
 .card-title{font-size:15px;font-weight:500;margin-bottom:.75rem}
 
 /* Badges */
@@ -51,7 +51,7 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
 
 /* Buttons */
 .btn{padding:8px 16px;font-size:13px;border-radius:8px;border:0.5px solid #ccc;background:#fff;color:#1a1a1a;cursor:pointer;font-family:inherit}
-.btn:hover{background:#f5f5f0}
+.btn:hover{background:#ece9e3}
 .btn:active{transform:scale(.98)}
 .btn-primary{background:#E6F1FB;color:#0C447C;border-color:#85B7EB}
 .btn-primary:hover{background:#B5D4F4}
@@ -62,7 +62,7 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
 .btn-sm{padding:4px 10px;font-size:12px}
 
 /* Stats */
-.stat{background:#f5f5f0;border-radius:8px;padding:1rem;text-align:center}
+.stat{background:#ece9e3;border-radius:8px;padding:1rem;text-align:center}
 .stat-val{font-size:24px;font-weight:500}
 .stat-lbl{font-size:12px;color:#888;margin-top:2px}
 
@@ -108,12 +108,12 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
 .avail-row:last-child{border-bottom:none}
 
 /* Setup/login screens */
-.screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:#f5f5f0;padding:1rem}
+.screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:#ece9e3;padding:1rem}
 .screen-card{background:#fff;border-radius:16px;padding:2.5rem;max-width:560px;width:100%;border:0.5px solid #e0ddd5}
 .screen-logo{font-size:20px;font-weight:500;color:#185FA5;margin-bottom:.25rem}
 .screen-sub{font-size:13px;color:#888;margin-bottom:2rem}
 .divider{border:none;border-top:0.5px solid #e0ddd5;margin:1.5rem 0}
-.setup-step{background:#f5f5f0;border-radius:8px;padding:1rem;margin-bottom:12px}
+.setup-step{background:#ece9e3;border-radius:8px;padding:1rem;margin-bottom:12px}
 .setup-step-num{font-size:11px;font-weight:500;color:#185FA5;margin-bottom:4px}
 .code{background:#1a1a1a;color:#9FE1CB;border-radius:6px;padding:8px 12px;font-family:monospace;font-size:12px;margin:6px 0;word-break:break-all}
 .toast{position:fixed;bottom:1.5rem;right:1.5rem;background:#1a1a1a;color:#fff;padding:10px 16px;border-radius:8px;font-size:13px;z-index:100;opacity:0;transition:opacity .2s;pointer-events:none}
@@ -249,7 +249,7 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
 
         <div style="margin-bottom:1rem">
           <div style="font-size:13px;font-weight:500;color:#555;margin-bottom:4px">Step 1 — Sign in with Google</div>
-          <div id="captain-google-status" style="font-size:13px;color:#888;background:#f5f5f0;border-radius:8px;padding:8px 12px">Not signed in yet — use the button above.</div>
+          <div id="captain-google-status" style="font-size:13px;color:#888;background:#ece9e3;border-radius:8px;padding:8px 12px">Not signed in yet — use the button above.</div>
         </div>
 
         <div id="captain-pw-section" style="opacity:0.4;pointer-events:none">
@@ -287,9 +287,12 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
 
   <div class="main">
     <div class="user-bar">
-      <div id="user-info" style="font-size:13px;color:#555"></div>
-      <span id="role-badge"></span>
-      <span id="last-sync" style="font-size:12px;color:#aaa"></span>
+      <div id="page-title" style="font-size:14px;font-weight:500;color:#1a1a1a"></div>
+      <div style="margin-left:auto;display:flex;align-items:center;gap:12px">
+        <span id="last-sync" style="font-size:12px;color:#aaa"></span>
+        <div id="user-info" style="font-size:13px;color:#555"></div>
+        <span id="role-badge"></span>
+      </div>
     </div>
 
     <div class="content">
@@ -372,10 +375,10 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
             <div id="avail-player-meta" style="font-size:13px;color:#888"></div>
           </div>
           <div class="card">
-            <div style="display:grid;grid-template-columns:70px 120px 1fr;gap:8px;padding-bottom:8px;border-bottom:0.5px solid #e0ddd5;margin-bottom:4px">
-              <span style="font-size:12px;color:#888">Date</span>
-              <span style="font-size:12px;color:#888">Status</span>
-              <span style="font-size:12px;color:#888">Note</span>
+            <div style="display:grid;grid-template-columns:80px 130px 1fr;gap:8px;padding:6px 10px 8px;border-bottom:0.5px solid #e0ddd5;margin-bottom:4px">
+              <span style="font-size:11px;color:#aaa;text-transform:uppercase;letter-spacing:.06em;font-weight:500">Date</span>
+              <span style="font-size:11px;color:#aaa;text-transform:uppercase;letter-spacing:.06em;font-weight:500">Status</span>
+              <span style="font-size:11px;color:#aaa;text-transform:uppercase;letter-spacing:.06em;font-weight:500">Note</span>
             </div>
             <div id="avail-body">Loading...</div>
           </div>
@@ -1055,6 +1058,7 @@ async function captainLogin(){
 
 function launchApp(){
   showScreen('app');
+  const _pt = document.getElementById('page-title'); if(_pt) _pt.textContent = 'Dashboard';
   const tn = document.getElementById('app-team-name'); if(tn) tn.textContent = CFG.teamName || 'Good Vibes Tribe';
   // keep brand-sub fixed
   const brandSub = document.querySelector('.brand-sub'); if(brandSub) brandSub.textContent = 'USTA 4.0 18+';
@@ -1114,6 +1118,8 @@ function logout(){
 // ─── NAVIGATION ──────────────────────────────────────────────────────────────
 function nav(id, btn){
   document.querySelectorAll('.section').forEach(s=>s.style.display='none');
+  const titles={dashboard:'Dashboard',roster:'Roster',availability:'Availability',news:'News',teaminfo:'Team Info',lineup:'Lineup',schedule:'Schedule',entitlements:'Entitlements',settings:'Settings'};
+  const _pt=document.getElementById('page-title'); if(_pt) _pt.textContent=titles[id]||'';
   document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
   document.getElementById('sec-'+id).style.display='block';
   btn.classList.add('active');
@@ -1673,8 +1679,8 @@ function renderDashboard(){
     return `<div class="card" style="margin-bottom:12px;${cardBorder}">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px">
         <div>
-          <div style="font-size:16px;font-weight:500">${dateLabel}</div>
-          ${sched.opponent ? `<div style="font-size:13px;color:#555;margin-top:3px">vs ${sched.opponent}</div>` : ''}
+          <div style="font-size:19px;font-weight:600;letter-spacing:-.3px;margin-bottom:1px">${dateLabel}</div>
+          ${sched.opponent ? `<div style="font-size:13px;color:#aaa;margin-top:2px;font-weight:400">vs ${sched.opponent}</div>` : ''}
           ${sched.location ? `<div style="font-size:12px;margin-top:3px;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
             <span style="padding:2px 8px;border-radius:20px;background:${sched.location.toLowerCase().includes('home')?'#EAF3DE':sched.location.toLowerCase().includes('away')?'#FAEEDA':'#F1EFE8'};color:${sched.location.toLowerCase().includes('home')?'#27500A':sched.location.toLowerCase().includes('away')?'#633806':'#5F5E5A'};font-size:11px">${sched.location}</span>
             ${sched.venue ? '<span style="font-size:12px;color:#555">'+sched.venue+'</span>' : ''}
@@ -1871,11 +1877,12 @@ function renderAvailability(){
     const statusBadge = av.status==='yes'?'tag-in':av.status==='maybe'?'tag-maybe':av.status==='no'?'tag-out':'tag-unknown';
     const statusLabel = av.status==='yes'?'Available':av.status==='maybe'?'Maybe':av.status==='no'?'Unavailable':'Unknown';
     const saveCall = `saveAvailRow('${p.id}','${d}')`;
-    return `<div style="display:grid;grid-template-columns:70px 120px 1fr;gap:8px;align-items:center;padding:7px 0;border-bottom:0.5px solid #f0ede8">
-      <span style="font-size:13px;${isPast?'color:#ccc':''}">${dateLabel}</span>
+    const rowBg = isPast ? '' : av.status==='yes' ? 'background:#f6fbf0' : av.status==='no' ? 'background:#fff8f8' : av.status==='maybe' ? 'background:#fffbf3' : '';
+    return `<div style="display:grid;grid-template-columns:80px 130px 1fr;gap:8px;align-items:center;padding:8px 10px;border-radius:8px;margin-bottom:3px;${rowBg}">
+      <span style="font-size:13px;font-weight:${isPast?'400':'500'};${isPast?'color:#ccc':'color:#333'}">${dateLabel}</span>
       <div>
         ${editable
-          ? `<select id="pstatus-${p.id}-${d}" style="font-size:12px;padding:3px 6px;width:auto;border-radius:6px" onchange="${saveCall};colorAvailSelect(this)">
+          ? `<select id="pstatus-${p.id}-${d}" style="font-size:12px;padding:4px 8px;width:auto;border-radius:6px;font-weight:500;border:0.5px solid #d8d4cc" onchange="${saveCall};colorAvailSelect(this)">
               <option value="unknown"${av.status==='unknown'?' selected':''}>Unknown</option>
               <option value="yes"${av.status==='yes'?' selected':''}>Yes</option>
               <option value="maybe"${av.status==='maybe'?' selected':''}>Maybe</option>
@@ -1884,7 +1891,7 @@ function renderAvailability(){
           : `<span class="${statusBadge}">${statusLabel}${isPast?' (past)':''}</span>`}
       </div>
       <div>
-        <input id="pnote-${p.id}-${d}" style="font-size:12px;padding:3px 6px;width:100%" placeholder="Note" value="${av.note||''}" ${editable?`onblur="${saveCall}"`:' readonly'}>
+        <input id="pnote-${p.id}-${d}" style="font-size:12px;padding:4px 8px;width:100%;border-radius:6px;border:0.5px solid #e0ddd5;background:${isPast?'transparent':'#fff'}" placeholder="Note" value="${av.note||''}" ${editable?`onblur="${saveCall}"`:' readonly'}>
       </div>
     </div>`;
   }).join('');
@@ -1893,10 +1900,13 @@ function renderAvailability(){
 
 function colorAvailSelect(el){
   if(!el) return;
-  const colors = {yes:'#EAF3DE;color:#27500A', no:'#FCEBEB;color:#791F1F', maybe:'#FAEEDA;color:#633806', unknown:'#f5f5f0;color:#888'};
-  const c = colors[el.value] || colors.unknown;
-  el.style.background = c.split(';')[0].split(':')[1];
-  el.style.color = c.split(':')[2];
+  const map = {yes:{bg:'#EAF3DE',color:'#27500A',row:'#f6fbf0'}, no:{bg:'#FCEBEB',color:'#791F1F',row:'#fff8f8'}, maybe:{bg:'#FAEEDA',color:'#633806',row:'#fffbf3'}, unknown:{bg:'#f5f5f0',color:'#888',row:''}};
+  const m = map[el.value] || map.unknown;
+  el.style.background = m.bg;
+  el.style.color = m.color;
+  // color the row too
+  const row = el.closest('div[style*="display:grid"]');
+  if(row) row.style.background = m.row;
 }
 
 function saveAvailRow(playerId, date){
