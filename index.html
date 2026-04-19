@@ -3,11 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <title>Good Vibes Tribe</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%23c8e636'/><path d='M15 35 Q50 50 15 65' fill='none' stroke='white' stroke-width='6'/><path d='M85 35 Q50 50 85 65' fill='none' stroke='white' stroke-width='6'/></svg>">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#ece9e3;color:#1a1a1a;font-size:15px;line-height:1.6}
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#ece9e3;color:#1a1a1a;font-size:15px;line-height:1.6}
 a{color:#185FA5}
 h1{font-size:22px;font-weight:500}
 h2{font-size:18px;font-weight:500;margin-bottom:1rem}
@@ -16,10 +19,10 @@ h3{font-size:15px;font-weight:500;margin-bottom:.75rem}
 /* Layout */
 .app{display:none;min-height:100vh}
 .sidebar{width:220px;background:#1a3a2a;border-right:none;padding:1.5rem 1rem;position:fixed;top:0;left:0;height:100vh;overflow-y:auto}
-.main{margin-left:220px;padding:2rem;max-width:900px;margin-top:52px}
+.main{margin-left:220px;padding:1.5rem 1.75rem;max-width:920px;margin-top:52px}
 
 .content{padding:0}
-.nav-item{display:block;padding:8px 12px;border-radius:7px;font-size:14px;color:rgba(255,255,255,0.65);cursor:pointer;border:none;background:none;width:100%;text-align:left;margin-bottom:2px;font-family:inherit}
+.nav-item{display:block;padding:7px 12px;border-radius:7px;font-size:13.5px;color:rgba(255,255,255,0.7);cursor:pointer;border:none;background:none;width:100%;text-align:left;margin-bottom:2px;font-family:inherit}
 .nav-item:hover{background:rgba(255,255,255,0.1);color:#fff}
 .nav-item.active{background:rgba(255,255,255,0.15);color:#fff;font-weight:500;border-left:3px solid #5DCAA5;border-radius:0 7px 7px 0}
 .nav-section{font-size:10px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:.08em;padding:8px 12px 4px;margin-top:.5rem}
@@ -29,7 +32,7 @@ h3{font-size:15px;font-weight:500;margin-bottom:.75rem}
 
 
 /* Cards */
-.card{background:#fff;border:0.5px solid #d8d4cc;border-radius:12px;padding:1rem 1.25rem;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.card{background:#fff;border:0.5px solid #d8d4cc;border-radius:10px;padding:1rem 1.25rem;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
 .card-title{font-size:15px;font-weight:500;margin-bottom:.75rem}
 
 /* Badges */
@@ -42,7 +45,7 @@ h3{font-size:15px;font-weight:500;margin-bottom:.75rem}
 .badge-captain{background:#EEEDFE;color:#3C3489}
 
 /* Forms */
-input,select,textarea{width:100%;padding:8px 10px;border:0.5px solid #ccc;border-radius:8px;font-size:14px;background:#fff;color:#1a1a1a;font-family:inherit}
+input,select,textarea{width:100%;padding:8px 10px;border:0.5px solid #d0cdc7;border-radius:8px;font-size:14px;background:#fff;color:#1a1a1a;font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
 input:focus,select:focus,textarea:focus{outline:none;border-color:#378ADD;box-shadow:0 0 0 2px rgba(55,138,221,.15)}
 label{font-size:13px;color:#666;display:block;margin-bottom:4px}
 .form-group{margin-bottom:12px}
@@ -50,6 +53,7 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
 .grid4{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px}
 
 /* Buttons */
+button{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
 .btn{padding:8px 16px;font-size:13px;border-radius:8px;border:0.5px solid #ccc;background:#fff;color:#1a1a1a;cursor:pointer;font-family:inherit}
 .btn:hover{background:#ece9e3}
 .btn:active{transform:scale(.98)}
@@ -97,7 +101,7 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
 
 /* Tabs */
 .tab-bar{display:flex;gap:0;border-bottom:2px solid #e0ddd5;margin-bottom:1rem}
-.tab-btn{padding:8px 20px;font-size:13px;border:none;background:none;cursor:pointer;color:#888;border-bottom:3px solid transparent;margin-bottom:-2px;font-family:inherit}
+.tab-btn{padding:8px 18px;font-size:13px;border:none;background:none;cursor:pointer;color:#888;border-bottom:3px solid transparent;margin-bottom:-2px;font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
 .tab-btn.active{color:#0F6E56;border-bottom-color:#1D9E75;font-weight:500}
 .tab-btn:hover:not(.active){color:#555}
 .tab-pane{display:none}.tab-pane.active{display:block}
@@ -287,7 +291,7 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
 
   <div class="main">
     <div class="user-bar">
-      <div id="page-title" style="font-size:14px;font-weight:500;color:#1a1a1a"></div>
+      <div id="page-title" style="font-size:13px;font-weight:600;color:#1a1a1a;letter-spacing:-.1px"></div>
       <div style="margin-left:auto;display:flex;align-items:center;gap:12px">
         <span id="last-sync" style="font-size:12px;color:#aaa"></span>
         <div id="user-info" style="font-size:13px;color:#555"></div>
