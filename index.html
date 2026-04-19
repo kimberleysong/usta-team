@@ -21,7 +21,6 @@ h3{font-size:15px;font-weight:500;margin-bottom:.75rem}
 .sidebar{width:190px;background:#1a3a2a;border-right:none;padding:1.5rem .875rem;position:fixed;top:0;left:0;height:100vh;overflow-y:auto}
 .main{margin-left:190px;padding:1.5rem 1.75rem;max-width:920px;margin-top:52px}
 
-.content{padding:0}
 .nav-item{display:block;padding:7px 12px;border-radius:7px;font-size:13.5px;color:rgba(255,255,255,0.7);cursor:pointer;border:none;background:none;width:100%;text-align:left;margin-bottom:2px;font-family:inherit}
 .nav-item:hover{background:rgba(255,255,255,0.1);color:#fff}
 .nav-item.active{background:rgba(255,255,255,0.15);color:#fff;font-weight:500;border-left:3px solid #5DCAA5;border-radius:0 7px 7px 0}
@@ -29,7 +28,6 @@ h3{font-size:15px;font-weight:500;margin-bottom:.75rem}
 .brand{font-size:15px;font-weight:600;color:#fff;margin-bottom:.15rem}
 .brand-sub{font-size:11px;color:#5DCAA5;letter-spacing:.08em;text-transform:uppercase;margin-bottom:1.5rem;font-weight:500}
 .user-bar{position:fixed;top:0;left:190px;right:0;height:52px;background:#fff;border-bottom:0.5px solid #e0ddd5;display:flex;align-items:center;justify-content:space-between;padding:0 2rem;gap:12px;z-index:10}
-
 
 /* Cards */
 .card{background:#fff;border:0.5px solid #d8d4cc;border-radius:10px;padding:1rem 1.25rem;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
@@ -150,8 +148,8 @@ button{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-seri
   .grid4{grid-template-columns:1fr 1fr!important}
   /* hide phone/email cols on roster */
   .roster-hide-mobile{display:none}
+  .roster-show-mobile{display:none}
   .roster-mobile-only{display:inline}
-.roster-mobile-only{display:none}
   /* full-width cards */
   .card{padding:.75rem 1rem}
   /* tab bar text smaller */
@@ -166,6 +164,7 @@ button{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-seri
 }
 @media(min-width:641px){
   .mobile-nav{display:none!important}
+  .roster-show-mobile{display:none!important}
 }
 </style>
 </head>
@@ -304,8 +303,7 @@ button{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-seri
       <!-- DASHBOARD -->
       <div id="sec-dashboard" class="section">
 
-        <div id="d-weeks-container" style="max-width:700px"></div>
-
+        <div id="d-weeks-container" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:16px;max-width:860px"></div>
 
       </div>
 
@@ -660,7 +658,7 @@ button{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-seri
             </div>
 
             <div style="border-left:3px solid #378ADD;padding:5px 10px;border-radius:0 6px 6px 0;background:#f5f9ff">
-              <div style="font-size:12px;font-weight:500;color:#0C447C;margin-bottom:1px">Score reporting</div>
+              <div style="font-size:12px;font-weight:500;color:#0C447C;margin-bottom:1px">Match results</div>
               <div style="font-size:13px;color:#333">Enter scores in TennisLink within 48 hours. Opponent has 48 hours to confirm.</div>
             </div>
 
@@ -670,12 +668,7 @@ button{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-seri
             </div>
 
             <div style="border-left:3px solid #378ADD;padding:5px 10px;border-radius:0 6px 6px 0;background:#f5f9ff">
-              <div style="font-size:12px;font-weight:500;color:#0C447C;margin-bottom:1px">Inclement weather</div>
-              <div style="font-size:13px;color:#333">Wait 1 hour before calling a rainout. If no courts started, no defaults — all lines carry over. Agree on makeup within 48 hours.</div>
-            </div>
-
-            <div style="border-left:3px solid #378ADD;padding:5px 10px;border-radius:0 6px 6px 0;background:#f5f9ff">
-              <div style="font-size:12px;font-weight:500;color:#0C447C;margin-bottom:1px">Captain present</div>
+              <div style="font-size:12px;font-weight:500;color:#0C447C;margin-bottom:1px">Match attendance</div>
               <div style="font-size:13px;color:#333">A captain or acting captain must be at every match and is responsible for eligibility and scorecards.</div>
             </div>
 
@@ -896,7 +889,6 @@ button{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-seri
     </button>
   </div>
   <div id="mobile-more-backdrop" onclick="toggleMobileMore()" style="display:none;position:fixed;inset:0;bottom:56px;z-index:18;background:rgba(0,0,0,.2)"></div>
-
 
 <div id="toast" class="toast"></div>
 
@@ -1260,7 +1252,6 @@ async function removePlayer(id){
 
 // ─── AVAILABILITY ─────────────────────────────────────────────────────────────
 
-
 // ─── LINEUP ──────────────────────────────────────────────────────────────────
 async function saveLineup(){
   if(!TOKEN){ await ensureToken(saveLineup); return; }
@@ -1595,29 +1586,6 @@ async function saveScheduleEdits(){
   renderScheduleFull();
 }
 
-
-function renderSchedule(){
-  const el = document.getElementById('d-schedule-list');
-  if(!el) return;
-  const today = new Date().toISOString().slice(0,10);
-  el.innerHTML = MATCH_DATES.map(d=>{
-    const s = STATE.schedule[d] || {opponent:'', location:''};
-    const dt = new Date(d+'T12:00:00');
-    const dateLabel = dt.toLocaleDateString('en-US',{month:'short',day:'numeric'});
-    const dayLabel = dt.toLocaleDateString('en-US',{weekday:'short'});
-    const isPast = d < today;
-    const hasData = s.opponent || s.location;
-    if(!hasData) return '';
-    return `<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:0.5px solid #f0ede8;flex-wrap:wrap;gap:4px">
-        <div style="display:flex;align-items:center;gap:12px">
-          <span style="font-size:12px;font-weight:500;color:${isPast?'#aaa':'#185FA5'};min-width:70px">${dayLabel} ${dateLabel}</span>
-          <span style="font-size:13px;color:${isPast?'#aaa':'#333'}">${s.opponent||'<span style="color:#ccc">TBD</span>'}</span>
-        </div>
-        <span style="font-size:12px;padding:2px 10px;border-radius:20px;background:${s.location.toLowerCase().includes('home')?'#EAF3DE':s.location.toLowerCase().includes('away')?'#FAEEDA':'#F1EFE8'};color:${s.location.toLowerCase().includes('home')?'#27500A':s.location.toLowerCase().includes('away')?'#633806':'#5F5E5A'}">${s.location||'TBD'}</span>
-      </div>`;
-  }).filter(Boolean).join('') || '<p style="font-size:13px;color:#aaa">No schedule entered yet.</p>';
-}
-
 // ─── RENDER ──────────────────────────────────────────────────────────────────
 function getUpcomingWednesdays(n){
   const today = new Date();
@@ -1636,8 +1604,6 @@ function renderDashboard(){
   const next = upcoming[0];
 
   // stat bar uses first upcoming date
-
-
 
   const pn = id => { if(!id) return '<span style="color:#aaa">TBD</span>'; const p=STATE.players.find(x=>x.id===id); return p?p.first+' '+p.last:'TBD'; };
   const pnf = id => { if(!id) return '<span style="color:#aaa">TBD</span>'; const p=STATE.players.find(x=>x.id===id); return p?p.first:'TBD'; };
@@ -1673,7 +1639,7 @@ function renderDashboard(){
     const hasLineup = LINEUP_KEYS.some(k=>lu[k]);
 
     const cardBorder = sched.location.toLowerCase().includes('home') ? 'border-left:3px solid #1D9E75' : sched.location.toLowerCase().includes('away') ? 'border-left:3px solid #EF9F27' : '';
-    return `<div class="card" style="margin-bottom:0;${cardBorder};padding:0;overflow:hidden">
+    return `<div class="card" style="${cardBorder};padding:0;overflow:hidden;margin-bottom:0">
       <div style="padding:1rem 1.25rem;border-bottom:0.5px solid #f0ede8">
         <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:${i===0?'#1D9E75':'#aaa'};margin-bottom:6px">${i===0?'Next match':'Following'}</div>
         <div style="font-size:20px;font-weight:600;letter-spacing:-.4px;margin-bottom:3px">${dateLabel}</div>
@@ -1684,8 +1650,6 @@ function renderDashboard(){
             <span style="padding:2px 8px;border-radius:20px;background:${sched.location.toLowerCase().includes('home')?'#EAF3DE':sched.location.toLowerCase().includes('away')?'#FAEEDA':'#F1EFE8'};color:${sched.location.toLowerCase().includes('home')?'#27500A':sched.location.toLowerCase().includes('away')?'#633806':'#5F5E5A'};font-size:11px">${sched.location}</span>
             ${sched.venue ? '<span style="font-size:12px;color:#555">'+sched.venue+'</span>' : ''}
           </div>` : ''}
-        </div>
-
       </div>
 
       <div style="padding:.75rem 1.25rem;border-bottom:0.5px solid #f0ede8">
@@ -1716,7 +1680,6 @@ function renderDashboard(){
   }).join('');
 }
 
-
 function renderRoster(){
   const tbody = document.getElementById('roster-body');
   const tbl = document.getElementById('roster-tbl');
@@ -1728,7 +1691,8 @@ function renderRoster(){
     const av = AVATAR_COLORS[i%AVATAR_COLORS.length].split(':');
     return `<tr>
       <td style="overflow:hidden"><div style="display:flex;align-items:center;gap:6px;overflow:hidden">
-        <div class="avatar" style="background:${av[0]};color:${av[1]};width:32px;height:32px;font-size:10px;flex-shrink:0;font-weight:500">${p.first}</div>
+        <div class="avatar roster-hide-mobile" style="background:${av[0]};color:${av[1]};width:28px;height:28px;font-size:11px;flex-shrink:0;font-weight:500">${p.first[0]}${p.last[0]}</div>
+        <div class="avatar roster-show-mobile" style="background:${av[0]};color:${av[1]};min-width:52px;height:28px;border-radius:14px;padding:0 8px;font-size:11px;flex-shrink:0;font-weight:500;white-space:nowrap">${p.first}</div>
         <span class="roster-hide-mobile" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.first} ${p.last}</span>
       </div></td>
       <td style="color:#185FA5;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px">${p.email}</td>
@@ -1769,13 +1733,6 @@ function mobileNav(id, btn){
     const sec = document.getElementById('sec-'+id);
     if(sec) sec.style.display='block';
   }
-}
-
-function syncMobileNav(id){
-  document.querySelectorAll('.mobile-nav-btn').forEach(b=>{
-    const onclick = b.getAttribute('onclick')||'';
-    b.classList.toggle('active', onclick.includes("'"+id+"'"));
-  });
 }
 
 function switchNewsTab(tab, btn){
@@ -2117,7 +2074,6 @@ function editLineup(d){
   if(btn) switchLineupTab('builder', btn);
 }
 
-
 function renderLineup(){
   const isCaptain = STATE.role === 'captain';
   const _ld = STATE.availability[SELECTED_LINEUP_DATE]||{};
@@ -2150,7 +2106,6 @@ function renderLineup(){
   document.getElementById('doubles-slots').innerHTML = ['d1p1','d1p2','d2p1','d2p2','d3p1','d3p2'].map(makeSlot).join('');
   document.getElementById('singles-slots').innerHTML = ['s1','s2'].map(makeSlot).join('');
 }
-
 
 function renderMessages(){
   const el = document.getElementById('msg-list');
