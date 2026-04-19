@@ -18,8 +18,8 @@ h3{font-size:15px;font-weight:500;margin-bottom:.75rem}
 
 /* Layout */
 .app{display:none;min-height:100vh}
-.sidebar{width:220px;background:#1a3a2a;border-right:none;padding:1.5rem 1rem;position:fixed;top:0;left:0;height:100vh;overflow-y:auto}
-.main{margin-left:220px;padding:1.5rem 1.75rem;max-width:920px;margin-top:52px}
+.sidebar{width:190px;background:#1a3a2a;border-right:none;padding:1.5rem .875rem;position:fixed;top:0;left:0;height:100vh;overflow-y:auto}
+.main{margin-left:190px;padding:1.5rem 1.75rem;max-width:920px;margin-top:52px}
 
 .content{padding:0}
 .nav-item{display:block;padding:7px 12px;border-radius:7px;font-size:13.5px;color:rgba(255,255,255,0.7);cursor:pointer;border:none;background:none;width:100%;text-align:left;margin-bottom:2px;font-family:inherit}
@@ -28,7 +28,7 @@ h3{font-size:15px;font-weight:500;margin-bottom:.75rem}
 .nav-section{font-size:10px;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:.08em;padding:8px 12px 4px;margin-top:.5rem}
 .brand{font-size:15px;font-weight:600;color:#fff;margin-bottom:.15rem}
 .brand-sub{font-size:11px;color:#5DCAA5;letter-spacing:.08em;text-transform:uppercase;margin-bottom:1.5rem;font-weight:500}
-.user-bar{position:fixed;top:0;left:220px;right:0;height:52px;background:#fff;border-bottom:0.5px solid #e0ddd5;display:flex;align-items:center;justify-content:space-between;padding:0 2rem;gap:12px;z-index:10}
+.user-bar{position:fixed;top:0;left:190px;right:0;height:52px;background:#fff;border-bottom:0.5px solid #e0ddd5;display:flex;align-items:center;justify-content:space-between;padding:0 2rem;gap:12px;z-index:10}
 
 
 /* Cards */
@@ -279,7 +279,7 @@ button{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-seri
     <button class="nav-item active" onclick="nav('dashboard',this)">Dashboard</button>
     <button class="nav-item" onclick="nav('availability',this)">Availability</button>
     <button class="nav-item" onclick="nav('news',this)">News</button>
-    <button class="nav-item" onclick="nav('teaminfo',this)">Team Info</button>
+    <button class="nav-item" onclick="nav('teaminfo',this)">Team</button>
     <button class="nav-item" onclick="nav('roster',this)">Roster</button>
     <div class="nav-section">Captain</div>
     <button class="nav-item" id="nav-lineup" onclick="nav('lineup',this)" style="display:none">Lineup</button>
@@ -421,8 +421,10 @@ button{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-seri
           <div id="lineup-builder-section">
             <div class="card" style="margin-bottom:1rem">
               <label style="font-size:12px;color:#888;display:block;margin-bottom:4px">Match date</label>
-              <select id="lineup-date-select" onchange="selectLineupDate(this.value)" style="font-size:14px;padding:6px 10px;min-width:200px"></select>
-              <div id="lineup-date-label" style="font-size:12px;color:#888;margin-top:6px"></div>
+              <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+                <select id="lineup-date-select" onchange="selectLineupDate(this.value)" style="font-size:14px;padding:6px 10px;min-width:200px"></select>
+                <div id="lineup-date-label" style="font-size:12px;color:#888"></div>
+              </div>
             </div>
             <div class="grid-lineup" style="display:grid;grid-template-columns:3fr 2fr;gap:12px;margin-bottom:12px">
               <div class="card" style="margin-bottom:0">
@@ -548,7 +550,7 @@ button{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-seri
       <div id="sec-teaminfo" class="section" style="display:none">
 
         <div class="tab-bar">
-          <button class="tab-btn active" onclick="switchTeamInfoTab('info',this)">Team Info</button>
+          <button class="tab-btn active" onclick="switchTeamInfoTab('info',this)">Team</button>
           <button class="tab-btn" onclick="switchTeamInfoTab('matchrules',this)">Match Rules</button>
           <button class="tab-btn" onclick="switchTeamInfoTab('leaguerules',this)">League Rules</button>
         </div>
@@ -634,12 +636,7 @@ button{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-seri
 
             <div style="border-left:3px solid #378ADD;padding:5px 10px;border-radius:0 6px 6px 0;background:#f5f9ff">
               <div style="font-size:12px;font-weight:500;color:#0C447C;margin-bottom:1px">Scoring</div>
-              <div style="font-size:13px;color:#333">Best of 3 sets, no-ad. At deuce, next point wins — receiver picks side. Sets split 1-1? 10-point match tiebreak decides.</div>
-            </div>
-
-            <div style="border-left:3px solid #378ADD;padding:5px 10px;border-radius:0 6px 6px 0;background:#f5f9ff">
-              <div style="font-size:12px;font-weight:500;color:#0C447C;margin-bottom:1px">Set tiebreak (6-6)</div>
-              <div style="font-size:13px;color:#333">First to 7, win by 2. Last server serves first, then teams alternate 2 serves each. Switch ends at 6 points.</div>
+              <div style="font-size:13px;color:#333">Best of 3 sets, no-ad — at deuce, next point wins (receiver picks side). Set tied 6-6? Play a 7-point tiebreak (first to 7, win by 2). If sets are split 1-1, a 10-point super tiebreak is played in lieu of a 3rd set (first to 10, win by 2).</div>
             </div>
 
             <div style="border-left:3px solid #378ADD;padding:5px 10px;border-radius:0 6px 6px 0;background:#f5f9ff">
@@ -658,12 +655,7 @@ button{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-seri
             </div>
 
             <div style="border-left:3px solid #378ADD;padding:5px 10px;border-radius:0 6px 6px 0;background:#f5f9ff">
-              <div style="font-size:12px;font-weight:500;color:#0C447C;margin-bottom:1px">Winning a court</div>
-              <div style="font-size:13px;color:#333">Win 2 sets. If split 1-1, a 10-point tiebreak decides (first to 10, win by 2).</div>
-            </div>
-
-            <div style="border-left:3px solid #378ADD;padding:5px 10px;border-radius:0 6px 6px 0;background:#f5f9ff">
-              <div style="font-size:12px;font-weight:500;color:#0C447C;margin-bottom:1px">Winning the match</div>
+              <div style="font-size:12px;font-weight:500;color:#0C447C;margin-bottom:1px">Matchup win</div>
               <div style="font-size:13px;color:#333">First team to win 3 of 5 courts wins and earns 1 standings point.</div>
             </div>
 
@@ -891,7 +883,7 @@ button{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-seri
     </button>
     <button onclick="mobileMoreNav('teaminfo')" style="width:100%;padding:12px 1.5rem;border:none;background:none;font-size:14px;text-align:left;color:#333;cursor:pointer;display:flex;align-items:center;gap:12px">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-      Team Info
+      Team
     </button>
     <button onclick="mobileMoreNav('roster')" style="width:100%;padding:12px 1.5rem;border:none;background:none;font-size:14px;text-align:left;color:#333;cursor:pointer;display:flex;align-items:center;gap:12px">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/><path d="M21 21v-2a4 4 0 0 0-3-3.85"/></svg>
@@ -1123,7 +1115,7 @@ function logout(){
 // ─── NAVIGATION ──────────────────────────────────────────────────────────────
 function nav(id, btn){
   document.querySelectorAll('.section').forEach(s=>s.style.display='none');
-  const titles={dashboard:'Dashboard',roster:'Roster',availability:'Availability',news:'News',teaminfo:'Team Info',lineup:'Lineup',schedule:'Schedule',entitlements:'Entitlements',settings:'Settings'};
+  const titles={dashboard:'Dashboard',roster:'Roster',availability:'Availability',news:'News',teaminfo:'Team',lineup:'Lineup',schedule:'Schedule',entitlements:'Entitlements',settings:'Settings'};
   const _pt=document.getElementById('page-title'); if(_pt) _pt.textContent=titles[id]||'';
   document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
   document.getElementById('sec-'+id).style.display='block';
@@ -1271,7 +1263,7 @@ async function removePlayer(id){
 
 // ─── LINEUP ──────────────────────────────────────────────────────────────────
 async function saveLineup(){
-  if(!TOKEN){toast('Sign in with Google to save');return}
+  if(!TOKEN){ await ensureToken(saveLineup); return; }
   const rows = await sheetsGet('Lineup!A2:C');
   const filtered = rows.filter(r=>r[0]!==SELECTED_LINEUP_DATE);
   LINEUP_KEYS.forEach(k=>{ if(STATE.lineup[k]) filtered.push([SELECTED_LINEUP_DATE,k,STATE.lineup[k]]); });
@@ -1515,7 +1507,7 @@ function showManualEntry(){
 }
 
 async function saveManualSchedule(){
-  if(!TOKEN){toast('Sign in with Google to save');return}
+  if(!TOKEN){ await ensureToken(saveManualSchedule); return; }
   for(const d of MATCH_DATES){
     const opp = document.getElementById('ms-opp-'+d)?.value.trim();
     const loc = document.getElementById('ms-loc-'+d)?.value.trim();
@@ -1681,12 +1673,14 @@ function renderDashboard(){
     const hasLineup = LINEUP_KEYS.some(k=>lu[k]);
 
     const cardBorder = sched.location.toLowerCase().includes('home') ? 'border-left:3px solid #1D9E75' : sched.location.toLowerCase().includes('away') ? 'border-left:3px solid #EF9F27' : '';
-    return `<div class="card" style="margin-bottom:12px;${cardBorder}">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px">
-        <div>
-          <div style="font-size:19px;font-weight:600;letter-spacing:-.3px;margin-bottom:1px">${dateLabel}</div>
-          ${sched.opponent ? `<div style="font-size:13px;color:#aaa;margin-top:2px;font-weight:400">vs ${sched.opponent}</div>` : ''}
-          ${sched.location ? `<div style="font-size:12px;margin-top:3px;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+    return `<div class="card" style="margin-bottom:0;${cardBorder};padding:0;overflow:hidden">
+      <div style="padding:1rem 1.25rem;border-bottom:0.5px solid #f0ede8">
+        <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:${i===0?'#1D9E75':'#aaa'};margin-bottom:6px">${i===0?'Next match':'Following'}</div>
+        <div style="font-size:20px;font-weight:600;letter-spacing:-.4px;margin-bottom:3px">${dateLabel}</div>
+        ${sched.opponent ? `<div style="font-size:13px;color:#888;font-weight:400">vs ${sched.opponent}</div>` : ''}
+      </div>
+      <div style="padding:.75rem 1.25rem;border-bottom:0.5px solid #f0ede8">
+        ${sched.location ? `<div style="font-size:12px;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
             <span style="padding:2px 8px;border-radius:20px;background:${sched.location.toLowerCase().includes('home')?'#EAF3DE':sched.location.toLowerCase().includes('away')?'#FAEEDA':'#F1EFE8'};color:${sched.location.toLowerCase().includes('home')?'#27500A':sched.location.toLowerCase().includes('away')?'#633806':'#5F5E5A'};font-size:11px">${sched.location}</span>
             ${sched.venue ? '<span style="font-size:12px;color:#555">'+sched.venue+'</span>' : ''}
           </div>` : ''}
@@ -1694,12 +1688,14 @@ function renderDashboard(){
 
       </div>
 
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+      <div style="padding:.75rem 1.25rem;border-bottom:0.5px solid #f0ede8">
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
           <span class="tag-in">${yesP.length} available</span>
           <span class="tag-maybe">${maybeP.length} maybe</span>
           <span class="tag-out">${noP.length} unavailable</span>
+        </div>
       </div>
-      <div>
+      <div style="padding:.75rem 1.25rem">
         <div style="font-size:12px;color:#888;margin-bottom:6px;font-weight:500">LINEUP</div>
         ${hasLineup ? `
           <div class="d-lineup-grid" style="font-size:13px;line-height:1.8">
@@ -1732,7 +1728,7 @@ function renderRoster(){
     const av = AVATAR_COLORS[i%AVATAR_COLORS.length].split(':');
     return `<tr>
       <td style="overflow:hidden"><div style="display:flex;align-items:center;gap:6px;overflow:hidden">
-        <div class="avatar" style="background:${av[0]};color:${av[1]};width:24px;height:24px;font-size:10px;flex-shrink:0">${p.first[0]}${p.last[0]}</div>
+        <div class="avatar" style="background:${av[0]};color:${av[1]};width:32px;height:32px;font-size:10px;flex-shrink:0;font-weight:500">${p.first}</div>
         <span class="roster-hide-mobile" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.first} ${p.last}</span>
       </div></td>
       <td style="color:#185FA5;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px">${p.email}</td>
