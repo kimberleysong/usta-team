@@ -137,18 +137,19 @@ button{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-seri
   /* bottom tab bar */
   .mobile-nav{display:flex;position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:0.5px solid #e0ddd5;z-index:20;height:56px}
   .mobile-nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:10px;color:#888;border:none;background:none;cursor:pointer;padding:4px 0;gap:2px}
-  .mobile-nav-btn.active{color:#0C447C}
+  .mobile-nav-btn.active{color:#1D9E75}
   .mobile-nav-icon{font-size:18px;line-height:1}
   /* extra bottom padding so content clears tab bar */
   .content{padding:.5rem 1rem 72px}
   .main{padding:.5rem 1rem 72px}
+  #d-weeks-container{grid-template-columns:1fr!important}
   /* stack doubles/singles vertically */
   #sec-lineup .grid-lineup{grid-template-columns:1fr!important}
   /* 2x2 stat grid */
   .grid4{grid-template-columns:1fr 1fr!important}
   /* hide phone/email cols on roster */
   .roster-hide-mobile{display:none}
-  .roster-show-mobile{display:none}
+  .roster-show-mobile{display:flex}
   .roster-mobile-only{display:inline}
   /* full-width cards */
   .card{padding:.75rem 1rem}
@@ -303,7 +304,7 @@ button{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-seri
       <!-- DASHBOARD -->
       <div id="sec-dashboard" class="section">
 
-        <div id="d-weeks-container" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:16px;max-width:860px"></div>
+        <div id="d-weeks-container" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(340px,100%),1fr));gap:16px;max-width:860px"></div>
 
       </div>
 
@@ -853,6 +854,10 @@ button{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-seri
     <button class="mobile-nav-btn" onclick="mobileNav('news',this)">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
       <span>News</span>
+    </button>
+    <button class="mobile-nav-btn" onclick="mobileNav('teaminfo',this)">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <span>Team</span>
     </button>
     <button class="mobile-nav-btn" onclick="toggleMobileMore(this)" id="mobile-more-btn">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="5" cy="12" r="1" fill="currentColor"/><circle cx="12" cy="12" r="1" fill="currentColor"/><circle cx="19" cy="12" r="1" fill="currentColor"/></svg>
@@ -1689,7 +1694,8 @@ function renderRoster(){
   const sorted = [...STATE.players].sort((a,b)=>a.first.localeCompare(b.first));
   tbody.innerHTML = sorted.map((p,i)=>{
     const av = AVATAR_COLORS[i%AVATAR_COLORS.length].split(':');
-    return `<tr>
+    const isCap = STATE.role==='captain';
+    return `<tr id="row-${p.id}" style="cursor:${isCap?'pointer':'default'}" onclick="${isCap?`toggleEditRow('${p.id}')`:''}" >
       <td style="overflow:hidden"><div style="display:flex;align-items:center;gap:6px;overflow:hidden">
         <div class="avatar roster-hide-mobile" style="background:${av[0]};color:${av[1]};width:28px;height:28px;font-size:11px;flex-shrink:0;font-weight:500">${p.first[0]}${p.last[0]}</div>
         <div class="avatar roster-show-mobile" style="background:${av[0]};color:${av[1]};min-width:52px;height:28px;border-radius:14px;padding:0 8px;font-size:11px;flex-shrink:0;font-weight:500;white-space:nowrap">${p.first}</div>
@@ -1698,8 +1704,75 @@ function renderRoster(){
       <td style="color:#185FA5;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px">${p.email}</td>
       <td style="white-space:nowrap">${p.phone}</td>
       <td class="roster-hide-mobile"><span class="badge badge-gray">${p.pos}</span></td>
-      <td>${STATE.role==='captain'?`<button class="btn btn-sm" style="font-size:12px;color:#aaa;border-color:#e0ddd5;padding:3px 10px" onclick="removePlayer('${p.id}')">Remove</button>`:''}</td>
+      <td onclick="event.stopPropagation()">${isCap?`<button class="btn btn-sm" style="font-size:12px;color:#aaa;border-color:#e0ddd5;padding:3px 10px" onclick="removePlayer('${p.id}')">Remove</button>`:''}</td>
+    </tr>
+    <tr id="edit-row-${p.id}" style="display:none;background:#f9fdf9">
+      <td colspan="5" style="padding:12px 16px" onclick="event.stopPropagation()">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:700px">
+          <div class="form-group" style="margin:0"><label style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.05em">First name</label>
+            <input id="edit-first-${p.id}" value="${p.first}" style="font-size:13px;padding:6px 8px">
+          </div>
+          <div class="form-group" style="margin:0"><label style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.05em">Last name</label>
+            <input id="edit-last-${p.id}" value="${p.last}" style="font-size:13px;padding:6px 8px">
+          </div>
+          <div class="form-group" style="margin:0"><label style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.05em">Contact email</label>
+            <input id="edit-email-${p.id}" value="${p.email}" style="font-size:13px;padding:6px 8px">
+          </div>
+          <div class="form-group" style="margin:0"><label style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.05em">Phone</label>
+            <input id="edit-phone-${p.id}" value="${p.phone}" oninput="formatPhone(this)" style="font-size:13px;padding:6px 8px">
+          </div>
+          <div class="form-group" style="margin:0"><label style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.05em">Google email</label>
+            <input id="edit-gemail-${p.id}" value="${p.gemail}" style="font-size:13px;padding:6px 8px">
+          </div>
+          <div class="form-group" style="margin:0"><label style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.05em">Singles/Dubs</label>
+            <select id="edit-pos-${p.id}" style="font-size:13px;padding:6px 8px">
+              <option value="singles"${p.pos==='singles'?' selected':''}>Singles</option>
+              <option value="doubles"${p.pos==='doubles'?' selected':''}>Doubles</option>
+              <option value="either"${p.pos==='either'?' selected':''}>Either</option>
+            </select>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:12px">
+          <button class="btn btn-primary btn-sm" onclick="savePlayerEdit('${p.id}')">Save</button>
+          <button class="btn btn-sm" onclick="toggleEditRow('${p.id}')">Cancel</button>
+        </div>
+      </td>
     </tr>`;}).join('');
+}
+
+function toggleEditRow(id){
+  // close any other open edit rows first
+  document.querySelectorAll('tr[id^="edit-row-"]').forEach(r=>{
+    if(r.id !== 'edit-row-'+id) r.style.display='none';
+  });
+  const row = document.getElementById('edit-row-'+id);
+  if(!row) return;
+  const isOpen = row.style.display !== 'none';
+  row.style.display = isOpen ? 'none' : 'table-row';
+}
+
+async function savePlayerEdit(id){
+  if(!TOKEN){ await ensureToken(()=>savePlayerEdit(id)); return; }
+  const first  = document.getElementById('edit-first-'+id)?.value.trim();
+  const last   = document.getElementById('edit-last-'+id)?.value.trim();
+  const email  = document.getElementById('edit-email-'+id)?.value.trim();
+  const phone  = document.getElementById('edit-phone-'+id)?.value.trim();
+  const gemail = document.getElementById('edit-gemail-'+id)?.value.trim();
+  const pos    = document.getElementById('edit-pos-'+id)?.value;
+  if(!first||!last){toast('First and last name required');return}
+  try{
+    const rows = await sheetsGet('Players!A2:H');
+    const rowIndex = rows.findIndex(r=>r[0]===id);
+    if(rowIndex===-1){toast('Player not found');return}
+    const sheetRow = rowIndex+2;
+    await sheetsUpdate(`Players!A${sheetRow}:H${sheetRow}`,[[id,first,last,phone,email,'4.0',pos,gemail]]);
+    // update local state
+    const p = STATE.players.find(x=>x.id===id);
+    if(p){p.first=first;p.last=last;p.email=email;p.phone=phone;p.gemail=gemail;p.pos=pos;}
+    toggleEditRow(id);
+    renderRoster();
+    toast('Player updated');
+  }catch(e){toast('Save failed: '+e.message);}
 }
 
 function toggleMobileMore(btn){
