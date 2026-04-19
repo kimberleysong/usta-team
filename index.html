@@ -80,11 +80,11 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
 .slot-select{flex:1;font-size:13px;padding:6px 8px}
 
 /* Msg */
-.msg-timeline{position:relative;padding-left:20px}
-.msg-timeline::before{content:'';position:absolute;left:5px;top:6px;bottom:0;width:1px;background:#e0ddd5}
+.msg-timeline{position:relative;padding-left:24px}
+.msg-timeline::before{content:'';position:absolute;left:6px;top:6px;bottom:0;width:1px;background:#e0ddd5}
 .msg-item{position:relative;margin-bottom:20px}
-.msg-dot{position:absolute;left:-16px;top:5px;width:9px;height:9px;border-radius:50%;border:2px solid #fff;outline:1px solid #1D9E75;background:#1D9E75}
-.msg-dot-reminder{background:#EF9F27;outline-color:#EF9F27}
+.msg-dot{position:absolute;left:-17px;top:4px;width:11px;height:11px;border-radius:50%;border:2px solid #fff;outline:2px solid #1D9E75;background:#1D9E75}
+.msg-dot-reminder{background:#EF9F27;outline-color:#EF9F27;outline-width:2px}
 .msg-dot-news{background:#888780;outline-color:#888780}
 .msg-date{font-size:11px;color:#aaa;margin-bottom:2px}
 .msg-subject{font-size:14px;font-weight:500;color:#1a1a1a;margin-bottom:4px}
@@ -271,10 +271,10 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
     <button class="nav-item active" onclick="nav('dashboard',this)">Dashboard</button>
     <button class="nav-item" onclick="nav('roster',this)">Roster</button>
     <button class="nav-item" onclick="nav('availability',this)">Availability</button>
-    <button class="nav-item" id="nav-lineup" onclick="nav('lineup',this)">Lineup</button>
     <button class="nav-item" onclick="nav('news',this)">News</button>
     <button class="nav-item" onclick="nav('teaminfo',this)">Team Info</button>
-    <div class="nav-section">Account</div>
+    <div class="nav-section">Captain</div>
+    <button class="nav-item" id="nav-lineup" onclick="nav('lineup',this)" style="display:none">Lineup</button>
     <button class="nav-item" id="nav-schedule" onclick="nav('schedule',this)" style="display:none">Schedule</button>
     <button class="nav-item" id="nav-entitlements" onclick="nav('entitlements',this)" style="display:none">Entitlements</button>
     <button class="nav-item" id="nav-settings" onclick="nav('settings',this)" style="display:none">Settings</button>
@@ -293,7 +293,7 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
       <!-- DASHBOARD -->
       <div id="sec-dashboard" class="section">
 
-        <div id="d-weeks-container"></div>
+        <div id="d-weeks-container" style="max-width:700px"></div>
 
 
       </div>
@@ -618,66 +618,61 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
           <div class="card-title">Match rules</div>
           <p style="font-size:12px;color:#888;margin-bottom:12px">2026 USTA Eastern — 18 &amp; Over Adult League. <a href="https://www.usta.com/en/home/play/adult-tennis/programs/eastern/regulations-and-grievances.html" target="_blank" style="color:#185FA5">Full regulations ↗</a></p>
 
-          <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;flex-direction:column;gap:8px">
 
-            <div style="border-left:3px solid #378ADD;padding:6px 10px;border-radius:0 6px 6px 0;background:#f5f9ff">
-              <div style="font-size:12px;font-weight:500;color:#0C447C;margin-bottom:2px">Scoring format</div>
-              <div style="font-size:13px;color:#333">Best of 3 sets with no-ad scoring. At deuce (40-40), the next point wins the game — receiver chooses which side to receive. A 10-point match tiebreak is played in lieu of a third set.</div>
+            <div style="border-left:3px solid #378ADD;padding:5px 10px;border-radius:0 6px 6px 0;background:#f5f9ff">
+              <div style="font-size:12px;font-weight:500;color:#0C447C;margin-bottom:1px">Scoring</div>
+              <div style="font-size:13px;color:#333">Best of 3 sets, no-ad. At deuce, next point wins — receiver picks side. Sets split 1-1? 10-point match tiebreak decides.</div>
             </div>
 
-            <div style="border-left:3px solid #378ADD;padding:6px 10px;border-radius:0 6px 6px 0;background:#f5f9ff">
-              <div style="font-size:12px;font-weight:500;color:#0C447C;margin-bottom:2px">Set tiebreak</div>
-              <div style="font-size:13px;color:#333">When a set reaches 6-6, a 7-point tiebreak is played to decide the set. First player/team to reach 7 points wins, but must win by 2 (e.g. 7-5 or 8-6). Players switch ends every 6 points. The player who served last in the set serves the first point of the tiebreak; after that, each player/team serves 2 consecutive points, alternating throughout.</div>
+            <div style="border-left:3px solid #378ADD;padding:5px 10px;border-radius:0 6px 6px 0;background:#f5f9ff">
+              <div style="font-size:12px;font-weight:500;color:#0C447C;margin-bottom:1px">Set tiebreak (6-6)</div>
+              <div style="font-size:13px;color:#333">First to 7, win by 2. Last server serves first, then teams alternate 2 serves each. Switch ends at 6 points.</div>
             </div>
 
-            <div style="border-left:3px solid #378ADD;padding:6px 10px;border-radius:0 6px 6px 0;background:#f5f9ff">
-              <div style="font-size:12px;font-weight:500;color:#0C447C;margin-bottom:2px">Warm-up</div>
-              <div style="font-size:13px;color:#333">A 10-minute warm-up including serves is permitted before match start. Warm-up time does not extend the default clock.</div>
+            <div style="border-left:3px solid #378ADD;padding:5px 10px;border-radius:0 6px 6px 0;background:#f5f9ff">
+              <div style="font-size:12px;font-weight:500;color:#0C447C;margin-bottom:1px">Warm-up</div>
+              <div style="font-size:13px;color:#333">10 minutes including serves. Does not extend the default clock.</div>
             </div>
 
-            <div style="border-left:3px solid #378ADD;padding:6px 10px;border-radius:0 6px 6px 0;background:#f5f9ff">
-              <div style="font-size:12px;font-weight:500;color:#0C447C;margin-bottom:2px">Lineup &amp; scorecards</div>
-              <div style="font-size:13px;color:#333">Captains must exchange scorecards simultaneously before match start. Players not present at lineup exchange must be placed in the lowest available singles or doubles position.</div>
+            <div style="border-left:3px solid #378ADD;padding:5px 10px;border-radius:0 6px 6px 0;background:#f5f9ff">
+              <div style="font-size:12px;font-weight:500;color:#0C447C;margin-bottom:1px">Lineup &amp; scorecards</div>
+              <div style="font-size:13px;color:#333">Captains exchange cards simultaneously before start. Late arrivals go to the lowest open position.</div>
             </div>
 
-            <div style="border-left:3px solid #378ADD;padding:6px 10px;border-radius:0 6px 6px 0;background:#f5f9ff">
-              <div style="font-size:12px;font-weight:500;color:#0C447C;margin-bottom:2px">Defaults</div>
-              <div style="font-size:13px;color:#333">Default time is 15 minutes after scheduled start. Defaults must occur from the bottom position up. Default score is 6-0, 6-0. A team default occurs when a team defaults the majority of courts (3 of 5).</div>
+            <div style="border-left:3px solid #378ADD;padding:5px 10px;border-radius:0 6px 6px 0;background:#f5f9ff">
+              <div style="font-size:12px;font-weight:500;color:#0C447C;margin-bottom:1px">Defaults</div>
+              <div style="font-size:13px;color:#333">15 min grace period. Defaults from the bottom up, scored 6-0 6-0. Team default = 3 of 5 courts defaulted.</div>
             </div>
 
-            <div style="border-left:3px solid #378ADD;padding:6px 10px;border-radius:0 6px 6px 0;background:#f5f9ff">
-              <div style="font-size:12px;font-weight:500;color:#0C447C;margin-bottom:2px">Court order</div>
-              <div style="font-size:13px;color:#333">Play begins simultaneously on all courts when possible. Recommended order: #1 doubles, #1 singles, #2 doubles, #2 singles, #3 doubles. Captains may mutually agree to a different order.</div>
+            <div style="border-left:3px solid #378ADD;padding:5px 10px;border-radius:0 6px 6px 0;background:#f5f9ff">
+              <div style="font-size:12px;font-weight:500;color:#0C447C;margin-bottom:1px">Winning a court</div>
+              <div style="font-size:13px;color:#333">Win 2 sets. If split 1-1, a 10-point tiebreak decides (first to 10, win by 2).</div>
             </div>
 
-            <div style="border-left:3px solid #378ADD;padding:6px 10px;border-radius:0 6px 6px 0;background:#f5f9ff">
-              <div style="font-size:12px;font-weight:500;color:#0C447C;margin-bottom:2px">Winning a court</div>
-              <div style="font-size:13px;color:#333">Each court is won by winning the majority of sets — typically 2 sets. If sets are split 1-1, a 10-point match tiebreak decides the court. First to 10 points (win by 2) wins the tiebreak and the court.</div>
+            <div style="border-left:3px solid #378ADD;padding:5px 10px;border-radius:0 6px 6px 0;background:#f5f9ff">
+              <div style="font-size:12px;font-weight:500;color:#0C447C;margin-bottom:1px">Winning the match</div>
+              <div style="font-size:13px;color:#333">First team to win 3 of 5 courts wins and earns 1 standings point.</div>
             </div>
 
-            <div style="border-left:3px solid #378ADD;padding:6px 10px;border-radius:0 6px 6px 0;background:#f5f9ff">
-              <div style="font-size:12px;font-weight:500;color:#0C447C;margin-bottom:2px">Winning the team match</div>
-              <div style="font-size:13px;color:#333">The team that wins the majority of courts (3 of 5) wins the match and earns 1 team point in the standings. If courts are tied 2-2 with one unfinished, that court determines the winner.</div>
+            <div style="border-left:3px solid #378ADD;padding:5px 10px;border-radius:0 6px 6px 0;background:#f5f9ff">
+              <div style="font-size:12px;font-weight:500;color:#0C447C;margin-bottom:1px">Score reporting</div>
+              <div style="font-size:13px;color:#333">Enter scores in TennisLink within 48 hours. Opponent has 48 hours to confirm.</div>
             </div>
 
-            <div style="border-left:3px solid #378ADD;padding:6px 10px;border-radius:0 6px 6px 0;background:#f5f9ff">
-              <div style="font-size:12px;font-weight:500;color:#0C447C;margin-bottom:2px">Score reporting</div>
-              <div style="font-size:13px;color:#333">Either captain must enter match scores in TennisLink within 48 hours. The opposing captain has 48 hours to confirm or dispute the score.</div>
+            <div style="border-left:3px solid #378ADD;padding:5px 10px;border-radius:0 6px 6px 0;background:#f5f9ff">
+              <div style="font-size:12px;font-weight:500;color:#0C447C;margin-bottom:1px">Rescheduling</div>
+              <div style="font-size:13px;color:#333">Both captains must agree in writing on new date, time, and location. Once set, only weather or extreme circumstances can change it.</div>
             </div>
 
-            <div style="border-left:3px solid #378ADD;padding:6px 10px;border-radius:0 6px 6px 0;background:#f5f9ff">
-              <div style="font-size:12px;font-weight:500;color:#0C447C;margin-bottom:2px">Rescheduling</div>
-              <div style="font-size:13px;color:#333">Matches may be rescheduled by mutual written agreement of both captains. Both captains must agree in writing on the new date, time, and location. Once confirmed, the match may only be rescheduled again due to inclement weather or extreme circumstances as determined by the League Coordinator.</div>
+            <div style="border-left:3px solid #378ADD;padding:5px 10px;border-radius:0 6px 6px 0;background:#f5f9ff">
+              <div style="font-size:12px;font-weight:500;color:#0C447C;margin-bottom:1px">Inclement weather</div>
+              <div style="font-size:13px;color:#333">Wait 1 hour before calling a rainout. If no courts started, no defaults — all lines carry over. Agree on makeup within 48 hours.</div>
             </div>
 
-            <div style="border-left:3px solid #378ADD;padding:6px 10px;border-radius:0 6px 6px 0;background:#f5f9ff">
-              <div style="font-size:12px;font-weight:500;color:#0C447C;margin-bottom:2px">Inclement weather</div>
-              <div style="font-size:13px;color:#333">If weather is clearly unplayable, captains may reschedule by phone or text. However, a 1-hour delay from the official start time must be observed to allow conditions to improve before a rainout is called. If the match is rained out before any courts begin, no defaults may be claimed — all courts carry over to the rescheduled date. Makeup arrangements must be agreed upon within 48 hours of the original start time.</div>
-            </div>
-
-            <div style="border-left:3px solid #378ADD;padding:6px 10px;border-radius:0 6px 6px 0;background:#f5f9ff">
-              <div style="font-size:12px;font-weight:500;color:#0C447C;margin-bottom:2px">Captain present</div>
-              <div style="font-size:13px;color:#333">A captain or acting captain familiar with local league rules must be present at every match. The captain is responsible for player eligibility and scorecard accuracy.</div>
+            <div style="border-left:3px solid #378ADD;padding:5px 10px;border-radius:0 6px 6px 0;background:#f5f9ff">
+              <div style="font-size:12px;font-weight:500;color:#0C447C;margin-bottom:1px">Captain present</div>
+              <div style="font-size:13px;color:#333">A captain or acting captain must be at every match and is responsible for eligibility and scorecards.</div>
             </div>
 
           </div>
@@ -690,41 +685,41 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
           <div class="card-title">USTA 18+ league rules summary</div>
           <p style="font-size:12px;color:#888;margin-bottom:12px">Key rules from the 2026 USTA National Regulations. <a href="https://www.usta.com/en/home/play/adult-tennis/programs/national/usta-league-resources.html" target="_blank" style="color:#185FA5">Full regulations ↗</a></p>
 
-          <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;flex-direction:column;gap:8px">
 
-            <div style="border-left:3px solid #1D9E75;padding:6px 10px;border-radius:0 6px 6px 0;background:#f9fdf9">
-              <div style="font-size:12px;font-weight:500;color:#0F6E56;margin-bottom:2px">Roster</div>
-              <div style="font-size:13px;color:#333">Maximum 24 players per team. At least 40% of roster must be at the designated NTRP level. Players must have a valid USTA membership to participate.</div>
+            <div style="border-left:3px solid #1D9E75;padding:5px 10px;border-radius:0 6px 6px 0;background:#f9fdf9">
+              <div style="font-size:12px;font-weight:500;color:#0F6E56;margin-bottom:1px">Roster</div>
+              <div style="font-size:13px;color:#333">Max 24 players. At least 40% must be at the designated NTRP level. Valid USTA membership required.</div>
             </div>
 
-            <div style="border-left:3px solid #1D9E75;padding:6px 10px;border-radius:0 6px 6px 0;background:#f9fdf9">
-              <div style="font-size:12px;font-weight:500;color:#0F6E56;margin-bottom:2px">Match format — 18+ Adult</div>
-              <div style="font-size:13px;color:#333">3 doubles courts + 2 singles courts = 5 lines per match. Best of 3 sets with a 10-point match tiebreak in lieu of a third set.</div>
+            <div style="border-left:3px solid #1D9E75;padding:5px 10px;border-radius:0 6px 6px 0;background:#f9fdf9">
+              <div style="font-size:12px;font-weight:500;color:#0F6E56;margin-bottom:1px">Match format</div>
+              <div style="font-size:13px;color:#333">5 lines — 3 doubles + 2 singles. Best of 3 sets, no-ad, with a 10-point match tiebreak instead of a third set.</div>
             </div>
 
-            <div style="border-left:3px solid #1D9E75;padding:6px 10px;border-radius:0 6px 6px 0;background:#f9fdf9">
-              <div style="font-size:12px;font-weight:500;color:#0F6E56;margin-bottom:2px">Score reporting</div>
-              <div style="font-size:13px;color:#333">Match scores must be entered in TennisLink within 48 hours of match completion. Either the home or visiting team may enter scores.</div>
+            <div style="border-left:3px solid #1D9E75;padding:5px 10px;border-radius:0 6px 6px 0;background:#f9fdf9">
+              <div style="font-size:12px;font-weight:500;color:#0F6E56;margin-bottom:1px">Score reporting</div>
+              <div style="font-size:13px;color:#333">Enter scores in TennisLink within 48 hours. Either captain can do it.</div>
             </div>
 
-            <div style="border-left:3px solid #1D9E75;padding:6px 10px;border-radius:0 6px 6px 0;background:#f9fdf9">
-              <div style="font-size:12px;font-weight:500;color:#0F6E56;margin-bottom:2px">Eligibility for playoffs</div>
-              <div style="font-size:13px;color:#333">Players must have played in at least 2 matches during the regular season to be eligible for championship play. Defaults do not count.</div>
+            <div style="border-left:3px solid #1D9E75;padding:5px 10px;border-radius:0 6px 6px 0;background:#f9fdf9">
+              <div style="font-size:12px;font-weight:500;color:#0F6E56;margin-bottom:1px">Playoff eligibility</div>
+              <div style="font-size:13px;color:#333">Must have played at least 2 matches in the regular season. Defaults don't count.</div>
             </div>
 
-            <div style="border-left:3px solid #1D9E75;padding:6px 10px;border-radius:0 6px 6px 0;background:#f9fdf9">
-              <div style="font-size:12px;font-weight:500;color:#0F6E56;margin-bottom:2px">NTRP ratings</div>
-              <div style="font-size:13px;color:#333">Players without a computer rating must self-rate on TennisLink before registering. Ratings are updated annually based on match results.</div>
+            <div style="border-left:3px solid #1D9E75;padding:5px 10px;border-radius:0 6px 6px 0;background:#f9fdf9">
+              <div style="font-size:12px;font-weight:500;color:#0F6E56;margin-bottom:1px">NTRP ratings</div>
+              <div style="font-size:13px;color:#333">No computer rating? Self-rate on TennisLink before registering. Ratings update annually.</div>
             </div>
 
-            <div style="border-left:3px solid #1D9E75;padding:6px 10px;border-radius:0 6px 6px 0;background:#f9fdf9">
-              <div style="font-size:12px;font-weight:500;color:#0F6E56;margin-bottom:2px">Sportsmanship</div>
-              <div style="font-size:13px;color:#333">All players are expected to uphold good conduct before, during, and after matches. Teammates and spectators may not offer advice on line calls or scoring during play.</div>
+            <div style="border-left:3px solid #1D9E75;padding:5px 10px;border-radius:0 6px 6px 0;background:#f9fdf9">
+              <div style="font-size:12px;font-weight:500;color:#0F6E56;margin-bottom:1px">Sportsmanship</div>
+              <div style="font-size:13px;color:#333">Good conduct expected at all times. No coaching or advice on line calls from the sideline.</div>
             </div>
 
-            <div style="border-left:3px solid #1D9E75;padding:6px 10px;border-radius:0 6px 6px 0;background:#f9fdf9">
-              <div style="font-size:12px;font-weight:500;color:#0F6E56;margin-bottom:2px">Playing on multiple teams</div>
-              <div style="font-size:13px;color:#333">Players may play on multiple teams at different NTRP levels. The Recovery Rule applies — a player who has played in a match may not play on another team at the same level that same day.</div>
+            <div style="border-left:3px solid #1D9E75;padding:5px 10px;border-radius:0 6px 6px 0;background:#f9fdf9">
+              <div style="font-size:12px;font-weight:500;color:#0F6E56;margin-bottom:1px">Multiple teams</div>
+              <div style="font-size:13px;color:#333">You can play on multiple teams at different NTRP levels, but not at the same level on the same day.</div>
             </div>
 
           </div>
@@ -1703,7 +1698,7 @@ function renderRoster(){
       <td style="color:#185FA5;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px">${p.email}</td>
       <td style="white-space:nowrap">${p.phone}</td>
       <td class="roster-hide-mobile"><span class="badge badge-gray">${p.pos}</span></td>
-      <td>${STATE.role==='captain'?`<button class="btn btn-danger btn-sm" onclick="removePlayer('${p.id}')">Remove</button>`:''}</td>
+      <td>${STATE.role==='captain'?`<button class="btn btn-sm" style="font-size:12px;color:#aaa;border-color:#e0ddd5;padding:3px 10px" onclick="removePlayer('${p.id}')">Remove</button>`:''}</td>
     </tr>`;}).join('');
 }
 
@@ -1848,10 +1843,10 @@ function renderAvailability(){
     const statusLabel = av.status==='yes'?'Available':av.status==='maybe'?'Maybe':av.status==='no'?'Unavailable':'Unknown';
     const saveCall = `saveAvailRow('${p.id}','${d}')`;
     return `<div style="display:grid;grid-template-columns:70px 120px 1fr;gap:8px;align-items:center;padding:7px 0;border-bottom:0.5px solid #f0ede8">
-      <span style="font-size:13px;${isPast?'color:#aaa':''}">${dateLabel}</span>
+      <span style="font-size:13px;${isPast?'color:#ccc':''}">${dateLabel}</span>
       <div>
         ${editable
-          ? `<select id="pstatus-${p.id}-${d}" style="font-size:12px;padding:3px 6px;width:auto" onchange="${saveCall}">
+          ? `<select id="pstatus-${p.id}-${d}" style="font-size:12px;padding:3px 6px;width:auto;border-radius:6px" onchange="${saveCall};colorAvailSelect(this)">
               <option value="unknown"${av.status==='unknown'?' selected':''}>Unknown</option>
               <option value="yes"${av.status==='yes'?' selected':''}>Yes</option>
               <option value="maybe"${av.status==='maybe'?' selected':''}>Maybe</option>
@@ -1864,6 +1859,15 @@ function renderAvailability(){
       </div>
     </div>`;
   }).join('');
+  setTimeout(colorAllAvailSelects, 50);
+}
+
+function colorAvailSelect(el){
+  if(!el) return;
+  const colors = {yes:'#EAF3DE;color:#27500A', no:'#FCEBEB;color:#791F1F', maybe:'#FAEEDA;color:#633806', unknown:'#f5f5f0;color:#888'};
+  const c = colors[el.value] || colors.unknown;
+  el.style.background = c.split(';')[0].split(':')[1];
+  el.style.color = c.split(':')[2];
 }
 
 function saveAvailRow(playerId, date){
@@ -1871,6 +1875,7 @@ function saveAvailRow(playerId, date){
   const noteEl   = document.getElementById('pnote-'+playerId+'-'+date);
   const status = statusEl ? statusEl.value : 'unknown';
   const note   = noteEl   ? noteEl.value   : '';
+  colorAvailSelect(statusEl);
   setAvailabilityForPlayer(playerId, date, status, note);
 }
 
@@ -1925,6 +1930,10 @@ async function setAvailabilityForPlayer(playerId, date, status, note){
     toast('Save failed: '+e.message);
     console.error(e);
   }
+}
+
+function colorAllAvailSelects(){
+  document.querySelectorAll('select[id^="pstatus-"]').forEach(colorAvailSelect);
 }
 
 function renderAvailSummary(){
