@@ -15,16 +15,18 @@ h3{font-size:15px;font-weight:500;margin-bottom:.75rem}
 
 /* Layout */
 .app{display:none;min-height:100vh}
-.sidebar{width:220px;background:#fff;border-right:0.5px solid #e0ddd5;padding:1.5rem 1rem;position:fixed;top:0;left:0;height:100vh;overflow-y:auto}
+.sidebar{width:220px;background:#1a3a2a;border-right:none;padding:1.5rem 1rem;position:fixed;top:0;left:0;height:100vh;overflow-y:auto}
 .main{margin-left:220px;padding:2rem;max-width:900px}
-.brand{font-size:15px;font-weight:500;color:#0F6E56;margin-bottom:.25rem}
+
+.content{padding:0}
+.nav-item{display:block;padding:8px 12px;border-radius:7px;font-size:14px;color:#7aad90;cursor:pointer;border:none;background:none;width:100%;text-align:left;margin-bottom:2px;font-family:inherit}
+.nav-item:hover{background:#2a5040;color:#fff}
+.nav-item.active{background:#2a5040;color:#fff;font-weight:500;border-left:3px solid #1D9E75;border-radius:0 7px 7px 0}
+.nav-section{font-size:10px;color:#4a7a60;text-transform:uppercase;letter-spacing:.08em;padding:8px 12px 4px;margin-top:.5rem}
+.brand{font-size:15px;font-weight:600;color:#fff;margin-bottom:.15rem}
 .brand-sub{font-size:11px;color:#1D9E75;letter-spacing:.08em;text-transform:uppercase;margin-bottom:1.5rem;font-weight:500}
-.nav-item{display:block;padding:8px 12px;border-radius:8px;font-size:14px;color:#555;cursor:pointer;border:none;background:none;width:100%;text-align:left;margin-bottom:2px}
-.nav-item:hover{background:#f5f5f0}
-.nav-item.active{background:#E1F5EE;color:#0F6E56;font-weight:500;border-left:3px solid #1D9E75;border-radius:0 8px 8px 0}
-.nav-section{font-size:11px;color:#aaa;text-transform:uppercase;letter-spacing:.05em;padding:8px 12px 4px;margin-top:.5rem}
 .user-bar{position:fixed;top:0;left:220px;right:0;height:52px;background:#fff;border-bottom:0.5px solid #e0ddd5;display:flex;align-items:center;justify-content:flex-end;padding:0 2rem;gap:12px;z-index:10}
-.content{margin-top:52px;padding:1rem 2rem 2rem;max-width:900px}
+.content-area{margin-top:52px;padding:1rem 2rem 2rem;max-width:900px}
 
 /* Cards */
 .card{background:#fff;border:0.5px solid #e0ddd5;border-radius:12px;padding:1rem 1.25rem;margin-bottom:12px}
@@ -137,6 +139,7 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
   .mobile-nav-icon{font-size:18px;line-height:1}
   /* extra bottom padding so content clears tab bar */
   .content{padding:.5rem 1rem 72px}
+  .main{padding:.5rem 1rem 72px}
   /* stack doubles/singles vertically */
   #sec-lineup .grid-lineup{grid-template-columns:1fr!important}
   /* 2x2 stat grid */
@@ -265,7 +268,8 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
 
 <!-- MAIN APP -->
 <div id="app" class="app">
-  <div class="sidebar">
+
+  <div class="sidebar" id="sidebar">
     <div class="brand" id="app-team-name">Good Vibes Tribe</div>
     <div class="brand-sub">USTA 4.0 18+</div>
     <button class="nav-item active" onclick="nav('dashboard',this)">Dashboard</button>
@@ -278,7 +282,7 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
     <button class="nav-item" id="nav-schedule" onclick="nav('schedule',this)" style="display:none">Schedule</button>
     <button class="nav-item" id="nav-entitlements" onclick="nav('entitlements',this)" style="display:none">Entitlements</button>
     <button class="nav-item" id="nav-settings" onclick="nav('settings',this)" style="display:none">Settings</button>
-    <button class="nav-item" onclick="logout()" style="color:#A32D2D">Sign out</button>
+    <button class="nav-item" onclick="logout()" style="color:#ff7a7a">Sign out</button>
   </div>
 
   <div class="main">
@@ -840,6 +844,9 @@ label{font-size:13px;color:#666;display:block;margin-bottom:4px}
     </div>
   </div>
 
+  </div>
+  </div>
+
   <!-- MOBILE BOTTOM NAV -->
   <nav class="mobile-nav" id="mobile-nav">
     <button class="mobile-nav-btn active" onclick="mobileNav('dashboard',this)">
@@ -1048,7 +1055,7 @@ async function captainLogin(){
 
 function launchApp(){
   showScreen('app');
-  document.getElementById('app-team-name').textContent = CFG.teamName || 'Good Vibes Tribe';
+  const tn = document.getElementById('app-team-name'); if(tn) tn.textContent = CFG.teamName || 'Good Vibes Tribe';
   // keep brand-sub fixed
   const brandSub = document.querySelector('.brand-sub'); if(brandSub) brandSub.textContent = 'USTA 4.0 18+';
   document.getElementById('user-info').textContent = STATE.user?.name || '';
@@ -1078,6 +1085,11 @@ function applyRoleUI(){
   set('lineup-builder-section', isCaptain ? 'block' : 'none');
   set('msg-captain-form', isCaptain ? 'block' : 'none');
   set('news-post-tab-btn', isCaptain ? 'block' : 'none');
+  // show/hide captain sidebar and shift main
+  const capSidebar = document.getElementById('captain-sidebar');
+  const mainEl = document.getElementById('main-content');
+  if(capSidebar) capSidebar.className = isCaptain ? 'captain-sidebar visible' : 'captain-sidebar';
+  if(mainEl) mainEl.className = isCaptain ? 'main with-sidebar' : 'main';
   set('nav-settings', isCaptain ? 'block' : 'none');
   set('nav-entitlements', isCaptain ? 'block' : 'none');
   set('nav-schedule', isCaptain ? 'block' : 'none');
@@ -1192,7 +1204,7 @@ async function loadSchedule(){
 }
 
 async function saveScheduleEntry(date, location, opponent, venue=''){
-  if(!TOKEN){toast('Sign in with Google to save');return}
+  if(!TOKEN){ await ensureToken(addPlayer); return; }
   const rows = await sheetsGet('Schedule!A2:D');
   const idx = rows.findIndex(r=>r[0]===date);
   if(idx===-1){
@@ -1312,8 +1324,25 @@ function buildLineupText(){
 }
 
 // ─── ANNOUNCEMENTS ────────────────────────────────────────────────────────────────
+async function ensureToken(retryFn){
+  if(TOKEN) return true;
+  toast('Connecting to Google...');
+  return new Promise(resolve=>{
+    const c = google.accounts.oauth2.initTokenClient({
+      client_id: CFG.clientId,
+      scope: 'https://www.googleapis.com/auth/spreadsheets',
+      callback: async (r)=>{
+        if(r.access_token){ TOKEN = r.access_token; if(retryFn) await retryFn(); resolve(true); }
+        else { toast('Could not connect — please sign out and sign in again'); resolve(false); }
+      },
+      error_callback: ()=>{ toast('Could not connect — please sign out and sign in again'); resolve(false); }
+    });
+    c.requestAccessToken({prompt:''});
+  });
+}
+
 async function postMessage(){
-  if(!TOKEN){toast('Sign in with Google to post');return}
+  if(!TOKEN){ await ensureToken(postMessage); return; }
   const subj=v('msg-subject'),body=v('msg-body');
   if(!subj||!body){toast('Subject and message required');return}
   const now = new Date();
@@ -1342,7 +1371,7 @@ async function loadTeamInfo(){
 }
 
 async function saveTeamInfo(){
-  if(!TOKEN){toast('Connect Google Account first');return}
+  if(!TOKEN){ await ensureToken(saveTeamInfo); return; }
   const name = document.getElementById('ti-club-name-input').value.trim();
   const addr = document.getElementById('ti-club-address-input').value.trim();
   try {
@@ -1380,7 +1409,7 @@ function renderTeamInfo(){
 
 // ─── SCHEDULE IMPORT ─────────────────────────────────────────────────────────
 async function importTennisLink(){
-  if(!TOKEN){toast('Sign in with Google to save schedule');return}
+  if(!TOKEN){ await ensureToken(saveSchedule); return; }
   const url = document.getElementById('tl-url').value.trim();
   if(!url){toast('Enter a TennisLink URL');return}
   const status = document.getElementById('tl-status');
@@ -1489,7 +1518,7 @@ async function saveManualSchedule(){
 
 async function clearSchedule(){
   if(!confirm('Clear all schedule data?')) return;
-  if(!TOKEN){toast('Sign in with Google');return}
+  if(!TOKEN){ await ensureToken(saveLineup); return; }
   await sheetsClear('Schedule!A2:C');
   STATE.schedule = {};
   renderScheduleFull();
@@ -1542,7 +1571,7 @@ function renderScheduleFull(){
 }
 
 async function saveScheduleEdits(){
-  if(!TOKEN){toast('Connect Google Account first');return}
+  if(!TOKEN){ await ensureToken(saveConfig); return; }
   toast('Saving...');
   for(const d of MATCH_DATES){
     const opp = document.getElementById('se-opp-'+d);
@@ -1722,7 +1751,7 @@ function mobileMoreNav(id){
 
 function mobileNav(id, btn){
   // update mobile nav active state
-  document.querySelectorAll('.mobile-nav-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.mobile-nav-btn,.topnav-item,.cap-item').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   // also update sidebar nav
   const sidebarBtn = Array.from(document.querySelectorAll('.nav-item')).find(b=>b.getAttribute('onclick')&&b.getAttribute('onclick').includes("'"+id+"'"));
@@ -2202,7 +2231,7 @@ function requestOAuthToken(){
 }
 
 async function initSheet(){
-  if(!TOKEN){toast('Click "Connect Google Account" first');return}
+  if(!TOKEN){ await ensureToken(initSheet); return; }
   toast('Creating sheet tabs...');
   const sheets = ['Players','Availability','Lineup','Messages','Schedule','TeamInfo'];
   const headers = {
