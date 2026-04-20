@@ -980,14 +980,24 @@ function handleCredential(response){
   STATE.user = {name:payload.name, email:payload.email, picture:payload.picture};
   STATE.role = 'player';
   localStorage.setItem('usta_user', JSON.stringify(STATE.user));
-  // request OAuth token silently — launches app whether token succeeds or not
-  const _tokenClient = google.accounts.oauth2.initTokenClient({
-    client_id: CFG.clientId,
-    scope: 'https://www.googleapis.com/auth/spreadsheets',
-    callback: (r)=>{ if(r.access_token) TOKEN = r.access_token; },
-    error_callback: ()=>{ console.warn('Silent token request failed'); }
-  });
-  _tokenClient.requestAccessToken({prompt:''});
+  // request OAuth token — try silent first, fall back to consent if blocked
+  const _getToken = (useConsent) => {
+    const _tokenClient = google.accounts.oauth2.initTokenClient({
+      client_id: CFG.clientId,
+      scope: 'https://www.googleapis.com/auth/spreadsheets',
+      callback: (r)=>{ if(r.access_token) TOKEN = r.access_token; },
+      error_callback: ()=>{
+        if(!useConsent){
+          // silent failed — try with visible consent screen
+          _getToken(true);
+        } else {
+          console.warn('Token request failed even with consent prompt');
+        }
+      }
+    });
+    _tokenClient.requestAccessToken({prompt: useConsent ? 'consent' : ''});
+  };
+  _getToken(false);
   const status = document.getElementById('login-google-status');
   if(status){ status.textContent = 'Signed in as '+payload.email+' — entering app...'; status.style.display='block'; }
   // update captain Step 1 status and unlock Step 2
@@ -1029,16 +1039,22 @@ async function captainLogin(){
     STATE.role = 'captain';
     localStorage.setItem('usta_user', JSON.stringify({...STATE.user, role:'captain'}));
     if(typeof google !== 'undefined' && google.accounts && google.accounts.oauth2){
-      const client = google.accounts.oauth2.initTokenClient({
-        client_id: CFG.clientId,
-        scope: 'https://www.googleapis.com/auth/spreadsheets',
-        callback: (r)=>{
-          TOKEN = r.access_token;
-          launchApp();
-        },
-        error_callback: ()=>{ launchApp(); } // launch even if token fails
-      });
-      client.requestAccessToken({prompt:''});
+      const _getCaptainToken = (useConsent) => {
+        const client = google.accounts.oauth2.initTokenClient({
+          client_id: CFG.clientId,
+          scope: 'https://www.googleapis.com/auth/spreadsheets',
+          callback: (r)=>{
+            if(r.access_token) TOKEN = r.access_token;
+            launchApp();
+          },
+          error_callback: ()=>{
+            if(!useConsent){ _getCaptainToken(true); }
+            else { launchApp(); } // launch anyway as last resort
+          }
+        });
+        client.requestAccessToken({prompt: useConsent ? 'consent' : ''});
+      };
+      _getCaptainToken(false);
     } else {
       launchApp(); // fallback if google not loaded
     }
