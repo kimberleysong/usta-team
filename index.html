@@ -1334,7 +1334,19 @@ async function ensureToken(retryFn){
         if(r.access_token){ TOKEN = r.access_token; if(retryFn) await retryFn(); resolve(true); }
         else { toast('Could not connect — please sign out and sign in again'); resolve(false); }
       },
-      error_callback: ()=>{ toast('Could not connect — please sign out and sign in again'); resolve(false); }
+      error_callback: (err)=>{
+        // silent failed — try with consent prompt
+        const c2 = google.accounts.oauth2.initTokenClient({
+          client_id: CFG.clientId,
+          scope: 'https://www.googleapis.com/auth/spreadsheets',
+          callback: async (r)=>{
+            if(r.access_token){ TOKEN = r.access_token; if(retryFn) await retryFn(); resolve(true); }
+            else { toast('Could not connect — please sign out and sign in again'); resolve(false); }
+          },
+          error_callback: ()=>{ toast('Could not connect — please sign out and sign in again'); resolve(false); }
+        });
+        c2.requestAccessToken({prompt:'consent'});
+      }
     });
     c.requestAccessToken({prompt:''});
   });
@@ -1976,7 +1988,19 @@ async function setAvailabilityForPlayer(playerId, date, status, note){
           toast('Could not connect to Google — please sign out and sign in again');
         }
       },
-      error_callback: ()=>{ toast('Could not connect to Google — please sign out and sign in again'); }
+      error_callback: ()=>{
+        // silent failed — retry with consent
+        const c2 = google.accounts.oauth2.initTokenClient({
+          client_id: CFG.clientId,
+          scope: 'https://www.googleapis.com/auth/spreadsheets',
+          callback: async (r)=>{
+            if(r.access_token){ TOKEN = r.access_token; await setAvailabilityForPlayer(playerId, date, status, note); }
+            else { toast('Could not connect — please sign out and sign in again'); }
+          },
+          error_callback: ()=>{ toast('Could not connect — please sign out and sign in again'); }
+        });
+        c2.requestAccessToken({prompt:'consent'});
+      }
     });
     c.requestAccessToken({prompt:''});
     return;
