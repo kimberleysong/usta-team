@@ -1161,6 +1161,7 @@ function applyRoleUI(){
 
 function logout(){
   localStorage.removeItem('usta_user');
+  sessionStorage.removeItem('team_code_ok');
   TOKEN = null;
   STATE.user = null;
   STATE.role = 'guest';
