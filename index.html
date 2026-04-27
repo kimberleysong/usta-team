@@ -510,13 +510,14 @@ button{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-seri
         
         <div class="card" style="margin-bottom:1rem">
           <div class="card-title">Import from TennisLink</div>
-          <p style="font-size:13px;color:#555;margin-bottom:12px">Paste your TennisLink schedule URL and click Import. The schedule will be parsed and saved to your Google Sheet.</p>
+          <p style="font-size:13px;color:#555;margin-bottom:4px">Copy the schedule table from TennisLink and paste it below. The app will parse it automatically.</p>
+          <p style="font-size:12px;color:#aaa;margin-bottom:12px">On TennisLink: open your team schedule page → select all the schedule rows → copy → paste here.</p>
           <div class="form-group">
-            <label>TennisLink schedule URL</label>
-            <input id="tl-url" placeholder="https://tennislink.usta.com/Leagues/Main/StatsAndStandings.aspx?t=..." value="https://tennislink.usta.com/Leagues/Main/StatsAndStandings.aspx?t=R-3#&&s=bD69iCS8MMix3GePOk_hYxV6W2AbB_QI0">
+            <label>Paste schedule text</label>
+            <textarea id="tl-paste" rows="8" placeholder="Paste TennisLink schedule text here...&#10;&#10;Example:&#10;1011951583&#10;5/13/2026	6:30 PM	WTC:Good Vibes Tribe:Song	Kimberley Song..."></textarea>
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
-            <button class="btn btn-primary" onclick="importTennisLink()">Import schedule</button>
+            <button class="btn btn-primary" onclick="parsePastedSchedule()">Parse &amp; import</button>
             <button class="btn" onclick="clearSchedule()">Clear schedule</button>
           </div>
           <div id="tl-status" style="font-size:13px;margin-top:10px;color:#888"></div>
@@ -912,6 +913,20 @@ button{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-seri
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script>
 // ─── CONFIG ─────────────────────────────────────────────────────────────────
+// ── DEFAULT SCHEDULE ─────────────────────────────────────────────────────────
+const DEFAULT_SCHEDULE = [
+  {date:'2026-05-13', home_away:'Home',  opponent:'WOB: Aces 4.0 (Calleva)',           venue:'Winchester Indoor Lawn Tennis Center'},
+  {date:'2026-05-20', home_away:'Away',  opponent:'WOB: Woburn Green (Willey)',         venue:'Woburn Racquet Club'},
+  {date:'2026-05-27', home_away:'Home',  opponent:'Bye',                                venue:'Winchester Indoor Lawn Tennis Center'},
+  {date:'2026-06-03', home_away:'Home',  opponent:"STC: Sportsmen's (Breckner/McDonough)", venue:'Winchester Indoor Lawn Tennis Center'},
+  {date:'2026-06-10', home_away:'Away',  opponent:'WOB: The Powerpuff Girls (Lyu)',     venue:'Woburn Racquet Club'},
+  {date:'2026-06-17', home_away:'Away',  opponent:'WOB: Aces 4.0 (Calleva)',           venue:'Woburn Racquet Club'},
+  {date:'2026-06-24', home_away:'Home',  opponent:'WOB: Woburn Green (Willey)',         venue:'Winchester Indoor Lawn Tennis Center'},
+  {date:'2026-07-01', home_away:'Away',  opponent:'Bye',                                venue:''},
+  {date:'2026-07-08', home_away:'Away',  opponent:"STC: Sportsmen's (Breckner/McDonough)", venue:"Sportsmen's Tennis & Education Center"},
+  {date:'2026-07-15', home_away:'Home',  opponent:'WOB: The Powerpuff Girls (Lyu)',     venue:'Winchester Indoor Lawn Tennis Center'},
+];
+
 // ── HARDCODED CONFIG — fill these in so players never see setup screen ──
 const DEFAULT_CFG = {
   sheetId:    '1nXZxwggCeBQCrZ5hBN9KyjtC51LDUMYfOabA4ak8OV4',
@@ -1258,9 +1273,16 @@ async function loadLineup(){
 }
 
 async function loadSchedule(){
-  const rows = await sheetsGet('Schedule!A2:D');
+  // seed with default schedule first so dashboard always has data
   STATE.schedule = {};
-  rows.forEach(r=>{ if(r[0]) STATE.schedule[r[0]] = {location:r[1]||'', opponent:r[2]||'', venue:r[3]||''}; });
+  DEFAULT_SCHEDULE.forEach(s=>{ STATE.schedule[s.date] = {location:s.home_away, opponent:s.opponent, venue:s.venue}; });
+  try{
+    const rows = await sheetsGet('Schedule!A2:D');
+    if(rows && rows.length){
+      STATE.schedule = {};
+      rows.forEach(r=>{ if(r[0]) STATE.schedule[r[0]] = {location:r[1]||'', opponent:r[2]||'', venue:r[3]||''}; });
+    }
+  }catch(e){ console.warn('Schedule load failed — using default'); }
 }
 
 async function saveScheduleEntry(date, location, opponent, venue=''){
@@ -1585,6 +1607,82 @@ async function saveManualSchedule(){
   toast('Schedule saved');
   renderScheduleFull();
   renderDashboard();
+}
+
+async function parsePastedSchedule(){
+  if(!TOKEN){ await ensureToken(parsePastedSchedule); return; }
+  const text = document.getElementById('tl-paste').value.trim();
+  if(!text){ toast('Please paste schedule text first'); return; }
+  const status = document.getElementById('tl-status');
+  status.textContent = 'Parsing...';
+
+  // Split into lines and process
+  const lines = text.split(/\r?\n/).map(l=>l.trim()).filter(l=>l);
+  const parsed = [];
+  let i = 0;
+
+  while(i < lines.length){
+    // Look for a Match ID line (all digits)
+    if(/^[0-9]{8,}$/.test(lines[i])){
+      i++; // skip match ID
+      if(i >= lines.length) break;
+
+      // Next line has: date, time, home team, home captain, away team, away captain, venue
+      const parts = lines[i].split('	');
+      if(parts.length >= 5){
+        const rawDate = parts[0]?.trim();
+        const homeTeam = parts[2]?.trim() || '';
+        const awayTeam = parts[4]?.trim() || '';
+        const venue = parts[6]?.trim() || parts[5]?.trim() || '';
+
+        // Parse date MM/DD/YYYY → YYYY-MM-DD
+        const dm = rawDate.match(/(\d+)\/(\d+)\/(\d+)/);
+        if(!dm){ i++; continue; }
+        const date = `${dm[3]}-${dm[1].padStart(2,'0')}-${dm[2].padStart(2,'0')}`;
+
+        // Determine home/away — WTC in home team = Home
+        const isHome = homeTeam.includes('WTC') || homeTeam.toLowerCase().includes('good vibes');
+        const opponentRaw = isHome ? awayTeam : homeTeam;
+        const home_away = isHome ? 'Home' : 'Away';
+
+        // Skip bye weeks
+        const isBye = opponentRaw.toLowerCase() === 'bye' || opponentRaw === '' || opponentRaw === 'N/A';
+        const opponent = isBye ? 'Bye' : opponentRaw;
+
+        parsed.push({date, home_away, opponent, venue: isBye ? '' : venue});
+      }
+      i++;
+    } else {
+      i++;
+    }
+  }
+
+  if(!parsed.length){
+    status.textContent = '❌ Could not parse schedule — check the format and try again.';
+    status.style.color = '#A32D2D';
+    return;
+  }
+
+  // Save to Google Sheet
+  try{
+    await sheetsClear('Schedule!A2:D');
+    const rows = parsed.map(s=>[s.date, s.home_away, s.opponent, s.venue]);
+    await sheetsUpdate('Schedule!A2:D', rows);
+
+    // Update local state
+    STATE.schedule = {};
+    parsed.forEach(s=>{ STATE.schedule[s.date] = {location:s.home_away, opponent:s.opponent, venue:s.venue}; });
+
+    renderScheduleFull();
+    renderDashboard();
+    status.textContent = `✅ Imported ${parsed.length} matches successfully.`;
+    status.style.color = '#1D9E75';
+    document.getElementById('tl-paste').value = '';
+    toast(`${parsed.length} matches imported`);
+  }catch(e){
+    status.textContent = '❌ Save failed: '+e.message;
+    status.style.color = '#A32D2D';
+  }
 }
 
 async function clearSchedule(){
