@@ -960,13 +960,14 @@ const AVATAR_COLORS=['#E6F1FB:#0C447C','#E1F5EE:#085041','#FAEEDA:#633806','#EEE
 // ─── BOOT ────────────────────────────────────────────────────────────────────
 window.onload = function(){
   // restore team code state if already verified this session
-  if(sessionStorage.getItem('team_code_ok')==='1'){
-    const playerSection = document.getElementById('login-player-section');
-    if(playerSection) playerSection.style.display = 'block';
-    // hide the code input section
-    const codeInput = document.getElementById('team-code-input');
-    if(codeInput) codeInput.closest('div[style]').style.display = 'none';
-  }
+  try{
+    if(sessionStorage.getItem('team_code_ok')==='1'){
+      const playerSection = document.getElementById('login-player-section');
+      if(playerSection) playerSection.style.display = 'block';
+      const codeInput = document.getElementById('team-code-input');
+      if(codeInput){ const p = codeInput.parentElement; if(p) p.style.display = 'none'; }
+    }
+  }catch(e){ console.warn('session restore error:', e); }
   // show setup only if config is completely missing AND no defaults set
   const hasConfig = CFG.sheetId && CFG.sheetId !== 'YOUR_SHEET_ID_HERE'
                  && CFG.apiKey  && CFG.apiKey  !== 'YOUR_API_KEY_HERE'
@@ -2208,7 +2209,7 @@ async function setAvailabilityForPlayer(playerId, date, status, note){
   renderAvailSummary();
   renderDashboard();
   // sanitize note — remove any chars that could break the API request
-  const safeNote = (note||'').replace(/[ -]/g, '').trim();
+  const safeNote = (note||'').split('').filter(c=>c.charCodeAt(0)>=32).join('').trim();
   try {
     const rows = await sheetsGet('Availability!A2:D');
     if(!rows){ toast('Could not read sheet — try again'); return; }
