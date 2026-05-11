@@ -239,6 +239,7 @@ button{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-seri
     </div>
 
     
+    <!-- STEP 1: Team code -->
     <div style="margin-bottom:1rem">
       <label style="font-size:12px;color:#888;display:block;margin-bottom:6px;font-weight:500">Team access code</label>
       <div style="display:flex;gap:8px">
@@ -246,27 +247,39 @@ button{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-seri
         <button class="btn btn-primary" onclick="verifyTeamCode()">Enter</button>
       </div>
       <div id="team-code-error" style="font-size:12px;color:#A32D2D;margin-top:6px;display:none">Incorrect code — contact Kim.</div>
-      <div id="team-code-ok" style="font-size:12px;color:#1D9E75;margin-top:6px;display:none">✓ Code accepted — sign in with Google below.</div>
     </div>
 
-    <div id="login-google-section" style="opacity:0.35;pointer-events:none">
+    <!-- STEP 2: Player name picker (shown after code accepted) -->
+    <div id="login-player-section" style="display:none">
+      <div style="font-size:12px;color:#1D9E75;margin-bottom:12px;font-weight:500">✓ Code accepted — who are you?</div>
+      <div class="form-group" style="margin-bottom:8px">
+        <label style="font-size:12px;color:#888;display:block;margin-bottom:6px">Select your name</label>
+        <select id="login-player-select" style="font-size:14px;padding:8px 10px;width:100%">
+          <option value="">— select your name —</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" style="width:100%" onclick="playerLogin()">Sign in as Player</button>
+      <div id="login-player-error" style="font-size:12px;color:#A32D2D;margin-top:6px;display:none">Please select your name.</div>
+    </div>
+
+    <!-- Google sign-in (hidden by default, shown only for captain) -->
+    <div id="login-google-section" style="display:none">
       <div id="g-signin-btn"></div>
       <div id="login-google-status" style="font-size:12px;color:#888;margin-top:8px;display:none"></div>
     </div>
 
     <hr class="divider">
 
-    <details style="margin-top:0" id="captain-details">
+    <details style="margin<details style="margin-top:0" id="captain-details" ontoggle="if(this.open) showCaptainGoogleBtn()">
       <summary style="font-size:13px;color:#888;cursor:pointer;list-style:none;display:flex;align-items:center;gap:6px">
         <span>&#9654;</span> Captain access
       </summary>
       <div style="margin-top:.75rem">
-
         <div style="margin-bottom:1rem">
           <div style="font-size:13px;font-weight:500;color:#555;margin-bottom:4px">Step 1 — Sign in with Google</div>
-          <div id="captain-google-status" style="font-size:13px;color:#888;background:#ece9e3;border-radius:8px;padding:8px 12px">Not signed in yet — use the button above.</div>
+          <div id="captain-google-signin" style="margin-bottom:8px"></div>
+          <div id="captain-google-status" style="font-size:13px;color:#888;background:#f5f5f0;border-radius:8px;padding:8px 12px;display:none"></div>
         </div>
-
         <div id="captain-pw-section" style="opacity:0.4;pointer-events:none">
           <div style="font-size:13px;font-weight:500;color:#555;margin-bottom:4px">Step 2 — Enter captain password</div>
           <div style="display:flex;gap:8px">
@@ -275,7 +288,6 @@ button{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-seri
           </div>
           <div id="login-error" style="font-size:12px;color:#A32D2D;margin-top:8px;display:none">Incorrect password.</div>
         </div>
-
       </div>
     </details>
   </div>
@@ -636,7 +648,7 @@ button{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-seri
 
             <div style="border-left:3px solid #378ADD;padding:5px 10px;border-radius:0 6px 6px 0;background:#f5f9ff">
               <div style="font-size:12px;font-weight:500;color:#0C447C;margin-bottom:1px">Scoring</div>
-              <div style="font-size:13px;color:#333;line-height:1.7"><span style="font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:#888">Format</span><br>• Best of 3 sets<br>• No-ad — at deuce, next point wins; receiver picks side<br>• Set tied 6-6: play a 5-point tiebreak (first to 5; if 4-4, one point decides)<br>• Sets split 1-1: play a 10-point match tiebreak (first to 10, win by 2)<br><br><span style="font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:#888">At the 90-min bell — finish game or 5-pt tiebreak in progress, then:</span><br><b style="color:#333">1. 1st set in progress</b> — team ahead wins set &amp; match · if tied: extra time plays 5-pt tiebreak; no extra time plays 1 deciding point<br><b style="color:#333">2. 2nd set in progress</b> — team ahead wins set · if tied: extra time plays 5-pt tiebreak; no extra time plays 1 deciding point · play match tiebreak if now 1-1<br><b style="color:#333">3. Sets 1-1, match tiebreak not started</b> — play match tiebreak regardless of extra time<br><b style="color:#333">4. Match tiebreak in progress</b> — extra time: finish it · no extra time: team ahead wins; if tied, 1 deciding point</div>
+              <div style="font-size:13px;color:#333;line-height:1.7"><span style="font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:#888">Format</span><br>• Best of 3 sets<br>• No-ad — at deuce, next point wins; receiver picks side<br>• Set tied 6-6: play a 5-point tiebreak (first to 5; if 4-4, one point decides)<br>• Sets split 1-1: play a 10-point match tiebreak (first to 10, win by 2)<br><br><span style="font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:#888">At the 90-min bell — finish game or 5-pt tiebreak in progress, then:</span><br>• <b style="color:#333">1st set in progress</b> — team ahead wins set &amp; match · if tied: extra time plays 5-pt tiebreak; no extra time plays 1 deciding point<br>• <b style="color:#333">2nd set in progress</b> — team ahead wins set · if tied: extra time plays 5-pt tiebreak; no extra time plays 1 deciding point · play match tiebreak if now 1-1<br>• <b style="color:#333">Sets 1-1, match tiebreak not started</b> — play match tiebreak regardless of extra time<br>• <b style="color:#333">Match tiebreak in progress</b> — extra time: finish it · no extra time: team ahead wins; if tied, 1 deciding point</div>
             </div>
 
             <div style="border-left:3px solid #378ADD;padding:5px 10px;border-radius:0 6px 6px 0;background:#f5f9ff">
@@ -949,10 +961,10 @@ const AVATAR_COLORS=['#E6F1FB:#0C447C','#E1F5EE:#085041','#FAEEDA:#633806','#EEE
 window.onload = function(){
   // restore team code state if already verified this session
   if(sessionStorage.getItem('team_code_ok')==='1'){
-    const section = document.getElementById('login-google-section');
-    const ok = document.getElementById('team-code-ok');
-    if(section){ section.style.opacity='1'; section.style.pointerEvents='auto'; }
-    if(ok){ ok.style.display='block'; }
+    const playerSection = document.getElementById('login-player-section');
+    const codeSection = document.querySelector('#login-screen .screen-card > div:has(#team-code-input)');
+    if(playerSection) playerSection.style.display = 'block';
+    populateLoginPlayerDropdown && populateLoginPlayerDropdown();
   }
   // show setup only if config is completely missing AND no defaults set
   const hasConfig = CFG.sheetId && CFG.sheetId !== 'YOUR_SHEET_ID_HERE'
@@ -999,22 +1011,54 @@ function verifyTeamCode(){
   const encoder = new TextEncoder();
   crypto.subtle.digest('SHA-256', encoder.encode(code)).then(buf=>{
     const hash = Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
-    const okDiv = document.getElementById('team-code-ok');
     const errDiv = document.getElementById('team-code-error');
-    const section = document.getElementById('login-google-section');
     if(hash === '2147f721db86ec5dba9b580342550e6dfee183f71c565ff5c26520da55e9b40c'){
-      okDiv.style.display = 'block';
       errDiv.style.display = 'none';
-      section.style.opacity = '1';
-      section.style.pointerEvents = 'auto';
       sessionStorage.setItem('team_code_ok','1');
+      // show player name section
+      document.getElementById('login-player-section').style.display = 'block';
+      document.getElementById('team-code-input').closest('div').style.display = 'none';
+      // populate player dropdown
+      populateLoginPlayerDropdown();
     } else {
       errDiv.style.display = 'block';
-      okDiv.style.display = 'none';
-      section.style.opacity = '0.35';
-      section.style.pointerEvents = 'none';
     }
   });
+}
+
+function populateLoginPlayerDropdown(){
+  const sel = document.getElementById('login-player-select');
+  if(!STATE.players.length){
+    // load players first then populate
+    loadPlayers().then(()=>populateLoginPlayerDropdown());
+    return;
+  }
+  const sorted = [...STATE.players].sort((a,b)=>a.first.localeCompare(b.first));
+  sel.innerHTML = '<option value="">— select your name —</option>' +
+    sorted.map(p=>`<option value="${p.id}">${p.first} ${p.last}</option>`).join('');
+}
+
+function playerLogin(){
+  const sel = document.getElementById('login-player-select');
+  const playerId = sel.value;
+  if(!playerId){
+    document.getElementById('login-player-error').style.display = 'block';
+    return;
+  }
+  const player = STATE.players.find(p=>p.id===playerId);
+  if(!player){ toast('Player not found'); return; }
+  STATE.user = {name: player.first+' '+player.last, email: player.gemail||player.email, picture:null, playerId};
+  STATE.role = 'player';
+  localStorage.setItem('usta_user', JSON.stringify(STATE.user));
+  launchApp();
+}
+
+function showCaptainGoogleBtn(){
+  // render Google sign-in button inside captain section
+  const container = document.getElementById('captain-google-signin');
+  if(container && container.childElementCount === 0 && typeof google !== 'undefined'){
+    google.accounts.id.renderButton(container, {theme:'outline',size:'large',text:'signin_with',width:260});
+  }
 }
 
 function handleCredential(response){
@@ -1040,18 +1084,17 @@ function handleCredential(response){
     _tokenClient.requestAccessToken({prompt: useConsent ? 'consent' : ''});
   };
   _getToken(false);
-  const status = document.getElementById('login-google-status');
-  if(status){ status.textContent = 'Signed in as '+payload.email+' — entering app...'; status.style.display='block'; }
-  // update captain Step 1 status and unlock Step 2
+  // update captain Step 1 status and unlock pw step
   const captainStatus = document.getElementById('captain-google-status');
   if(captainStatus){
     captainStatus.textContent = 'Signed in as '+payload.email;
+    captainStatus.style.display = 'block';
     captainStatus.style.background = '#EAF3DE';
     captainStatus.style.color = '#27500A';
   }
   const pwSection = document.getElementById('captain-pw-section');
   if(pwSection){ pwSection.style.opacity='1'; pwSection.style.pointerEvents='auto'; }
-  // if captain details section is open, don't auto-launch — wait for password
+  // captain details is open — wait for password
   const captainDetails = document.getElementById('captain-details');
   if(captainDetails && captainDetails.open){
     document.getElementById('captain-pw-input')?.focus();
@@ -1162,6 +1205,8 @@ function logout(){
   TOKEN = null;
   STATE.user = null;
   STATE.role = 'guest';
+  STATE.user = null;
+  STATE.role = 'guest';
   if(typeof google !== 'undefined' && google.accounts && google.accounts.id){
     google.accounts.id.disableAutoSelect();
   }
@@ -1193,13 +1238,13 @@ async function sheetsGet(range){
 }
 
 async function sheetsUpdate(range, values){
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${CFG.sheetId}/values/${encodeURIComponent(range)}?valueInputOption=RAW`;
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${CFG.sheetId}/values/${encodeURIComponent(range)}?valueInputOption=RAW${TOKEN ? '' : '&key='+CFG.apiKey}`;
   const headers = TOKEN ? {Authorization:`Bearer ${TOKEN}`} : {};
   await axios.put(url, {range, majorDimension:'ROWS', values}, {headers});
 }
 
 async function sheetsAppend(sheetName, values){
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${CFG.sheetId}/values/${encodeURIComponent(sheetName+'!A1')}:append?valueInputOption=RAW&insertDataOption=INSERT_ROWS`;
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${CFG.sheetId}/values/${encodeURIComponent(sheetName+'!A1')}:append?valueInputOption=RAW&insertDataOption=INSERT_ROWS${TOKEN ? '' : '&key='+CFG.apiKey}`;
   const headers = TOKEN ? {Authorization:`Bearer ${TOKEN}`} : {};
   await axios.post(url, {majorDimension:'ROWS', values}, {headers});
 }
@@ -2059,7 +2104,8 @@ function renderAvailability(){
     const isPast = d < today;
     const editable = canEdit && !isPast;
     const dt = new Date(d+'T12:00:00');
-    const dateLabel = dt.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+    const isBye = ['2026-05-27', '2026-07-01'].includes(d);
+    const dateLabel = dt.toLocaleDateString('en-US',{month:'short',day:'numeric'}) + (isBye ? ' — Bye' : '');
     const statusBadge = av.status==='yes'?'tag-in':av.status==='maybe'?'tag-maybe':av.status==='no'?'tag-out':'tag-unknown';
     const statusLabel = av.status==='yes'?'Available':av.status==='maybe'?'Maybe':av.status==='no'?'Unavailable':'Unknown';
     const saveCall = `saveAvailRow('${p.id}','${d}')`;
@@ -2136,41 +2182,22 @@ async function setAvailabilityForPlayer(playerId, date, status, note){
     toast('Cannot update availability for past dates'); return;
   }
   if(STATE.role !== 'captain'){
-    const me = STATE.user?.email;
-    const player = STATE.players.find(p=>p.id===playerId);
-    if(!player || player.gemail.toLowerCase() !== me.toLowerCase()){
+    // for non-google players, verify by playerId stored in STATE.user
+    const myId = STATE.user?.playerId;
+    if(myId && myId !== playerId){
       toast('You can only update your own availability'); return;
     }
-  }
-  if(!TOKEN){
-    // token missing — try to get it silently then retry
-    toast('Connecting to Google...');
-    const c = google.accounts.oauth2.initTokenClient({
-      client_id: CFG.clientId,
-      scope: 'https://www.googleapis.com/auth/spreadsheets',
-      callback: async (r)=>{
-        if(r.access_token){
-          TOKEN = r.access_token;
-          await setAvailabilityForPlayer(playerId, date, status, note);
-        } else {
-          toast('Could not connect to Google — please sign out and sign in again');
-        }
-      },
-      error_callback: ()=>{
-        // silent failed — retry with consent
-        const c2 = google.accounts.oauth2.initTokenClient({
-          client_id: CFG.clientId,
-          scope: 'https://www.googleapis.com/auth/spreadsheets',
-          callback: async (r)=>{
-            if(r.access_token){ TOKEN = r.access_token; await setAvailabilityForPlayer(playerId, date, status, note); }
-            else { toast('Could not connect — please sign out and sign in again'); }
-          },
-          error_callback: ()=>{ toast('Could not connect — please sign out and sign in again'); }
-        });
-        c2.requestAccessToken({prompt:'consent'});
+    // if no playerId (legacy google login), verify by email
+    if(!myId){
+      const me = STATE.user?.email;
+      const player = STATE.players.find(p=>p.id===playerId);
+      if(!player || !me || player.gemail.toLowerCase() !== me.toLowerCase()){
+        toast('You can only update your own availability'); return;
       }
-    });
-    c.requestAccessToken({prompt:''});
+    }
+  }
+  if(!TOKEN && STATE.role !== 'player'){
+    await ensureToken(()=>setAvailabilityForPlayer(playerId,date,status,note));
     return;
   }
   // Update local state immediately
@@ -2179,19 +2206,30 @@ async function setAvailabilityForPlayer(playerId, date, status, note){
   updatePlayerMeta();
   renderAvailSummary();
   renderDashboard();
+  // sanitize note — remove any chars that could break the API request
+  const safeNote = (note||'').replace(/[ -]/g, '').trim();
   try {
     const rows = await sheetsGet('Availability!A2:D');
+    if(!rows){ toast('Could not read sheet — try again'); return; }
     const rowIndex = rows.findIndex(r=>r[0]===date && r[1]===playerId);
     if(rowIndex === -1){
-      await sheetsAppend('Availability', [[date, playerId, status, note||'']]);
+      await sheetsAppend('Availability', [[date, playerId, status, safeNote]]);
     } else {
       const sheetRow = rowIndex + 2;
-      await sheetsUpdate(`Availability!A${sheetRow}:D${sheetRow}`, [[date, playerId, status, note||'']]);
+      if(sheetRow < 2){ toast('Invalid row — try again'); return; }
+      await sheetsUpdate(`Availability!A${sheetRow}:D${sheetRow}`, [[date, playerId, status, safeNote]]);
     }
     toast('Saved');
   } catch(e){
-    toast('Save failed: '+e.message);
-    console.error(e);
+    const msg = e.message || '';
+    if(msg.includes('400')){
+      toast('Bad request — check your note for special characters');
+    } else if(msg.includes('403')){
+      toast('Permission denied — contact Kim to check sheet access');
+    } else {
+      toast('Save failed: '+msg);
+    }
+    console.error('Availability save error:', e);
   }
 }
 
