@@ -962,9 +962,10 @@ window.onload = function(){
   // restore team code state if already verified this session
   if(sessionStorage.getItem('team_code_ok')==='1'){
     const playerSection = document.getElementById('login-player-section');
-    const codeSection = document.querySelector('#login-screen .screen-card > div:has(#team-code-input)');
     if(playerSection) playerSection.style.display = 'block';
-    populateLoginPlayerDropdown && populateLoginPlayerDropdown();
+    // hide the code input section
+    const codeInput = document.getElementById('team-code-input');
+    if(codeInput) codeInput.closest('div[style]').style.display = 'none';
   }
   // show setup only if config is completely missing AND no defaults set
   const hasConfig = CFG.sheetId && CFG.sheetId !== 'YOUR_SHEET_ID_HERE'
@@ -974,6 +975,8 @@ window.onload = function(){
     showScreen('setup');
     return;
   }
+  // Always show login screen first
+  showScreen('login');
   loadGoogleIdentity();
 };
 
@@ -1203,8 +1206,6 @@ function logout(){
   localStorage.removeItem('usta_user');
   sessionStorage.removeItem('team_code_ok');
   TOKEN = null;
-  STATE.user = null;
-  STATE.role = 'guest';
   STATE.user = null;
   STATE.role = 'guest';
   if(typeof google !== 'undefined' && google.accounts && google.accounts.id){
