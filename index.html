@@ -235,6 +235,7 @@ button{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-seri
     <div style="text-align:center;margin-bottom:1.5rem">
       <div style="font-size:28px;margin-bottom:.5rem">&#127934;</div>
       <div style="font-size:15px;font-weight:500;color:#1a1a1a;margin-bottom:.5rem">Welcome to your team app</div>
+      <div style="font-size:13px;color:#888">Sign in with your Google account to view the schedule, update your availability, and see the lineup.</div>
     </div>
 
     
@@ -977,6 +978,7 @@ window.onload = function(){
   }
   // Always show login screen first
   showScreen('login');
+  loadPlayers().then(populateLoginPlayerDropdown);
   loadGoogleIdentity();
 };
 
@@ -1031,9 +1033,12 @@ function verifyTeamCode(){
 
 function populateLoginPlayerDropdown(){
   const sel = document.getElementById('login-player-select');
+  if(!sel) return;
   if(!STATE.players.length){
-    // load players first then populate
-    loadPlayers().then(()=>populateLoginPlayerDropdown());
+    sel.innerHTML = '<option value="">Loading players...</option>';
+    loadPlayers().then(()=>populateLoginPlayerDropdown()).catch(()=>{
+      sel.innerHTML = '<option value="">Could not load players — check connection</option>';
+    });
     return;
   }
   const sorted = [...STATE.players].sort((a,b)=>a.first.localeCompare(b.first));
@@ -2105,8 +2110,7 @@ function renderAvailability(){
     const isPast = d < today;
     const editable = canEdit && !isPast;
     const dt = new Date(d+'T12:00:00');
-    const isBye = ['2026-05-27', '2026-07-01'].includes(d);
-    const dateLabel = dt.toLocaleDateString('en-US',{month:'short',day:'numeric'}) + (isBye ? ' — Bye' : '');
+    const dateLabel = dt.toLocaleDateString('en-US',{month:'short',day:'numeric'});
     const statusBadge = av.status==='yes'?'tag-in':av.status==='maybe'?'tag-maybe':av.status==='no'?'tag-out':'tag-unknown';
     const statusLabel = av.status==='yes'?'Available':av.status==='maybe'?'Maybe':av.status==='no'?'Unavailable':'Unknown';
     const saveCall = `saveAvailRow('${p.id}','${d}')`;
@@ -2165,7 +2169,8 @@ function requestTokenWithConsent(){
 function checkAvailTokenBanner(){
   const banner = document.getElementById('avail-token-banner');
   if(!banner) return;
-  banner.style.display = (!TOKEN) ? 'flex' : 'none';
+  // only show banner for captain (players use API key writes now)
+  banner.style.display = (!TOKEN && STATE.role === 'captain') ? 'flex' : 'none';
 }
 
 function saveAvailRow(playerId, date){
@@ -2197,7 +2202,8 @@ async function setAvailabilityForPlayer(playerId, date, status, note){
       }
     }
   }
-  if(!TOKEN && STATE.role !== 'player'){
+  // captain needs token; players use API key (sheet must be publicly editable)
+  if(!TOKEN && STATE.role === 'captain'){
     await ensureToken(()=>setAvailabilityForPlayer(playerId,date,status,note));
     return;
   }
@@ -2242,7 +2248,8 @@ function renderAvailSummary(){
   const el = document.getElementById('avail-summary-table');
   if(!el) return;
   const today = new Date().toISOString().slice(0,10);
-  const shortDate = d => { const dt = new Date(d+'T12:00:00'); return dt.toLocaleDateString('en-US',{month:'short',day:'numeric'}); };
+  const BYE_DATES = ['2026-05-27','2026-07-01'];
+  const shortDate = d => { if(BYE_DATES.includes(d)) return 'Bye'; const dt = new Date(d+'T12:00:00'); return dt.toLocaleDateString('en-US',{month:'short',day:'numeric'}); };
   const thStyle = (d) => {
     const isSelected = d === SELECTED_DATE;
     const dateAvail = STATE.availability[d] || {};
