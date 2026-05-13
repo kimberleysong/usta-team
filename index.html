@@ -997,8 +997,9 @@ function initGSI(){
   if(savedUser && savedUser.role === 'captain'){
     STATE.role = 'captain'; STATE.user = savedUser;
     launchApp();
-  } else if(savedUser && savedUser.email){
-    STATE.role = 'player'; STATE.user = savedUser;
+  } else if(savedUser && (savedUser.email || savedUser.playerId)){
+    STATE.role = savedUser.role || 'player';
+    STATE.user = savedUser;
     launchApp();
   } else {
     showScreen('login');
@@ -1051,7 +1052,7 @@ function playerLogin(){
   }
   const player = STATE.players.find(p=>p.id===playerId);
   if(!player){ toast('Player not found'); return; }
-  STATE.user = {name: player.first+' '+player.last, email: player.gemail||player.email, picture:null, playerId};
+  STATE.user = {name: player.first+' '+player.last, email: player.gemail||'', picture:null, playerId, role:'player'};
   STATE.role = 'player';
   localStorage.setItem('usta_user', JSON.stringify(STATE.user));
   launchApp();
