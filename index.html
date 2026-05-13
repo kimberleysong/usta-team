@@ -826,6 +826,7 @@ button{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-seri
           <div class="form-group"><label>API Key</label><input id="cfg-api-key"></div>
           <div class="form-group"><label>OAuth Client ID</label><input id="cfg-client-id"></div>
           <div class="form-group"><label>Change captain password</label><input type="password" id="cfg-captain-pw" placeholder="Leave blank to keep current"></div>
+          <div class="form-group"><label>Apps Script URL <span style="font-size:11px;color:#888;font-weight:400">— enables player saves without Google account</span></label><input id="cfg-apps-script-url" placeholder="https://script.google.com/macros/s/..."></div>
           <button class="btn btn-primary" onclick="saveConfig()">Save settings</button>
           <button class="btn btn-danger" style="margin-left:8px" onclick="resetSetup()">Reset &amp; re-run setup</button>
         </div>
@@ -930,7 +931,8 @@ const DEFAULT_CFG = {
   apiKey:     'AIzaSyCk8ZEcMdjO2VD3L6pfZrc0au3zp_w7FbU',
   clientId:   '1053306336977-3env1i48fpuh03firf5fbf4qjpbpc10g.apps.googleusercontent.com',
   captainPwHash: 'a0c545d1914e0d3cdd509d9f2e7de121ce2d495939327253a481c371fad434c6',
-  teamName:   'Good Vibes Tribe'
+  teamName:   'Good Vibes Tribe',
+  appsScriptUrl: '' // paste your Apps Script Web App URL here
 };
 // merge: localStorage overrides defaults (captain's saved config wins)
 let CFG = Object.assign({}, DEFAULT_CFG, JSON.parse(localStorage.getItem('usta_cfg') || '{}'));
@@ -2173,6 +2175,32 @@ function checkAvailTokenBanner(){
   banner.style.display = (!TOKEN && STATE.role === 'captain') ? 'flex' : 'none';
 }
 
+async function saveAvailabilityViaScript(playerId, date, status, note){
+  // Use Apps Script web app — no OAuth needed for players
+  const url = CFG.appsScriptUrl || (STATE.appsScriptUrl);
+  if(!url){ throw new Error('Apps Script URL not configured'); }
+  
+  // Get team code hash from sessionStorage
+  const codeHash = '2147f721db86ec5dba9b580342550e6dfee183f71c565ff5c26520da55e9b40c';
+  
+  const resp = await fetch(url, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      action: 'saveAvailability',
+      codeHash,
+      playerId,
+      date,
+      status,
+      note: note || ''
+    }),
+    redirect: 'follow'
+  });
+  const result = await resp.json();
+  if(result.error) throw new Error(result.error);
+  return result;
+}
+
 function saveAvailRow(playerId, date){
   const statusEl = document.getElementById('pstatus-'+playerId+'-'+date);
   const noteEl   = document.getElementById('pnote-'+playerId+'-'+date);
@@ -2202,9 +2230,24 @@ async function setAvailabilityForPlayer(playerId, date, status, note){
       }
     }
   }
-  // captain needs token; players use API key (sheet must be publicly editable)
+  // captain needs token; players use Apps Script (no OAuth needed)
   if(!TOKEN && STATE.role === 'captain'){
     await ensureToken(()=>setAvailabilityForPlayer(playerId,date,status,note));
+    return;
+  }
+  if(STATE.role === 'player' && CFG.appsScriptUrl){
+    try{
+      await saveAvailabilityViaScript(playerId, date, status, note);
+      // update local state
+      if(!STATE.availability[date]) STATE.availability[date]={};
+      STATE.availability[date][playerId] = {status, note:note||''};
+      updatePlayerMeta();
+      renderAvailSummary();
+      renderDashboard();
+      toast('Saved');
+    }catch(e){
+      toast('Save failed: '+e.message);
+    }
     return;
   }
   // Update local state immediately
@@ -2466,6 +2509,8 @@ function saveConfig(){
   CFG.apiKey = v('cfg-api-key')||CFG.apiKey;
   CFG.clientId = v('cfg-client-id')||CFG.clientId;
   const pw = v('cfg-captain-pw');
+  const scriptUrl = v('cfg-apps-script-url');
+  if(scriptUrl){ CFG.appsScriptUrl = scriptUrl; localStorage.setItem('usta_cfg', JSON.stringify(CFG)); }
   if(pw){
     const encoder = new TextEncoder();
     crypto.subtle.digest('SHA-256', encoder.encode(pw)).then(buf=>{
@@ -2548,6 +2593,8 @@ async function initSheet(){
 }
 
 function loadSettingsForm(){
+  const urlField = document.getElementById('cfg-apps-script-url');
+  if(urlField && CFG.appsScriptUrl) urlField.value = CFG.appsScriptUrl;
   document.getElementById('cfg-team-name').value = CFG.teamName||'';
   document.getElementById('cfg-sheet-id').value = CFG.sheetId||'';
   document.getElementById('cfg-api-key').value = CFG.apiKey||'';
