@@ -2183,17 +2183,17 @@ async function saveAvailabilityViaScript(playerId, date, status, note){
   // Get team code hash from sessionStorage
   const codeHash = '2147f721db86ec5dba9b580342550e6dfee183f71c565ff5c26520da55e9b40c';
   
-  const resp = await fetch(url, {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({
-      action: 'saveAvailability',
-      codeHash,
-      playerId,
-      date,
-      status,
-      note: note || ''
-    }),
+  // Use no-cors + URLSearchParams since Apps Script doesn't support CORS preflight
+  const params = new URLSearchParams({
+    action: 'saveAvailability',
+    codeHash,
+    playerId,
+    date,
+    status,
+    note: note || ''
+  });
+  const resp = await fetch(url + '?' + params.toString(), {
+    method: 'GET',
     redirect: 'follow'
   });
   const result = await resp.json();
@@ -2235,7 +2235,11 @@ async function setAvailabilityForPlayer(playerId, date, status, note){
     await ensureToken(()=>setAvailabilityForPlayer(playerId,date,status,note));
     return;
   }
-  if(STATE.role === 'player' && CFG.appsScriptUrl){
+  if(STATE.role === 'player'){
+    if(!CFG.appsScriptUrl){
+      toast('Saving not available yet — contact Kim to complete setup');
+      return;
+    }
     try{
       await saveAvailabilityViaScript(playerId, date, status, note);
       // update local state
@@ -2246,7 +2250,12 @@ async function setAvailabilityForPlayer(playerId, date, status, note){
       renderDashboard();
       toast('Saved');
     }catch(e){
-      toast('Save failed: '+e.message);
+      const msg = e.message||'';
+      if(msg.includes('fetch')){
+        toast('Could not reach server — check your internet connection');
+      } else {
+        toast('Save failed: '+msg);
+      }
     }
     return;
   }
