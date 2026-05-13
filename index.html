@@ -2207,7 +2207,21 @@ function saveAvailRow(playerId, date){
   const status = statusEl ? statusEl.value : 'unknown';
   const note   = noteEl   ? noteEl.value   : '';
   colorAvailSelect(statusEl);
-  setAvailabilityForPlayer(playerId, date, status, note);
+  // optimistic update — reflect change immediately in local state
+  if(!STATE.availability[date]) STATE.availability[date]={};
+  STATE.availability[date][playerId] = {status, note:note||''};
+  updatePlayerMeta();
+  renderAvailSummary();
+  renderDashboard();
+  // show saving indicator on the row
+  const dot = document.querySelector(`#pstatus-${playerId}-${date}`)?.closest('div[style*="display:grid"]')?.querySelector('div[style*="border-radius:50%"]');
+  if(dot){ dot.style.outline='2px solid #aaa'; dot.title='Saving...'; }
+  // save in background
+  setAvailabilityForPlayer(playerId, date, status, note).then(()=>{
+    if(dot){ dot.style.outline=''; dot.title=''; }
+  }).catch(()=>{
+    if(dot){ dot.style.outline='2px solid #E24B4A'; dot.title='Save failed — tap to retry'; }
+  });
 }
 
 async function setAvailabilityForPlayer(playerId, date, status, note){
@@ -2242,13 +2256,7 @@ async function setAvailabilityForPlayer(playerId, date, status, note){
     }
     try{
       await saveAvailabilityViaScript(playerId, date, status, note);
-      // update local state
-      if(!STATE.availability[date]) STATE.availability[date]={};
-      STATE.availability[date][playerId] = {status, note:note||''};
-      updatePlayerMeta();
-      renderAvailSummary();
-      renderDashboard();
-      toast('Saved');
+      // local state already updated optimistically in saveAvailRow
     }catch(e){
       const msg = e.message||'';
       if(msg.includes('fetch')){
