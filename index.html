@@ -2054,8 +2054,11 @@ function renderAvailPlayerDropdown(){
       SELECTED_AVAIL_PLAYER = kim ? kim.id : (sorted[0]?.id || null);
     }
   } else {
-    // Player sees only themselves
-    const myPlayer = STATE.players.find(p => p.gemail.toLowerCase() === me);
+    // Player sees only themselves — use playerId from login (name picker) or match by gemail
+    const myId = STATE.user?.playerId;
+    const myPlayer = myId
+      ? STATE.players.find(p => p.id === myId)
+      : STATE.players.find(p => p.gemail && me && p.gemail.toLowerCase() === me);
     if(myPlayer){
       sel.innerHTML = `<option value="${myPlayer.id}">${myPlayer.first} ${myPlayer.last}</option>`;
       SELECTED_AVAIL_PLAYER = myPlayer.id;
@@ -2225,11 +2228,11 @@ async function setAvailabilityForPlayer(playerId, date, status, note){
     if(myId && myId !== playerId){
       toast('You can only update your own availability'); return;
     }
-    // if no playerId (legacy google login), verify by email
+    // if no playerId (legacy google login), verify by gemail
     if(!myId){
-      const me = STATE.user?.email;
+      const me = STATE.user?.email?.toLowerCase();
       const player = STATE.players.find(p=>p.id===playerId);
-      if(!player || !me || player.gemail.toLowerCase() !== me.toLowerCase()){
+      if(!player || !me || !player.gemail || player.gemail.toLowerCase() !== me){
         toast('You can only update your own availability'); return;
       }
     }
