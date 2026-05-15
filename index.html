@@ -388,10 +388,6 @@ button{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-seri
         <!-- UPDATE TAB -->
         <div id="avail-tab-update" class="tab-pane active">
 
-          <div id="avail-token-banner" style="display:none;background:#FAEEDA;border:0.5px solid #EF9F27;border-radius:8px;padding:10px 14px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
-            <span style="font-size:13px;color:#633806">To save availability, grant access to Google Sheets.</span>
-            <button class="btn btn-sm" style="background:#EF9F27;color:#fff;border:none;font-weight:500" onclick="requestTokenWithConsent()">Grant access</button>
-          </div>
           <div class="card" style="margin-bottom:8px;padding:.75rem 1rem;display:flex;align-items:center;gap:16px;flex-wrap:wrap">
             <div>
               <label style="font-size:12px;color:#888;display:block;margin-bottom:4px">Player</label>
@@ -1534,68 +1530,6 @@ function renderTeamInfo(){
 }
 
 // ─── SCHEDULE IMPORT ─────────────────────────────────────────────────────────
-async function importTennisLink(){
-  if(!TOKEN){ await ensureToken(saveSchedule); return; }
-  const url = document.getElementById('tl-url').value.trim();
-  if(!url){toast('Enter a TennisLink URL');return}
-  const status = document.getElementById('tl-status');
-  status.textContent = 'Fetching schedule...';
-  status.style.color = '#888';
-  try {
-    const resp = await fetch(url, {credentials:'omit'});
-    if(!resp.ok) throw new Error('HTTP '+resp.status);
-    const html = await resp.text();
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(html, 'text/html');
-    // TennisLink schedule tables — try multiple selectors
-    const rows = Array.from(doc.querySelectorAll('table tr, .schedule-row, [class*="schedule"] tr'));
-    const entries = [];
-    const dateRe = /(\d{1,2}\/\d{1,2}\/\d{2,4})/;
-    rows.forEach(row => {
-      const text = row.innerText || row.textContent || '';
-      const dateMatch = text.match(dateRe);
-      if(!dateMatch) return;
-      const cells = Array.from(row.querySelectorAll('td')).map(td=>(td.innerText||td.textContent||'').trim().replace(/\s+/g,' '));
-      if(cells.length < 2) return;
-      // parse date
-      const rawDate = dateMatch[1];
-      const parts = rawDate.split('/');
-      const year = parts[2].length===2 ? '20'+parts[2] : parts[2];
-      const isoDate = `${year}-${parts[0].padStart(2,'0')}-${parts[1].padStart(2,'0')}`;
-      // find opponent and location from cells
-      const opponent = cells.find(c=>c && c.length>2 && !c.match(/^\d/) && !c.match(/home|away|tbd/i) && c!==rawDate) || '';
-      const location = cells.find(c=>c && /home|away|tbd|court|club|park/i.test(c)) || '';
-      if(isoDate && opponent) entries.push({date:isoDate, opponent, location});
-    });
-    if(!entries.length){
-      // fallback: try to find any text that looks like match data
-      status.textContent = 'Could not auto-parse the page. Try the manual entry below.';
-      status.style.color = '#A32D2D';
-      renderManualEntry(doc, url);
-      return;
-    }
-    // save all entries
-    let saved = 0;
-    for(const e of entries){
-      await saveScheduleEntry(e.date, e.opponent, e.location);
-      saved++;
-    }
-    status.textContent = `Imported ${saved} match${saved!==1?'es':''}. Check the schedule below.`;
-    status.style.color = '#27500A';
-    renderScheduleFull();
-    renderDashboard();
-  } catch(e){
-    console.error(e);
-    if(e.message.includes('CORS') || e.message.includes('Failed to fetch') || e.message.includes('NetworkError')){
-      status.innerHTML = 'TennisLink blocks direct access from web apps (CORS restriction). <strong>Use manual entry below</strong> — copy the schedule details from TennisLink and enter them here.';
-      status.style.color = '#A32D2D';
-      showManualEntry();
-    } else {
-      status.textContent = 'Error: '+e.message;
-      status.style.color = '#A32D2D';
-    }
-  }
-}
 
 function showManualEntry(){
   const existing = document.getElementById('manual-entry-section');
@@ -1716,16 +1650,6 @@ async function parsePastedSchedule(){
     status.textContent = '❌ Save failed: '+e.message;
     status.style.color = '#A32D2D';
   }
-}
-
-async function clearSchedule(){
-  if(!confirm('Clear all schedule data?')) return;
-  if(!TOKEN){ await ensureToken(saveLineup); return; }
-  await sheetsClear('Schedule!A2:C');
-  STATE.schedule = {};
-  renderScheduleFull();
-  renderDashboard();
-  toast('Schedule cleared');
 }
 
 function renderScheduleFull(){
@@ -2143,30 +2067,10 @@ function colorAvailSelect(el){
   if(row){ const dot = row.querySelector('div[style*="border-radius:50%"]'); if(dot) dot.style.background = m.dot; }
 }
 
-function requestTokenWithConsent(){
-  const client = google.accounts.oauth2.initTokenClient({
-    client_id: CFG.clientId,
-    scope: 'https://www.googleapis.com/auth/spreadsheets',
-    callback: (r)=>{
-      if(r.access_token){
-        TOKEN = r.access_token;
-        const banner = document.getElementById('avail-token-banner');
-        if(banner) banner.style.display = 'none';
-        toast('Connected — you can now save availability');
-      } else {
-        toast('Could not connect — try signing out and back in');
-      }
-    },
-    error_callback: ()=>{ toast('Could not connect — try signing out and back in'); }
-  });
-  client.requestAccessToken({prompt:'consent'});
-}
-
 function checkAvailTokenBanner(){
+  // Apps Script handles all saves — no token banner needed
   const banner = document.getElementById('avail-token-banner');
-  if(!banner) return;
-  // only show banner for captain (players use API key writes now)
-  banner.style.display = (!TOKEN && STATE.role === 'captain') ? 'flex' : 'none';
+  if(banner) banner.style.display = 'none';
 }
 
 async function saveAvailabilityViaScript(playerId, date, status, note){
@@ -2257,29 +2161,25 @@ async function setAvailabilityForPlayer(playerId, date, status, note){
       }
     }
   }
-  // captain needs token; players use Apps Script (no OAuth needed)
-  if(!TOKEN && STATE.role === 'captain'){
-    await ensureToken(()=>setAvailabilityForPlayer(playerId,date,status,note));
+  // All availability saves go through Apps Script — no OAuth needed
+  if(!CFG.appsScriptUrl){
+    toast('Saving not available yet — contact Kim to complete setup');
     return;
   }
-  if(STATE.role === 'player'){
-    if(!CFG.appsScriptUrl){
-      toast('Saving not available yet — contact Kim to complete setup');
-      return;
+  try{
+    await saveAvailabilityViaScript(playerId, date, status, note);
+    // local state already updated optimistically in saveAvailRow
+  }catch(e){
+    const msg = e.message||'';
+    if(msg.includes('Network error')){
+      toast('Could not reach server — check your connection');
+    } else if(msg.includes('timed out')){
+      toast('Request timed out — try again');
+    } else {
+      toast('Save failed: '+msg);
     }
-    try{
-      await saveAvailabilityViaScript(playerId, date, status, note);
-      // local state already updated optimistically in saveAvailRow
-    }catch(e){
-      const msg = e.message||'';
-      if(msg.includes('fetch')){
-        toast('Could not reach server — check your internet connection');
-      } else {
-        toast('Save failed: '+msg);
-      }
-    }
-    return;
   }
+  return;
   // Update local state immediately
   if(!STATE.availability[date]) STATE.availability[date]={};
   STATE.availability[date][playerId] = {status, note:note||''};
@@ -2381,9 +2281,6 @@ function renderAvailSummary(){
   const legendEl = document.getElementById('avail-summary-legend');
   if(legendEl) legendEl.style.display='flex';
 }
-
-function renderDateTabs(){ /* kept for lineup date compat — no longer used in availability */ }
-function selectDate(d){ SELECTED_DATE = d; renderDashboard(); }
 
 function switchLineupTab(tab, btn){
   document.querySelectorAll('#sec-lineup .tab-btn').forEach(b=>b.classList.remove('active'));
